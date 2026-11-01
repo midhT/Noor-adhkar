@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#090d20">
+  <meta name="theme-color" content="#090d20"><meta name="color-scheme" content="dark light"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="A quiet, offline-first companion for daily adhkar and tasbeeh.">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
@@ -43,8 +43,8 @@
 
         <div class="section-heading"><div><span class="eyebrow">QUICK ACCESS</span><h2>Continue your dhikr</h2></div></div>
         <button class="featured-dhikr" id="quickCounter">
-          <div><span class="eyebrow">SELECTED DHIKR</span><div class="arabic small-arabic" lang="ar" dir="rtl">أَسْتَغْفِرُ اللّٰهَ</div><div class="featured-name">Astaghfirullah</div><div class="muted">I seek forgiveness from Allah</div></div>
-          <div class="quick-count"><strong id="quickCount">0</strong><span>/ 100</span><span class="arrow">↗</span></div>
+          <div class="featured-copy"><span class="eyebrow">SELECTED DHIKR</span><div class="arabic small-arabic" id="quickDhikrArabic" lang="ar" dir="rtl">أَسْتَغْفِرُ اللّٰهَ</div><div class="featured-name" id="quickDhikrName">Astaghfirullah</div><div class="muted" id="quickDhikrMeaning">I seek forgiveness from Allah</div></div>
+          <div class="quick-count"><strong id="quickCount">0</strong><span>/ <span id="quickTarget">100</span></span><span class="arrow">↗</span></div>
         </button>
 
         <div class="section-heading"><div><span class="eyebrow">YOUR JOURNEY</span><h2>Today at a glance</h2></div></div>
@@ -75,8 +75,9 @@
           <div class="counter-orbit orbit-one"></div><div class="counter-orbit orbit-two"></div>
           <button class="count-button" id="countButton" aria-label="Count one dhikr"><span class="tap-label">TAP TO COUNT</span><strong id="countValue">0</strong><span class="count-target">OF <span id="targetLabel">100</span></span><span class="count-plus" id="plusFeedback">+1</span></button>
         </div>
-        <div class="counter-actions"><button class="secondary-button" id="resetCounter">↺ Reset</button><button class="primary-button" id="finishCounter">Complete session</button><button class="secondary-button" id="vibrateBtn" aria-pressed="false">◌ Haptics off</button></div>
-        <p class="counter-note" id="counterNote">Every count is saved on this device.</p>
+        <div class="counter-complete" id="counterComplete" role="status" aria-live="polite" hidden><span class="complete-icon">✓</span><div><strong>Adhkar completed</strong><p id="counterCompleteText">Target reached. Alhamdulillah.</p></div></div>
+        <div class="counter-actions"><button class="secondary-button" id="resetCounter">↺ Reset</button><button class="primary-button" id="finishCounter">Save session</button><button class="secondary-button" id="vibrateBtn" aria-pressed="false">◌ Haptics off</button></div>
+        <p class="counter-note" id="counterNote">Your count saves automatically. A completed target cannot be exceeded.</p>
       </section>
 
       <section class="screen" id="libraryScreen">
