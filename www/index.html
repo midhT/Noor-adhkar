@@ -9,7 +9,14 @@
   <link rel="stylesheet" href="styles.css">
   <title>Noor — Islamic Daily Companion</title>
 </head>
-<body>
+<body class="intro-pending">
+  <div class="noor-intro" id="noorIntro" aria-label="Noor opening animation" role="status">
+    <div class="intro-stars" aria-hidden="true"></div>
+    <div class="intro-emblem" aria-hidden="true"><span class="intro-crescent"></span><span class="intro-star">✦</span></div>
+    <div class="intro-wordmark">NOOR</div>
+    <div class="intro-tagline">REMEMBER <i>•</i> PRAY <i>•</i> REFLECT</div>
+    <div class="intro-rule"><span></span></div>
+  </div>
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-mark">ن</div>
@@ -122,6 +129,7 @@
     </nav>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
+  <script src="intro.js"></script>
   <script src="native.bundle.js"></script>
   <script src="app.js"></script>
   <script src="v3.js"></script>

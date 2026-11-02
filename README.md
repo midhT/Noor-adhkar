@@ -33,3 +33,10 @@ Core data stays in local app/browser storage. No account or analytics service is
 
 ### Android system bars and haptics
 The build bundles Capacitor Haptics and Status Bar plugins. The status bar is explicitly shown with a dark navy background and light icons, and WebView content does not overlay it. Haptic feedback uses native Android impact feedback in the APK; browser preview uses the vibration API when available. Test on a physical device.
+
+
+## Noor celestial identity
+- `assets/icon.png` is the source artwork used to generate the native Android launcher icon.
+- `assets/splash.png` is the source artwork used for the native Android splash screen.
+- `www/intro.js` and the intro styles provide the short animated crescent/wordmark reveal after the web app starts.
+- The GitHub Actions workflow generates Android icon/splash resources with `@capacitor/assets`.

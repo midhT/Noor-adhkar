@@ -1,12 +1,12 @@
 {
-  "name": "Noor — Islamic Daily Companion",
+  "name": "Noor \u2014 Islamic Daily Companion",
   "short_name": "Noor",
   "description": "A quiet, offline-first companion for Adhkar, Salah learning, focus, and reflection.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#090d20",
-  "theme_color": "#090d20",
+  "background_color": "#07080b",
+  "theme_color": "#07080b",
   "orientation": "portrait",
   "icons": [
     {
