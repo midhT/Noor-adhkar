@@ -50,3 +50,6 @@ body.light .topbar,body.light .bottom-nav{background:rgba(248,246,239,.94);borde
 @media(max-width:370px){main{padding-left:13px;padding-right:13px}.topbar{padding-left:14px;padding-right:14px}.streak-card{padding:13px}.routine-card{padding:12px}.routine-symbol{font-size:22px}.featured-dhikr{padding:13px}.bottom-nav{gap:0;padding-left:2px;padding-right:2px}.nav-item span{font-size:17px}.nav-item small{font-size:7px}.focus-ring{width:min(190px,65vw);height:min(190px,65vw)}.focus-clock{font-size:clamp(38px,12vw,48px)}.achievement-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.achievement{padding:10px 3px}.achievement strong{font-size:9px}}
 @media(min-width:420px){main{padding-left:20px;padding-right:20px}.bottom-nav{padding-left:9px;padding-right:9px}}
 @media(prefers-reduced-motion:reduce){.app-shell:after,.v3-hero:after{animation:none!important}.screen{animation:none!important}}
+
+/* Android system bars: keep content clear of status/navigation insets. */
+html{min-height:100%;} body{padding-top:env(safe-area-inset-top, 0px);padding-bottom:env(safe-area-inset-bottom, 0px);} .app-shell{min-height:100dvh;}

@@ -29,3 +29,7 @@ The Salah section is a learning aid, not a fatwa. The Arabic, transliteration, t
 
 ## Privacy
 Core data stays in local app/browser storage. No account or analytics service is configured in this source build. A public release still needs a store-compliant privacy policy and accurate data-safety disclosures.
+
+
+### Android system bars and haptics
+The build bundles Capacitor Haptics and Status Bar plugins. The status bar is explicitly shown with a dark navy background and light icons, and WebView content does not overlay it. Haptic feedback uses native Android impact feedback in the APK; browser preview uses the vibration API when available. Test on a physical device.
