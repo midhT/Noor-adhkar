@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#090d20"><meta name="color-scheme" content="dark light"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="A quiet, offline-first companion for daily adhkar and tasbeeh.">
+  <meta name="theme-color" content="#090d20">
+  <meta name="description" content="Noor — an offline-first Islamic daily companion for Adhkar, Salah learning, focus, and reflection.">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
-  <title>Noor — Adhkar & Tasbeeh</title>
+  <title>Noor — Islamic Daily Companion</title>
 </head>
 <body>
   <div class="app-shell">
@@ -43,8 +43,8 @@
 
         <div class="section-heading"><div><span class="eyebrow">QUICK ACCESS</span><h2>Continue your dhikr</h2></div></div>
         <button class="featured-dhikr" id="quickCounter">
-          <div class="featured-copy"><span class="eyebrow">SELECTED DHIKR</span><div class="arabic small-arabic" id="quickDhikrArabic" lang="ar" dir="rtl">أَسْتَغْفِرُ اللّٰهَ</div><div class="featured-name" id="quickDhikrName">Astaghfirullah</div><div class="muted" id="quickDhikrMeaning">I seek forgiveness from Allah</div></div>
-          <div class="quick-count"><strong id="quickCount">0</strong><span>/ <span id="quickTarget">100</span></span><span class="arrow">↗</span></div>
+          <div><span class="eyebrow">SELECTED DHIKR</span><div class="arabic small-arabic" lang="ar" dir="rtl">أَسْتَغْفِرُ اللّٰهَ</div><div class="featured-name">Astaghfirullah</div><div class="muted">I seek forgiveness from Allah</div></div>
+          <div class="quick-count"><strong id="quickCount">0</strong><span>/ 100</span><span class="arrow">↗</span></div>
         </button>
 
         <div class="section-heading"><div><span class="eyebrow">YOUR JOURNEY</span><h2>Today at a glance</h2></div></div>
@@ -75,9 +75,8 @@
           <div class="counter-orbit orbit-one"></div><div class="counter-orbit orbit-two"></div>
           <button class="count-button" id="countButton" aria-label="Count one dhikr"><span class="tap-label">TAP TO COUNT</span><strong id="countValue">0</strong><span class="count-target">OF <span id="targetLabel">100</span></span><span class="count-plus" id="plusFeedback">+1</span></button>
         </div>
-        <div class="counter-complete" id="counterComplete" role="status" aria-live="polite" hidden><span class="complete-icon">✓</span><div><strong>Adhkar completed</strong><p id="counterCompleteText">Target reached. Alhamdulillah.</p></div></div>
-        <div class="counter-actions"><button class="secondary-button" id="resetCounter">↺ Reset</button><button class="primary-button" id="finishCounter">Save session</button><button class="secondary-button" id="vibrateBtn" aria-pressed="false">◌ Haptics off</button></div>
-        <p class="counter-note" id="counterNote">Your count saves automatically. A completed target cannot be exceeded.</p>
+        <div class="counter-actions"><button class="secondary-button" id="resetCounter">↺ Reset</button><button class="primary-button" id="finishCounter">Complete session</button><button class="secondary-button" id="vibrateBtn" aria-pressed="false">◌ Haptics off</button></div>
+        <p class="counter-note" id="counterNote">Every count is saved on this device.</p>
       </section>
 
       <section class="screen" id="libraryScreen">
@@ -87,6 +86,8 @@
         <p class="disclaimer">Translations are brief meanings for convenience. Verify wording, virtues, and prescribed counts with reliable scholarly sources.</p>
       </section>
 
+      <section class="screen" id="salahScreen"></section>
+      <section class="screen" id="focusScreen"></section>
       <section class="screen" id="progressScreen">
         <div class="screen-heading"><span class="eyebrow">STEADY, NOT PERFECT</span><h1>Your journey</h1><p class="muted">A private record of your remembrance, stored on this device.</p></div>
         <div class="progress-hero"><span class="eyebrow">CURRENT STREAK</span><div><strong id="progressStreak">0</strong><span> days</span></div><p id="progressStreakText" class="muted">Complete your daily goal to start a streak.</p><div class="streak-line"><span id="streakFill"></span></div><div class="streak-meta"><span>Best: <b id="progressBest">0 days</b></span><span id="streakMilestone">Next milestone: 3 days</span></div></div>
@@ -114,11 +115,14 @@
       <button class="nav-item active" data-screen="homeScreen"><span>⌂</span><small>Home</small></button>
       <button class="nav-item" data-screen="counterScreen"><span>◉</span><small>Tasbeeh</small></button>
       <button class="nav-item" data-screen="libraryScreen"><span>▤</span><small>Library</small></button>
+      <button class="nav-item" data-screen="salahScreen"><span>۞</span><small>Salah</small></button>
+      <button class="nav-item" data-screen="focusScreen"><span>◌</span><small>Focus</small></button>
       <button class="nav-item" data-screen="progressScreen"><span>✦</span><small>Progress</small></button>
       <button class="nav-item" data-screen="settingsScreen"><span>⋯</span><small>More</small></button>
     </nav>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
   <script src="app.js"></script>
+  <script src="v3.js"></script>
 </body>
 </html>
