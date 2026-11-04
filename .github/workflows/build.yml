@@ -1,4 +1,3 @@
-
 name: Build Noor Android
 
 on:
@@ -11,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
@@ -21,25 +22,30 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Inspect Flutter plugins
+      - name: Verify Android configuration
         run: |
           flutter --version
-          flutter pub deps --style=compact
-          cat .flutter-plugins-dependencies
-          grep -RniE 'PluginRegistry\.Registrar|io\.flutter\.app' "$HOME/.pub-cache/hosted/pub.dev" || true
-
-      - name: Diagnose Android manifest
-        run: |
-          echo "=== Main manifest ==="
+          find android -maxdepth 4 -type f | sort
           cat android/app/src/main/AndroidManifest.xml
-          echo "=== All Android manifests ==="
-          find android -name AndroidManifest.xml -print
-          echo "=== Git-tracked manifests ==="
-          git ls-files '*AndroidManifest.xml'
 
-      - name: Build APK
-        run: flutter build apk --release -v
+      - name: Build release APK
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter build apk --release --verbose 2>&1 | tee build.log
 
+      - name: Upload release APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Noor-Android-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
 
-
-
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Noor-Build-Log
+          path: build.log
+          if-no-files-found: warn
