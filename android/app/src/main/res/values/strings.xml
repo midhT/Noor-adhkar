@@ -1,0 +1,5 @@
+<resources>
+    <string name="widget_salah_description">Noor next Salah</string>
+    <string name="widget_tasbeeh_description">Noor Tasbeeh counter</string>
+    <string name="widget_verse_description">Noor Quran verse</string>
+</resources>
