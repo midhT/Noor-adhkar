@@ -28,8 +28,18 @@ jobs:
           cat .flutter-plugins-dependencies
           grep -RniE 'PluginRegistry\.Registrar|io\.flutter\.app' "$HOME/.pub-cache/hosted/pub.dev" || true
 
+      - name: Diagnose Android manifest
+        run: |
+          echo "=== Main manifest ==="
+          cat android/app/src/main/AndroidManifest.xml
+          echo "=== All Android manifests ==="
+          find android -name AndroidManifest.xml -print
+          echo "=== Git-tracked manifests ==="
+          git ls-files '*AndroidManifest.xml'
+
       - name: Build APK
         run: flutter build apk --release -v
+
 
 
 
