@@ -27,10 +27,10 @@ class NoorTheme {
       labelTextStyle: WidgetStateProperty.all(
         const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
     ),
-    cardTheme: CardThemeData(
+    cardTheme: const CardThemeData(
       color: surface, elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22),
-        side: const BorderSide(color: line, width: .7)),
+        side: BorderSide(color: line, width: .7)),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true, fillColor: surface2,
