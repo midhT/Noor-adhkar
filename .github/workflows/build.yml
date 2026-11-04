@@ -56,10 +56,9 @@ jobs:
       - name: Configure Flutter SDK path for Gradle
         shell: bash
         run: |
-          FLUTTER_BIN="$(readlink -f "$(command -v flutter)")"
-          FLUTTER_SDK="$(dirname "$(dirname "$FLUTTER_BIN")")"
-          test -f "$FLUTTER_SDK/packages/flutter_tools/gradle/build.gradle"
-          printf 'flutter.sdk=%s\n' "$FLUTTER_SDK" > android/local.properties
+          test -d "$FLUTTER_ROOT/packages/flutter_tools/gradle"
+          printf 'flutter.sdk=%s\n' "$FLUTTER_ROOT" > android/local.properties
+          cat android/local.properties
 
       - name: Set up Gradle 8.14.3
         uses: gradle/actions/setup-gradle@v4
