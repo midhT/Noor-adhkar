@@ -95,7 +95,9 @@ class NoorNotifications {
     final hour = int.tryParse(match.group(1)!);
     final minute = int.tryParse(match.group(2)!);
     if (hour == null || minute == null || hour < 0 || hour > 23 ||
-        minute < 0 || minute > 59) return null;
+        minute < 0 || minute > 59) {
+      return null;
+    }
     return (hour, minute);
   }
 
