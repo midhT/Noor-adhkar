@@ -1,12 +1,18 @@
 pluginManagement {
     def flutterSdkPath = {
         def properties = new Properties()
-        file("local.properties").withInputStream { properties.load(it) }
+        def localPropertiesFile = file("local.properties")
+        assert localPropertiesFile.exists(),
+                "android/local.properties is missing. Run the GitHub Actions setup workflow."
+        localPropertiesFile.withInputStream { properties.load(it) }
         def flutterSdkPath = properties.getProperty("flutter.sdk")
-        assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+        assert flutterSdkPath != null && !flutterSdkPath.trim().isEmpty(),
+                "flutter.sdk not set in android/local.properties"
         return flutterSdkPath
     }()
+
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
     repositories {
         google()
         mavenCentral()
