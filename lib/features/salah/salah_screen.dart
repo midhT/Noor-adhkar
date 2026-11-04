@@ -16,7 +16,7 @@ class _SalahScreenState extends State<SalahScreen> {
   Future<void> _init() async {
     lat = double.tryParse(await NoorStorage.getSetting('latitude') ?? '');
     lon = double.tryParse(await NoorStorage.getSetting('longitude') ?? '');
-    if (lat != null && lon != null) _calculate();
+    if (lat != null && lon != null) await _calculate();
     if (mounted) setState(() {});
   }
   void _calculate() {
@@ -30,8 +30,7 @@ class _SalahScreenState extends State<SalahScreen> {
       lat = pos.latitude; lon = pos.longitude;
       await NoorStorage.saveSetting('latitude', '$lat');
       await NoorStorage.saveSetting('longitude', '$lon');
-      error = null;
-      _calculate();
+      error = null; await _calculate();
     } catch (e) { error = e.toString(); }
     if (mounted) setState(() {});
   }
@@ -59,6 +58,7 @@ class _SalahScreenState extends State<SalahScreen> {
   }
   Future<void> _editJamaat(String prayer) async {
     final existing = await NoorStorage.getJamaat(prayer);
+    if (!mounted) return;
     final ctrl = TextEditingController(text: existing ?? '');
     final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
       title: Text('$prayer Jamaat time'),
@@ -66,9 +66,7 @@ class _SalahScreenState extends State<SalahScreen> {
       actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('CANCEL')),
         TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('SAVE'))],
     ));
-    if (ok == true) {
-      await NoorStorage.saveJamaat(prayer, ctrl.text.trim());
-    }
+    if (ok == true) await NoorStorage.saveJamaat(prayer, ctrl.text.trim());
     if (mounted) setState(() {});
   }
   @override Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(20), children: [
