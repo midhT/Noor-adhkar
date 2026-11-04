@@ -4,7 +4,6 @@ import '../../core/verses.dart';
 import '../../core/prayer_service.dart';
 import '../../core/storage.dart';
 import '../../core/widgets_service.dart';
-import '../salah/salah_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final p = await PrayerService.calculateForDate(latitude: lat, longitude: lon);
       final now = DateTime.now();
       final list = {'Fajr':p.fajr, 'Sunrise':p.sunrise, 'Dhuhr':p.dhuhr, 'Asr':p.asr, 'Maghrib':p.maghrib, 'Isha':p.isha};
+      if (!mounted) return;
       final upcoming = list.entries.firstWhere((e) => e.value.isAfter(now), orElse: () => list.entries.first);
       nextPrayer = upcoming.key; nextTime = TimeOfDay.fromDateTime(upcoming.value).format(context);
       place = 'Saved coordinates';

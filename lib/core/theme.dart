@@ -27,7 +27,7 @@ class NoorTheme {
       labelTextStyle: WidgetStateProperty.all(
         const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: surface, elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22),
         side: const BorderSide(color: line, width: .7)),

@@ -16,7 +16,7 @@ class _SalahScreenState extends State<SalahScreen> {
   Future<void> _init() async {
     lat = double.tryParse(await NoorStorage.getSetting('latitude') ?? '');
     lon = double.tryParse(await NoorStorage.getSetting('longitude') ?? '');
-    if (lat != null && lon != null) await _calculate();
+    if (lat != null && lon != null) _calculate();
     if (mounted) setState(() {});
   }
   void _calculate() {
@@ -30,7 +30,7 @@ class _SalahScreenState extends State<SalahScreen> {
       lat = pos.latitude; lon = pos.longitude;
       await NoorStorage.saveSetting('latitude', '$lat');
       await NoorStorage.saveSetting('longitude', '$lon');
-      error = null; await _calculate();
+      error = null; _calculate();
     } catch (e) { error = e.toString(); }
     if (mounted) setState(() {});
   }

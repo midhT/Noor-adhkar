@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../core/storage.dart';
 import '../../core/notifications.dart';
 import '../../core/theme.dart';
-import '../../core/prayer_service.dart';
 import '../duas/duas_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
