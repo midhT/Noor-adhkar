@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../core/storage.dart';
 import '../../core/notifications.dart';
 import '../../core/theme.dart';
-import '../../core/prayer_service.dart';
 import '../duas/duas_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -47,12 +46,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (lat != null && lon != null) {
               final count = await NoorNotifications.schedulePrayerReminders(
                 latitude: lat, longitude: lon);
-              if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Scheduled $count upcoming prayer/Jamaat reminders.')));
               return;
             }
           }
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(granted ? 'Set your location in Salah first.' : 'Permission not granted'))); }),
       const Divider(height: 1),
       ListTile(leading: const Icon(Icons.menu_book_outlined), title: const Text('Duas library'),
