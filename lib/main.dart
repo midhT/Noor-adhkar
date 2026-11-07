@@ -276,7 +276,7 @@ class _FocusPageState extends State<FocusPage> {
       const Icon(Icons.nights_stay, color: gold, size: 42), const SizedBox(height: 18),
       Text(display, style: const TextStyle(fontSize: 58, fontWeight: FontWeight.w300)),
       const SizedBox(height: 16),
-      Wrap(spacing: 8, children: [10, 20, 30].map((m) => OutlinedButton(onPressed: running ? null : () => setState(() => seconds = m * 60), child: Text('$m min')).toList()),
+      Wrap(spacing: 8, children: [10, 20, 30].map((m) => OutlinedButton(onPressed: running ? null : () => setState(() => seconds = m * 60), child: Text('$m min'))).toList()),
       const SizedBox(height: 12),
       FilledButton.icon(onPressed: start, icon: Icon(running ? Icons.pause : Icons.play_arrow), label: Text(running ? 'Pause' : 'Begin focus')),
       const SizedBox(height: 8),

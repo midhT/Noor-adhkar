@@ -1,0 +1,62 @@
+[1mdiff --git a/.github/workflows/build.yml b/.github/workflows/build.yml[m
+[1mindex f7d8376..66592f0 100644[m
+[1m--- a/.github/workflows/build.yml[m
+[1m+++ b/.github/workflows/build.yml[m
+[36m@@ -22,6 +22,7 @@[m [mjobs:[m
+       - name: Setup Flutter[m
+         uses: subosito/flutter-action@v2[m
+         with:[m
+[32m+[m[32m          flutter-version: '3.47.9'[m
+           channel: stable[m
+           cache: true[m
+ [m
+[36m@@ -29,6 +30,7 @@[m [mjobs:[m
+         run: flutter pub get[m
+ [m
+       - name: Configure Flutter SDK path[m
+[32m+[m[32m        shell: bash[m
+         run: |[m
+           FLUTTER_BIN=$(readlink -f "$(command -v flutter)")[m
+           FLUTTER_SDK=$(dirname "$(dirname "$FLUTTER_BIN")")[m
+[36m@@ -46,12 +48,16 @@[m [mjobs:[m
+           chmod +x gradlew[m
+           ./gradlew --version[m
+ [m
+[31m-      - name: Build release APK[m
+[32m+[m[32m      - name: Build release APK (verbose diagnostics)[m
+         run: flutter build apk --release --verbose[m
+ [m
+[32m+[m[32m      - name: Verify release APK[m
+[32m+[m[32m        run: test -s build/app/outputs/flutter-apk/app-release.apk[m
+[32m+[m
+       - name: Upload APK[m
+         uses: actions/upload-artifact@v4[m
+         with:[m
+[31m-          name: Noor-Android-APK[m
+[32m+[m[32m          name: Noor-4.0-Android-APK[m
+           path: build/app/outputs/flutter-apk/app-release.apk[m
+           if-no-files-found: error[m
+[32m+[m[32m          retention-days: 14[m
+[1mdiff --git a/android/settings.gradle b/android/settings.gradle[m
+[1mindex f5aba53..48cebf7 100644[m
+[1m--- a/android/settings.gradle[m
+[1m+++ b/android/settings.gradle[m
+[36m@@ -7,11 +7,17 @@[m [mpluginManagement {[m
+         return flutterSdkPath[m
+     }()[m
+     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")[m
+[31m-    repositories { google(); mavenCentral(); gradlePluginPortal() }[m
+[32m+[m[32m    repositories {[m
+[32m+[m[32m        google()[m
+[32m+[m[32m        mavenCentral()[m
+[32m+[m[32m        gradlePluginPortal()[m
+[32m+[m[32m    }[m
+ }[m
+[32m+[m
+ plugins {[m
+     id "dev.flutter.flutter-plugin-loader" version "1.0.0"[m
+     id "com.android.application" version "8.11.1" apply false[m
+     id "org.jetbrains.kotlin.android" version "2.2.20" apply false[m
+ }[m
+[32m+[m
+ include ":app"[m
