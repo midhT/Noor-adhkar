@@ -42,7 +42,13 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.noorTest
+            // GitHub Actions runs with CI=true, but the committed test keystore is not available there.
+            // Fall back to the default Android debug keystore so CI can still build the APK artifact.
+            if (System.getenv("CI") == "true") {
+                signingConfig signingConfigs.debug
+            } else {
+                signingConfig signingConfigs.noorTest
+            }
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
