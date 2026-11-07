@@ -248,7 +248,7 @@ class _SalahPageState extends State<SalahPage> {
         Expanded(child: Text(e.key.name, style: const TextStyle(fontSize: 16))),
         Text('${e.value.hour.toString().padLeft(2,'0')}:${e.value.minute.toString().padLeft(2,'0')}', style: const TextStyle(color: gold, fontSize: 17)),
       ])))),
-      Padding(padding: const EdgeInsets.all(16), child: Text('Default coordinates are Srinagar. Verify or replace them with your location and confirm timings with your local mosque.', style: const TextStyle(color: muted))),
+      const Padding(padding: EdgeInsets.all(16), child: Text('Default coordinates are Srinagar. Verify or replace them with your location and confirm timings with your local mosque.', style: TextStyle(color: muted))),
     ]);
   }
 }
