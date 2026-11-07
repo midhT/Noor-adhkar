@@ -6,7 +6,7 @@
 Checks:
   1. bracket/paren/brace balance, honouring strings, comments and ${} interpolation
   2. every local import points at an existing file
-  3. every top-level symbol used from another local file is imported (undefined-name class of error)
+  3. a uniquely defined top-level symbol used from another local file is imported
   4. local imports that provide nothing the file uses (analyzer: unused_import warning)
 
 This is NOT a compiler. It catches the cheap mistakes so CI is not the first to see them.
@@ -151,7 +151,16 @@ def main():
         errors += errs
         provides[p] = top_symbols(code)
 
-    imp_rx = re.compile(r'''^(?:import|export)\s+['"]([^'"]+)['"]''', re.M)
+    # The repository may contain alternate/legacy implementations with the same public
+    # names (for example PrayerService). A text-only checker cannot know which declaration
+    # Dart resolves through a file's imports, so only enforce the import rule for symbols
+    # with exactly one provider. Flutter analyze remains the authority for ambiguous names.
+    providers = {}
+    for path, symbols in provides.items():
+        for symbol in symbols:
+            providers.setdefault(symbol, set()).add(path)
+
+    imp_rx = re.compile(r'''^(?:import|export)\s+["']([^"']+)["']''', re.M)
     for p, (src, code) in codes.items():
         rel = os.path.relpath(p, ROOT)
         imported = set()
@@ -168,13 +177,12 @@ def main():
             else:
                 imported.add(t)
         used_words = set(re.findall(r'\b[A-Za-z_]\w*\b', code))
-        for other, syms in provides.items():
-            if other == p:
-                continue
-            need = syms & used_words
-            if need and other not in imported:
-                # a test importing package:noor is already resolved above; report the miss
-                errors.append(f'{rel}: uses {sorted(need)[:4]} from {os.path.relpath(other, ROOT)} without importing it')
+        for symbol in used_words:
+            candidates = providers.get(symbol, set())
+            if len(candidates) == 1:
+                other = next(iter(candidates))
+                if other != p and other not in imported:
+                    errors.append(f'{rel}: uses {symbol} from {os.path.relpath(other, ROOT)} without importing it')
         for t in imported:
             if not (provides.get(t, set()) & used_words):
                 errors.append(f'{rel}: unused import {os.path.relpath(t, ROOT)} (analyzer warning)')
