@@ -171,7 +171,7 @@ class DhikrPage extends StatelessWidget {
       heading('Dhikr', 'A moment of remembrance, at your pace.'),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: card(child: Column(children: [
         DropdownButtonFormField<String>(
-          value: selected, isExpanded: true, decoration: const InputDecoration(labelText: 'Choose dhikr'),
+          initialValue: selected, isExpanded: true, decoration: const InputDecoration(labelText: 'Choose dhikr'),
           items: [...presets.map((e) => DropdownMenuItem(value: e.name, child: Text(e.name))), ...custom.map((e) => DropdownMenuItem(value: e, child: Text(e)))],
           onChanged: (v) { if (v != null) onSelect(v); },
         ),
