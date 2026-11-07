@@ -1,46 +1,62 @@
+import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
-import 'verses.dart';
+import 'data/reflections.dart';
+import 'prayer.dart';
+import 'store.dart';
+import 'util.dart';
 
+/// Pushes data to the three Android home-screen widgets. The Salah widget receives the
+/// next four days of timings, so its countdown and "next prayer" stay correct without
+/// the app being opened. The Tasbeeh widget only ever shows *completed* (ended-session)
+/// quantity, matching the in-app rule.
 class NoorWidgets {
-  static const tasbeehProvider = 'TasbeehWidgetProvider';
-  static const salahProvider = 'SalahWidgetProvider';
-  static const verseProvider = 'VerseWidgetProvider';
+  static const _pkg = 'com.midhat.noor';
+  static const tasbeeh = 'TasbeehWidgetProvider';
+  static const salah = 'SalahWidgetProvider';
+  static const verse = 'VerseWidgetProvider';
 
-  static Future<void> updateTasbeeh(int count, String dhikr) async {
-    await HomeWidget.saveWidgetData<int>('tasbeeh_count', count);
-    await HomeWidget.saveWidgetData<String>('tasbeeh_dhikr', dhikr);
-    await HomeWidget.updateWidget(
-      androidName: tasbeehProvider,
-      qualifiedAndroidName: 'com.midhat.noor.$tasbeehProvider',
-    );
-  }
+  static Future<void> pushAll() async {
+    final s = NoorStore.instance;
+    try {
+      final now = DateTime.now();
+      final today = dateKey(now);
+      final sessionsToday = s.sessionsForDay(today);
+      await HomeWidget.saveWidgetData<int>('tasbeeh_today', s.countOn(today));
+      await HomeWidget.saveWidgetData<int>('tasbeeh_sessions', sessionsToday.length);
+      await HomeWidget.saveWidgetData<String>(
+          'tasbeeh_last', sessionsToday.isEmpty ? '' : sessionsToday.first.name);
+      await HomeWidget.saveWidgetData<bool>('use24h', s.use24h);
 
-  static Future<void> updateSalah(String prayer, String time) async {
-    await HomeWidget.saveWidgetData<String>('next_prayer', prayer);
-    await HomeWidget.saveWidgetData<String>('next_prayer_time', time);
-    await HomeWidget.updateWidget(
-      androidName: salahProvider,
-      qualifiedAndroidName: 'com.midhat.noor.$salahProvider',
-    );
-  }
+      final lat = s.lat, lon = s.lon;
+      var schedule = '';
+      var place = '';
+      if (lat != null && lon != null) {
+        final cfg = PrayerConfig.fromStore(s);
+        final buf = StringBuffer();
+        for (var d = 0; d < 4; d++) {
+          for (final e in PrayerService.computeDay(lat, lon, dayOffset(now, d), cfg)) {
+            if (e.isSunrise) continue;
+            buf.write('${e.name}|${e.time.millisecondsSinceEpoch};');
+          }
+        }
+        schedule = buf.toString();
+        place = s.placeName;
+      }
+      await HomeWidget.saveWidgetData<String>('prayer_schedule', schedule);
+      await HomeWidget.saveWidgetData<String>('prayer_place', place);
 
-  static Future<void> updateVerseOfDay() async {
-    final verse = verses[DateTime.now().day % verses.length];
-    await HomeWidget.saveWidgetData<String>('verse_arabic', verse.arabic);
-    await HomeWidget.saveWidgetData<String>('verse_translation', verse.translation);
-    await HomeWidget.saveWidgetData<String>('verse_reference', verse.reference);
-    await HomeWidget.updateWidget(
-      androidName: verseProvider,
-      qualifiedAndroidName: 'com.midhat.noor.$verseProvider',
-    );
-  }
+      // Verse list: the widget picks today's entry itself, so it rolls over daily on its own.
+      final verseBuf = StringBuffer();
+      for (final r in reflections) {
+        verseBuf.write('${r.arabic}\u0001${r.translation}\u0001${r.reference}\u0002');
+      }
+      await HomeWidget.saveWidgetData<String>('verse_list', verseBuf.toString());
 
-  static Future<void> updateAll({
-    required int count, required String dhikr,
-    required String prayer, required String time,
-  }) async {
-    await updateTasbeeh(count, dhikr);
-    await updateSalah(prayer, time);
-    await updateVerseOfDay();
+      for (final name in [tasbeeh, salah, verse]) {
+        await HomeWidget.updateWidget(androidName: name, qualifiedAndroidName: '$_pkg.$name');
+      }
+    } catch (e) {
+      debugPrint('Noor widget update skipped: $e');
+    }
   }
 }

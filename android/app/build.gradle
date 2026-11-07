@@ -1,6 +1,6 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
+    id "org.jetbrains.kotlin.android"
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -14,22 +14,34 @@ android {
         targetCompatibility JavaVersion.VERSION_17
         coreLibraryDesugaringEnabled true
     }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    // Kotlin's jvmTarget follows the JDK (17 in CI); the old kotlinOptions{} DSL is an error on Kotlin 2.2+.
 
     defaultConfig {
         applicationId "com.midhat.noor"
-        minSdk 23
+        minSdk 24
         targetSdk flutter.targetSdkVersion
-        versionCode 4
-        versionName "4.0.0"
+        versionCode 5
+        versionName "5.0.0"
+    }
+
+    signingConfigs {
+        // TEST-ONLY key, committed on purpose so every CI build has the same signature and a new
+        // APK installs over the previous one without uninstalling. It is public: never use it for
+        // a store release. Create your own keystore for that and keep it out of Git.
+        noorTest {
+            storeFile file("noor-test.keystore")
+            storePassword "noortest"
+            keyAlias "noor"
+            keyPassword "noortest"
+        }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.noorTest
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
 }

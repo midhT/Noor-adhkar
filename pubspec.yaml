@@ -1,7 +1,7 @@
 name: noor
 description: Noor - an offline-first Islamic daily companion.
 publish_to: "none"
-version: 4.0.0+4
+version: 5.0.0+5
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   adhan: ^2.0.0
   geolocator: ^13.0.2
   shared_preferences: ^2.3.3
@@ -17,7 +16,9 @@ dependencies:
   timezone: ^0.10.0
   home_widget: ^0.7.0
   intl: ^0.19.0
-  permission_handler: ^11.3.1
+  audioplayers: ^6.1.0
+  file_picker: ^8.1.2
+  path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:
@@ -26,3 +27,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/audio/night_pad.wav

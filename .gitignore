@@ -1,9 +1,31 @@
 .dart_tool/
 .packages
-.pub/
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
+pubspec.lock
 android/local.properties
-.idea/
+android/.gradle/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
+android/app/debug/
+android/app/release/
 *.iml
+.idea/
+*.jks
+*.keystore
+key.properties
+!android/app/noor-test.keystore
+
+# Local signing credentials
+android/app/noor-test.keystore
+*.jks
+*.keystore
+
+# Accidental terminal output files
+.github/workflows/build.yml:
+.github/workflows/build.yml::
+tatus --short
+tatus --short --untracked-files=all
+to commit. Workflow may already contain the fix."

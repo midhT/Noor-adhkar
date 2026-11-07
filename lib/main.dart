@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
-import 'core/noor_app.dart';
-import 'core/notifications.dart';
+import 'package:flutter/services.dart';
+import 'core/reminders.dart';
+import 'core/store.dart';
+import 'ui/shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await NoorNotifications.initialize();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  await NoorStore.instance.load();
+  try {
+    await NoorReminders.initialize();
+  } catch (e) {
+    debugPrint('Notifications unavailable: $e');
+  }
   runApp(const NoorApp());
 }
