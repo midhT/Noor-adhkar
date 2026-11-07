@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:noor/core/noor_app.dart';
+import 'package:noor/main.dart';
 
 void main() {
-  testWidgets('Noor launches and shows home navigation', (tester) async {
+  testWidgets('Noor opens with home and navigation', (tester) async {
     await tester.pumpWidget(const NoorApp());
-    expect(find.text('NOOR'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('Assalamu Alaikum'), findsOneWidget);
+    expect(find.text('Dhikr'), findsOneWidget);
     expect(find.text('Salah'), findsOneWidget);
   });
 }

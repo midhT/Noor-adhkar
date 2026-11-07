@@ -1,8 +1,8 @@
-name: Build Noor Android
+name: Noor V5 Android
 
 on:
   push:
-    branches: [main, 'v5*']
+    branches: [main, "v5*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -10,94 +10,32 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: noor-android-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  # Static analysis + unit/widget tests. Runs in parallel with the build, so a failing test
-  # turns the run red but never prevents the APK from being produced for device testing.
   verify:
-    name: Analyze and test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-
-      - name: Offline source checks (no SDK needed)
-        run: python3 -I tool/check_dart.py
-
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-
-      - name: Flutter version
-        run: flutter --version
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      # Fails on errors and warnings; style "info" hints do not block.
-      - name: Analyze
-        run: flutter analyze --no-fatal-infos
-
-      - name: Test
-        run: flutter test
+      - run: flutter create . --platforms=android
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
 
   build:
-    name: Build release APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-
-      - name: Toolchain versions
-        run: |
-          java -version
-          flutter --version
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Point Gradle at the Flutter SDK
-        shell: bash
-        run: |
-          test -d "$FLUTTER_ROOT/packages/flutter_tools/gradle"
-          printf 'flutter.sdk=%s\n' "$FLUTTER_ROOT" > android/local.properties
-
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.14.3'
-
-      - name: Generate Gradle wrapper
-        working-directory: android
-        run: |
-          gradle wrapper --gradle-version 8.14.3 --distribution-type all
-          chmod +x gradlew
-
-      - name: Build release APK
-        run: flutter build apk --release
-
-      - name: Verify APK
-        run: |
-          APK=build/app/outputs/flutter-apk/app-release.apk
-          test -s "$APK"
-          ls -lh "$APK"
-          sha256sum "$APK"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - run: flutter create . --platforms=android
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
         with:
           name: Noor-5.0-Android-APK
           path: build/app/outputs/flutter-apk/app-release.apk

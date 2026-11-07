@@ -1,11 +1,27 @@
 # Noor V5
 
-Offline-first Islamic daily companion for Android (Flutter). Tabs: **Home · Dhikr · Salah · Focus · Journey**.
+Noor is an offline-first Islamic daily companion built with Flutter.
 
-- Dhikr sessions with presets and custom adhkar; the count is hidden until the session ends, then a Qur'anic reflection is shown.
-- Prayer times (method, madhab, adjustments), live countdown, rescheduled reminders, Jamaat times.
-- Focus Studio with optional audio and celestial motion; branded splash; three home-screen widgets.
-- All data stays on the device.
+## Included in this source package
+- Dhikr counter with ten presets, custom dhikr, session completion and saved progress.
+- Salah schedule calculation using the `adhan` package, with selectable calculation method and madhab.
+- Focus timer with optional local ambient audio asset.
+- Journey screen with streak and session history.
+- Local preferences using SharedPreferences.
+- Dark navy and warm-gold visual system.
+- GitHub Actions workflow for analysis, tests and Android APK build.
 
-Docs: `docs/01_AUDIT_AND_PLAN.md` · `03_VERIFICATION_REPORT.md` · `04_KNOWN_LIMITATIONS.md` · `05_INSTALL.md`.
-**Status:** not yet compiled by the author's tooling — see the verification report.
+## Build
+Install Flutter stable and Android SDK, then run:
+
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter build apk --release
+```
+
+APK: `build/app/outputs/flutter-apk/app-release.apk`
+
+## Important
+Prayer times depend on the coordinates, calculation method and local authority. Confirm them against your local mosque before relying on them. Notification delivery depends on Android permissions and battery settings. This source has not been compiled or tested on a physical device in this generation session.
