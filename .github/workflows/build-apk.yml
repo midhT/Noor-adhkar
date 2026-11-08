@@ -32,12 +32,14 @@ jobs:
       - name: Build native bridge
         run: npm run build
 
-      - name: Add Android platform if missing
+      - name: Ensure Android platform exists
         run: |
-          if [ ! -d android ]; then
+          if [ ! -f android/app/src/main/AndroidManifest.xml ]; then
+            echo "Android project missing or incomplete. Recreating it."
+            rm -rf android
             npx cap add android
           else
-            echo "Android platform already exists; skipping creation."
+            echo "Valid Android project found."
           fi
 
       - name: Add Noor widgets, alarm permissions and native plugin
