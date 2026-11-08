@@ -1,0 +1,8 @@
+{
+  "appId": "com.noor.adhkar",
+  "appName": "Noor",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
