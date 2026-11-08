@@ -202,3 +202,32 @@ body.light .nav-item.active{background:rgba(31,30,27,.08)}
 }
 @media(min-width:521px){.bottom-nav{left:50%;right:auto;width:496px;transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){.nav-item,.rm-switch:after{transition:none}}
+
+
+/* Noor V3.2 scroll fix: keep the document as the vertical scroll container. */
+html {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+body {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+.app-shell {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: visible !important;
+}
+main {
+  touch-action: pan-y;
+}
