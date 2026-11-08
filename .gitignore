@@ -1,8 +1,9 @@
-
 .DS_Store
-android/.gradle/
-android/app/build/
-android/build/
 node_modules/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/app/noor-test.keystore
 tests/.build/
 www/native.bundle.js

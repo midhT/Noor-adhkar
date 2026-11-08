@@ -2,8 +2,6 @@ import { registerPlugin } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { Share } from '@capacitor/share';
 
 const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 // Custom Android plugin (android-native/java/NoorWidgetsPlugin.java) that feeds the home-screen widgets.
@@ -67,14 +65,6 @@ window.NoorNative = {
     },
     async pending() {
       try { return (await LocalNotifications.getPending()).notifications.map(n => n.id); } catch (_) { return []; }
-    }
-  } : null,
-
-  /* ---- Files: an Android WebView cannot download blob: URLs, so backups go through the share sheet ---- */
-  files: isNative ? {
-    async shareText(filename, text, title) {
-      const written = await Filesystem.writeFile({ path: filename, data: text, directory: Directory.Cache, encoding: Encoding.UTF8 });
-      await Share.share({ title: title || filename, dialogTitle: title || 'Save your Noor backup', url: written.uri });
     }
   } : null,
 

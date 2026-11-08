@@ -1,4 +1,4 @@
-# Noor V3.3 — Islamic Daily Companion
+# Noor V3.2 — Islamic Daily Companion
 
 Noor is an offline-first mobile web app packaged for Android with Capacitor. The default Salah learning path is Hanafi-oriented.
 
@@ -57,16 +57,3 @@ The home screen now includes a compact prayer dashboard inspired by the supplied
 - Alarms and widgets only work in the installed Android app. In a browser the reminders card says "Preview only".
 - Some phone makers (Xiaomi, Oppo, Samsung power saving, etc.) kill background alarms; if an alarm is missed, exclude Noor from battery optimisation.
 - The Java widget code, manifest patch and Gradle build could not be compiled in the authoring environment (no Android SDK or network); the first GitHub Actions build is the real compile test. Test the alarm and both widgets on a physical phone.
-
-
-## V3.3 Milestone 1
-See `CHANGELOG.md` and `TESTING_REPORT.md`. Run the automated UI tests with `tests/run.sh` (needs `npm install`, `pip install playwright`, `playwright install chromium`).
-
-### Push to GitHub (new branch, no history rewriting)
-```bash
-git checkout -b v3.3-milestone-1
-git add -A
-git commit -m "Noor V3.3 Milestone 1: five-tab navigation, Settings, 12-hour time, backup and restore"
-git push -u origin v3.3-milestone-1
-```
-Then open a pull request on GitHub, check that the Build Noor APK run passes, and merge.

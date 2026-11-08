@@ -76,7 +76,7 @@
     $('rmMaster').setAttribute('aria-checked', String(cfg.master));
     $('rmBody').hidden = !cfg.master;
     $('rmRows').innerHTML = rows.map(r => `
-      <div class="rm-row"><span>${r.label}</span><em>${r.time ? NoorTime.to12(r.time) : 'Set time'}</em>
+      <div class="rm-row"><span>${r.label}</span><em>${r.time || 'Set time'}</em>
         <button type="button" class="rm-switch" data-id="${r.id}" role="switch" aria-checked="${cfg.on[r.id]}" aria-label="${r.label} reminder"></button>
       </div>`).join('');
     $('rmSeg').innerHTML = OFFSETS.map(o => `<button type="button" data-off="${o}" aria-pressed="${cfg.offset === o}">${offsetLabel(o)}</button>`).join('');
@@ -105,7 +105,7 @@
       list.push({
         id: r.nid, hour: Math.floor(at / 60), minute: at % 60,
         title: cfg.offset ? `${r.label} in ${cfg.offset} minutes` : `Time for ${r.label}`,
-        body: cfg.offset ? `${r.label} is at ${NoorTime.to12(r.time)}.` : `It is ${NoorTime.to12(r.time)}. Take a moment to pray.`
+        body: cfg.offset ? `${r.label} is at ${r.time}.` : `It is ${r.time}. Take a moment to pray.`
       });
     }
     if (list.length) await nt.schedule(list);
