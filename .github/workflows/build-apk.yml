@@ -3,7 +3,7 @@ name: Build Noor APK
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, noor-v3.2-builder ]
 
 permissions:
   contents: read
