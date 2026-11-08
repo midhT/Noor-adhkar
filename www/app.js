@@ -17,7 +17,8 @@ function today(){return new Date().toLocaleDateString("en-CA");}
 function prettyDate(iso){return new Date(iso+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});}
 function getDhikr(){if(state.selected==="custom")return {name:state.customName||"Custom dhikr",arabic:"ذِكْر",meaning:"Your personal remembrance",target:state.target};return DHIKR[state.selected]||DHIKR.istighfar;}
 function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2100);}
-function switchScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.screen===id));window.scrollTo({top:0,behavior:"smooth"});if(id==="progressScreen")renderProgress();}
+function switchScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.screen===(id==="progressScreen"?"homeScreen":id)));window.scrollTo({top:0,behavior:"smooth"});if(id==="progressScreen")renderProgress();document.dispatchEvent(new CustomEvent("noor:screen",{detail:id}));}
+document.querySelectorAll("[data-back]").forEach(b=>b.addEventListener("click",()=>switchScreen(b.dataset.back)));
 document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>switchScreen(b.dataset.screen)));
 $("quickCounter").addEventListener("click",()=>switchScreen("counterScreen"));
 $("todayLabel").textContent=prettyDate(today()).toUpperCase();
@@ -56,7 +57,5 @@ async function pullWidgetTaps(){const w=window.NoorNative?.widgets;if(!w){widget
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pullWidgetTaps();});
 function renderAll(){updateStreak();renderHome();renderCounter();renderProgress();}
 $("themeBtn").addEventListener("click",()=>{state.theme=state.theme==="light"?"dark":"light";document.body.classList.toggle("light",state.theme==="light");save();});
-$("exportData").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`noor-adhkar-${today()}.json`;a.click();URL.revokeObjectURL(url);toast("Data export prepared");});
-$("clearData").addEventListener("click",()=>{if(!confirm("Permanently clear all Noor data stored in this browser? Export first if you want a backup."))return;localStorage.removeItem(KEY);state={...defaultState,counts:{},sessions:[],days:{},completed:{}};save();renderAll();toast("Local data cleared");});
 if("serviceWorker" in navigator && location.protocol!=="file:"){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
 document.body.classList.toggle("light",state.theme==="light");$("dhikrSelect").value=state.selected;renderLibrary();renderAll();pullWidgetTaps();

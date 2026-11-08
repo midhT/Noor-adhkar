@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0b0d">
-  <meta name="description" content="Noor — an offline-first Islamic daily companion for Adhkar, Salah learning, focus, and reflection.">
+  <meta name="description" content="Noor — an offline-first Islamic daily companion for Adhkar, Tasbeeh, Salah, and reflection.">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css">
@@ -88,15 +88,15 @@
       </section>
 
       <section class="screen" id="libraryScreen">
-        <div class="screen-heading"><span class="eyebrow">WORDS TO RETURN TO</span><h1>Dhikr library</h1><p class="muted">Choose a remembrance to begin counting.</p></div>
+        <div class="screen-heading"><span class="eyebrow">WORDS TO RETURN TO</span><h1>Adhkar</h1><p class="muted">Choose a remembrance to begin counting.</p></div>
         <div class="search-wrap"><span>⌕</span><input id="librarySearch" placeholder="Search dhikr…" aria-label="Search dhikr"></div>
         <div id="libraryList" class="library-list"></div>
         <p class="disclaimer">Translations are brief meanings for convenience. Verify wording, virtues, and prescribed counts with reliable scholarly sources.</p>
       </section>
 
       <section class="screen" id="salahScreen"></section>
-      <section class="screen" id="focusScreen"></section>
       <section class="screen" id="progressScreen">
+        <button class="back-link" type="button" data-back="homeScreen">‹ Home</button>
         <div class="screen-heading"><span class="eyebrow">STEADY, NOT PERFECT</span><h1>Your journey</h1><p class="muted">A private record of your remembrance, stored on this device.</p></div>
         <div class="progress-hero"><span class="eyebrow">CURRENT STREAK</span><div><strong id="progressStreak">0</strong><span> days</span></div><p id="progressStreakText" class="muted">Complete your daily goal to start a streak.</p><div class="streak-line"><span id="streakFill"></span></div><div class="streak-meta"><span>Best: <b id="progressBest">0 days</b></span><span id="streakMilestone">Next milestone: 3 days</span></div></div>
         <div class="stats-grid progress-stats"><div class="stat-card"><span class="stat-icon">✦</span><span class="stat-label">TOTAL COUNTS</span><strong id="allCounts">0</strong></div><div class="stat-card"><span class="stat-icon">◷</span><span class="stat-label">SESSIONS</span><strong id="allSessions">0</strong></div></div>
@@ -104,29 +104,41 @@
         <div class="achievement-grid" id="achievementGrid"></div>
         <div class="section-heading"><div><span class="eyebrow">LAST 7 DAYS</span><h2>Consistency</h2></div></div>
         <div class="week-chart" id="weekChart"></div>
-        <button class="secondary-button full-width" id="exportData">Export my data</button>
-        <button class="danger-link" id="clearData">Clear all local data</button>
       </section>
 
       <section class="screen" id="settingsScreen">
         <div class="screen-heading"><span class="eyebrow">YOUR SPACE</span><h1>Settings</h1><p class="muted">Keep the experience quiet and personal.</p></div>
-        <div class="settings-card">
-          <div class="setting-row"><div><strong>Haptic feedback</strong><p>Vibrate when counting</p></div><button class="toggle" id="settingsVibrate" aria-pressed="false">OFF</button></div>
-          <div class="setting-row"><div><strong>Daily adhkar goal</strong><p>Complete both routines for streak credit</p></div><span class="setting-value">2 routines</span></div>
-          <div class="setting-row"><div><strong>Local storage</strong><p>Your data stays in this browser on this device.</p></div><span class="privacy-dot">●</span></div>
-        </div>
+        <details class="st-group" id="stSalah"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c0 2.2-2.6 3-2.6 5.2h5.2c0-2.2-2.6-3-2.6-5.2z"/><path d="M6 20.5v-7.3a6 6 0 0 1 12 0v7.3"/><path d="M3.5 20.5h17"/></svg></span><span class="st-title"><strong>Salah</strong><small>Prayer times</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Prayer times</strong><p>Enter your local mosque or timetable times in 12-hour format.</p></div><button class="st-btn" type="button" data-act="edit-times">Edit</button></div><p class="tiny-note">Automatic location-based calculation, Jamaat times and Adhan sound are the next milestone.</p></div>
+        </details>
+        <details class="st-group" id="stAdhkar"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2.5 2.5 0 0 1 2.5 2.5v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H18"/></svg></span><span class="st-title"><strong>Adhkar</strong><small>Daily goal</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Daily adhkar goal</strong><p>Complete both routines for streak credit</p></div><span class="setting-value">2 routines</span></div></div>
+        </details>
+        <details class="st-group" id="stNotifications"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg></span><span class="st-title"><strong>Notifications</strong><small>Salah reminders</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Salah reminders</strong><p><span id="stRemStatus">Loading…</span></p></div><button class="st-btn" type="button" data-act="reminders">Manage</button></div></div>
+        </details>
+        <details class="st-group" id="stAppearance"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8v16.4a8.2 8.2 0 0 0 0-16.4z" fill="currentColor" stroke="none"/></svg></span><span class="st-title"><strong>Appearance</strong><small>Dark or light</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Theme</strong><p>Dark is the default</p></div><div class="st-seg" id="stThemeSeg" role="group" aria-label="Theme"><button type="button" data-theme="dark" aria-pressed="false">Dark</button><button type="button" data-theme="light" aria-pressed="false">Light</button></div></div></div>
+        </details>
+        <details class="st-group" id="stAudio"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><span class="st-title"><strong>Audio & Haptics</strong><small>Vibration and background audio</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Haptic feedback</strong><p>Vibrate when counting</p></div><button class="toggle" id="settingsVibrate" aria-pressed="false">OFF</button></div><div class="setting-row"><div><strong>Background audio</strong><p><span id="bgAudioLabel">Soft ambient pad</span></p></div><button class="toggle" id="bgAudioToggle" aria-pressed="false">OFF</button></div><div class="setting-row"><div><strong>Use my own audio</strong><p id="bgAudioFileLabel">Optional. Plays only until the app is closed.</p></div><label class="st-btn st-file">Choose<input type="file" id="bgAudioFile" accept="audio/*" hidden></label></div><audio id="bgAudio" loop preload="none"></audio></div>
+        </details>
+        <details class="st-group" id="stData"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v6c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6"/><path d="M5 12v6c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8v-6"/></svg></span><span class="st-title"><strong>Data & Backup</strong><small>Export, restore and reset</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Back up my data</strong><p>Saves all progress, presets, prayer times and settings to a file</p></div><button class="st-btn" type="button" id="stExport">Export</button></div><div class="setting-row"><div><strong>Restore from backup</strong><p>Checks the file first and asks before replacing anything</p></div><label class="st-btn st-file">Choose file<input type="file" id="stRestoreFile" accept="application/json,.json" hidden></label></div><div class="setting-row" id="stUndoRow" hidden><div><strong>Undo last restore or reset</strong><p id="stUndoInfo"></p></div><button class="st-btn" type="button" id="stUndo">Undo</button></div><div class="setting-row"><div><strong>Reset progress</strong><p>Clears counts, sessions and streaks. Settings and prayer times stay.</p></div><button class="st-btn st-danger" type="button" id="stResetProgress">Reset</button></div><div class="setting-row"><div><strong>Erase everything</strong><p>Removes all Noor data from this device</p></div><button class="st-btn st-danger" type="button" id="stEraseAll">Erase</button></div><p class="tiny-note" id="stDataNote">Your data stays on this device. Back it up before uninstalling Noor or switching to a differently signed build.</p></div>
+        </details>
+        <details class="st-group" id="stAbout"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 11v5.2"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></svg></span><span class="st-title"><strong>About Noor</strong><small>Version, credits and creator</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Version</strong><p><span id="stVersion"></span></p></div></div><div class="setting-row"><div><strong>Created by</strong><p>Mir Midhat ul Ahad — designer and developer of Noor</p></div></div><div class="setting-row"><div><strong>Instagram</strong><p>No handle has been added yet</p></div><span class="setting-value">Not set</span></div><p class="tiny-note">Salah content defaults to a Hanafi learning path. Please review Arabic, transliteration, translations and references with a qualified editor before public release.</p></div>
+        </details>
         <div class="about-card"><div class="brand-mark">ن</div><h2>Noor</h2><p class="muted">A quiet space for daily remembrance.</p><span class="eyebrow">OFFLINE-FIRST · PRIVATE BY DESIGN</span></div>
       </section>
     </main>
 
     <nav class="bottom-nav" aria-label="Main navigation">
       <button class="nav-item active" data-screen="homeScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4l8 7.2V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg></span><small>Home</small></button>
+      <button class="nav-item" data-screen="libraryScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2.5 2.5 0 0 1 2.5 2.5v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H18"/></svg></span><small>Adhkar</small></button>
       <button class="nav-item" data-screen="counterScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/></svg></span><small>Tasbeeh</small></button>
-      <button class="nav-item" data-screen="libraryScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2.5 2.5 0 0 1 2.5 2.5v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H18"/></svg></span><small>Library</small></button>
       <button class="nav-item" data-screen="salahScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c0 2.2-2.6 3-2.6 5.2h5.2c0-2.2-2.6-3-2.6-5.2z"/><path d="M6 20.5v-7.3a6 6 0 0 1 12 0v7.3"/><path d="M3.5 20.5h17"/></svg></span><small>Salah</small></button>
-      <button class="nav-item" data-screen="focusScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.2A8 8 0 0 1 9.8 4.5a8 8 0 1 0 9.7 9.7z"/></svg></span><small>Focus</small></button>
-      <button class="nav-item" data-screen="progressScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.2 5.8 5.8 2.2-5.8 2.2L12 19.5l-2.2-5.8L4 11.5l5.8-2.2z"/></svg></span><small>Progress</small></button>
-      <button class="nav-item" data-screen="settingsScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/></svg></span><small>More</small></button>
+      <button class="nav-item" data-screen="settingsScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.8 5.8l1.5 1.5M16.7 16.7l1.5 1.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5"/></svg></span><small>Settings</small></button>
     </nav>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
@@ -134,7 +146,9 @@
   <script src="native.bundle.js"></script>
   <script src="app.js"></script>
   <script src="v3.js"></script>
+  <script src="time12.js"></script>
   <script src="prayer-dashboard.js"></script>
   <script src="reminders.js"></script>
+  <script src="settings.js"></script>
 </body>
 </html>

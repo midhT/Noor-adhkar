@@ -14,7 +14,7 @@
     catch (_) { return {}; }
   };
   const write = value => localStorage.setItem(KEY, JSON.stringify(value));
-  const fmt = value => value || '—:—';
+  const fmt = value => window.NoorTime.to12(value);
   const toMinutes = value => {
     if (!/^\d{2}:\d{2}$/.test(value || '')) return null;
     const [h, m] = value.split(':').map(Number);
@@ -57,16 +57,17 @@
     </div>
     <div class="pd-date card-surface"><div><span class="pd-kicker">TODAY</span><strong id="pdDate"></strong><small>Prayer times are stored on this device</small></div><button type="button" id="pdEditToggle" class="pd-edit">Edit times</button></div>
     <details class="pd-editor" id="pdEditor"><summary>Set prayer times</summary>
-      <p>Enter the times from your local mosque or a trusted timetable. Noor will use these values for this dashboard. Automatic location-based calculation will be added separately.</p>
+      <p>Enter the times from your local mosque or a trusted timetable (hour, minute, AM or PM). Noor uses these for the dashboard, reminders and widgets.</p>
       <div class="pd-input-grid" id="pdInputs"></div>
-      <label class="pd-sunrise-input">Sunrise <input type="time" id="pdSunriseInput" aria-label="Sunrise time"></label>
+      <div class="pd-sunrise-input"><span>Sunrise</span>${NoorTime.fieldHtml('pdSunriseInput', 'Sunrise')}</div>
       <div class="pd-editor-actions"><button type="button" id="pdSave" class="pd-save">Save schedule</button><button type="button" id="pdClear" class="pd-clear">Clear</button></div>
       <p class="pd-save-status" id="pdSaveStatus" role="status" aria-live="polite"></p>
     </details>`;
   greeting.insertAdjacentElement('afterend', dashboard);
 
   const inputs = dashboard.querySelector('#pdInputs');
-  inputs.innerHTML = prayers.map(p => `<label>${p.label}<input type="time" id="pd-${p.id}" aria-label="${p.label} time"></label>`).join('');
+  inputs.innerHTML = prayers.map(p => `<div class="pd-field"><span>${p.label}</span>${NoorTime.fieldHtml('pd-' + p.id, p.label)}</div>`).join('');
+  NoorTime.bind(dashboard);
   const $ = id => dashboard.querySelector(`#${id}`);
   const date = new Date();
   $('pdDate').textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).format(date);

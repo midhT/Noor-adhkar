@@ -3,7 +3,7 @@ name: Build Noor APK
 on:
   workflow_dispatch:
   push:
-    branches: [ main, noor-v3.2-builder ]
+    branches: [ main, noor-v3.3-m1 ]
 
 permissions:
   contents: read
@@ -32,15 +32,8 @@ jobs:
       - name: Build native bridge
         run: npm run build
 
-      - name: Ensure Android platform exists
-        run: |
-          if [ ! -f android/app/src/main/AndroidManifest.xml ]; then
-            echo "Android project missing or incomplete. Recreating it."
-            rm -rf android
-            npx cap add android
-          else
-            echo "Valid Android project found."
-          fi
+      - name: Add Android platform
+        run: npx cap add android
 
       - name: Add Noor widgets, alarm permissions and native plugin
         run: node scripts/patch-android.mjs

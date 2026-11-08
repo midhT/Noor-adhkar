@@ -77,9 +77,18 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
         return (h < 24 && m < 60) ? h * 60 + m : -1;
     }
 
+    /** 12-hour time with AM/PM, e.g. "5:02 AM". Noor never shows 24-hour time. */
     private static String fmt(int minutes) {
         if (minutes < 0) return "--:--";
-        return String.format(java.util.Locale.US, "%02d:%02d", minutes / 60, minutes % 60);
+        int h = (minutes / 60) % 12;
+        if (h == 0) h = 12;
+        return String.format(java.util.Locale.US, "%d:%02d %s", h, minutes % 60, minutes / 60 >= 12 ? "PM" : "AM");
+    }
+
+    /** Two-line version for the small five-prayer row: "5:02" over "AM". */
+    private static String fmtStacked(int minutes) {
+        if (minutes < 0) return "--:--";
+        return fmt(minutes).replace(" ", "\n");
     }
 
     private static long millisFor(int minutes, int dayOffset) {
@@ -120,7 +129,7 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
         for (int i = 0; i < 5; i++) {
             boolean isNext = next != null && next[0] == i;
             v.setTextViewText(NAME_VIEWS[i], LABELS[i]);
-            v.setTextViewText(TIME_VIEWS[i], fmt(mins[i]));
+            v.setTextViewText(TIME_VIEWS[i], fmtStacked(mins[i]));
             v.setTextColor(NAME_VIEWS[i], isNext ? COLOR_NEXT : COLOR_MUTED);
             v.setTextColor(TIME_VIEWS[i], isNext ? COLOR_NEXT : COLOR_ON);
         }
