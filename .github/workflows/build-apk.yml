@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-ubuntu-latest
     steps:
       - name: Check out project
         uses: actions/checkout@v4
@@ -32,8 +32,14 @@ jobs:
       - name: Build native bridge
         run: npm run build
 
-      - name: Add Android platform
-        run: npx cap add android
+      - name: Add Android platform if missing or incomplete
+        run: |
+          if [ ! -f capacitor.config.json ] || [ ! -f android/app/src/main/AndroidManifest.xml ]; then
+            echo "Capacitor Android platform missing or incomplete; creating it now..."
+            npx cap add android
+          else
+            echo "Capacitor Android platform already initialized; skipping creation."
+          fi
 
       - name: Add Noor widgets, alarm permissions and native plugin
         run: node scripts/patch-android.mjs
