@@ -9,86 +9,86 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Run Noor tests
-    runs-on: ubuntu-latest
+test:
+  name: Run Noor tests
+  runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4
+  steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
-      - name: Install Node dependencies
-        run: npm ci
+    - name: Install Node dependencies
+      run: npm ci
 
-      - name: Install Playwright
-        run: |
-          python -m pip install playwright
-          python -m playwright install --with-deps chromium
+    - name: Install Playwright and image tooling
+      run: |
+        python -m pip install playwright pillow
+        python -m playwright install --with-deps chromium
 
-      - name: Build native bridge
-        run: npm run build
+    - name: Build native bridge
+      run: npm run build
 
-      - name: Run test suite
-        run: bash tests/run.sh
+    - name: Run test suite
+      run: bash tests/run.sh
 
-  build:
-    name: Build Android APK
-    needs: test
-    runs-on: ubuntu-latest
+build:
+  name: Build Android APK
+  needs: test
+  runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v4
+  steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '21'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Build native bridge
-        run: npm run build
+    - name: Build native bridge
+      run: npm run build
 
-      - name: Add Android platform
-        run: npx cap add android
+    - name: Add Android platform
+      run: npx cap add android
 
-      - name: Add Noor widgets and native plugin
-        run: node scripts/patch-android.mjs
+    - name: Add Noor widgets and native plugin
+      run: node scripts/patch-android.mjs
 
-      - name: Generate launcher icon and splash assets
-        run: npx --yes @capacitor/assets generate --android
+    - name: Generate launcher icon and splash assets
+      run: npx --yes @capacitor/assets generate --android
 
-      - name: Add themed monochrome icon layer
-        run: node scripts/patch-icons.mjs
+    - name: Add themed monochrome icon layer
+      run: node scripts/patch-icons.mjs
 
-      - name: Sync Capacitor
-        run: npx cap sync android
+    - name: Sync Capacitor
+      run: npx cap sync android
 
-      - name: Build debug APK
-        working-directory: android
-        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+    - name: Build debug APK
+      working-directory: android
+      run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Noor-V3.3-M2.1-debug-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Noor-V3.3-M2.1-debug-APK
+        path: android/app/build/outputs/apk/debug/app-debug.apk
+        if-no-files-found: error
