@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 rm -rf .build
 mkdir -p .build/wwwtest
-cp -r ../www .build/wwwtest
+cp -r ../www/. .build/wwwtest/
 
 cd ..
 node --input-type=module <<'NODE'
