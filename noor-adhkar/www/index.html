@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0d">
+  <meta name="description" content="Naseem — an offline-first Islamic daily companion for Dhikr, Salah, Duas, Zakat and reflection.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="theme.css">
+  <title>Naseem — Islamic Daily Companion</title>
+</head>
+<body class="intro-pending">
+  <div class="noor-intro" id="noorIntro" aria-label="Naseem opening animation" role="status">
+    <div class="intro-stars" aria-hidden="true"></div>
+    <div class="intro-emblem" aria-hidden="true"><span class="intro-crescent"></span><span class="intro-star">✦</span></div>
+    <div class="intro-wordmark">NASEEM</div>
+    <div class="intro-tagline">REMEMBER <i>•</i> PRAY <i>•</i> REFLECT</div>
+    <div class="intro-rule"><span></span></div>
+  </div>
+  <div class="app-shell">
+    <header class="topbar">
+      <button type="button" class="brand-mark" id="brandMark" aria-label="Open your account">ن</button>
+      <div class="brand-copy"><div class="brand-name">NASEEM</div><div class="brand-sub">DAILY ADHKAR</div></div>
+      <button class="icon-button" id="themeBtn" aria-label="Toggle theme" title="Toggle theme"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8v16.4a8.2 8.2 0 0 0 0-16.4z" fill="currentColor" stroke="none"/></svg></button>
+    </header>
+
+    <main>
+      <section class="screen active" id="homeScreen">
+        <div class="greeting">
+          <p class="eyebrow" id="todayLabel">YOUR DAILY MOMENT</p>
+          <h1>Return to remembrance.</h1>
+          <p class="muted">A little, consistently, with intention.</p>
+        </div>
+
+        <div class="streak-card">
+          <div class="streak-icon">✦</div>
+          <div class="streak-copy"><span class="eyebrow">CURRENT STREAK</span><strong><span id="homeStreak">0</span> <small>days</small></strong><span class="muted" id="streakHint">Begin today’s journey.</span></div>
+          <div class="streak-best"><span class="eyebrow">BEST</span><strong id="bestStreak">0 days</strong></div>
+        </div>
+
+        <div class="section-heading"><div><span class="eyebrow">TODAY</span><h2>Your adhkar</h2></div><span class="pill" id="dailyProgress">0 / 2 complete</span></div>
+        <div class="routine-grid">
+          <button class="routine-card" data-routine="morning">
+            <span class="routine-symbol">☼</span><span class="routine-title">Morning adhkar</span><span class="routine-sub">Start with remembrance</span><span class="routine-bottom"><span id="morningStatus">Not started</span><span>↗</span></span>
+          </button>
+          <button class="routine-card evening" data-routine="evening">
+            <span class="routine-symbol">☾</span><span class="routine-title">Evening adhkar</span><span class="routine-sub">End with remembrance</span><span class="routine-bottom"><span id="eveningStatus">Not started</span><span>↗</span></span>
+          </button>
+        </div>
+
+        <div class="section-heading"><div><span class="eyebrow">QUICK ACCESS</span><h2>Continue your dhikr</h2></div></div>
+        <button class="featured-dhikr" id="quickCounter">
+          <div><span class="eyebrow">SELECTED DHIKR</span><div class="arabic small-arabic" lang="ar" dir="rtl">أَسْتَغْفِرُ اللّٰهَ</div><div class="featured-name">Astaghfirullah</div><div class="muted">I seek forgiveness from Allah</div></div>
+          <div class="quick-count"><strong id="quickCount">0</strong><span>/ 100</span><span class="arrow">↗</span></div>
+        </button>
+
+        <div class="section-heading"><div><span class="eyebrow">YOUR JOURNEY</span><h2>Today at a glance</h2></div></div>
+        <div class="stats-grid">
+          <div class="stat-card"><span class="stat-icon">◉</span><span class="stat-label">COUNTS TODAY</span><strong id="todayCounts">0</strong></div>
+          <div class="stat-card"><span class="stat-icon">◇</span><span class="stat-label">SESSIONS</span><strong id="todaySessions">0</strong></div>
+        </div>
+      </section>
+
+<section class="screen" id="dhikrScreen">
+        <div class="screen-heading"><span class="eyebrow">A MOMENT OF REMEMBRANCE</span><h1>Dhikr</h1><p class="muted">Count freely, or pick a remembrance from the Adhkar list.</p></div>
+        <div class="seg-switch" role="tablist" aria-label="Dhikr views"><span class="seg-thumb" aria-hidden="true"></span><button type="button" role="tab" id="tabCounter" data-panel="counterScreen" aria-selected="true">Counter</button><button type="button" role="tab" id="tabLibrary" data-panel="libraryScreen" aria-selected="false">Adhkar</button></div>
+        <div class="dpanel active" id="counterScreen" role="tabpanel" aria-label="Counter">
+        <div class="dhikr-picker">
+          <label for="dhikrSelect">CURRENT DHIKR</label>
+          <select id="dhikrSelect" data-title="Choose a dhikr">
+            <option value="istighfar" data-ar="أَسْتَغْفِرُ اللّٰهَ">Astaghfirullah</option>
+            <option value="subhanallah" data-ar="سُبْحَانَ اللّٰهِ">SubhanAllah</option>
+            <option value="alhamdulillah" data-ar="الْحَمْدُ لِلّٰهِ">Alhamdulillah</option>
+            <option value="allahuakbar" data-ar="اللّٰهُ أَكْبَرُ">Allahu Akbar</option>
+            <option value="hawqala" data-ar="لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ">La hawla wa la quwwata illa billah</option>
+            <option value="custom">Custom dhikr</option>
+          </select>
+          <div id="customDhikrWrap" hidden><input id="customDhikr" maxlength="100" placeholder="Enter dhikr name"></div>
+          <div class="dhikr-meaning"><div class="arabic" id="counterArabic" lang="ar" dir="rtl">أَسْتَغْفِرُ اللّٰهَ</div><strong id="counterLatin">Astaghfirullah</strong><span id="counterMeaning">I seek forgiveness from Allah</span></div>
+        </div>
+        <div class="target-row"><label for="targetInput">DAILY SESSION TARGET</label><div class="target-control"><button id="targetMinus" aria-label="Decrease target">−</button><input type="number" min="1" max="10000" id="targetInput" value="100"><button id="targetPlus" aria-label="Increase target">+</button></div></div>
+        <div class="progress-track"><div id="counterProgress"></div></div>
+        <div class="counter-stage">
+          <div class="counter-orbit orbit-one"></div><div class="counter-orbit orbit-two"></div>
+          <button class="count-button" id="countButton" aria-label="Count one dhikr"><span class="tap-label">TAP TO COUNT</span><strong id="countValue">0</strong><span class="count-target">OF <span id="targetLabel">100</span></span><span class="count-plus" id="plusFeedback">+1</span></button>
+        </div>
+        <div class="counter-actions"><button class="secondary-button" id="resetCounter">↺ Reset</button><button class="primary-button" id="finishCounter">Complete session</button><button class="secondary-button" id="vibrateBtn" aria-pressed="false">◌ Haptics off</button></div>
+        <p class="counter-note" id="counterNote">Every count is saved on this device.</p>
+      </div>
+        <div class="dpanel" id="libraryScreen" role="tabpanel" aria-label="Adhkar" hidden>
+        <div class="search-wrap"><span>⌕</span><input id="librarySearch" placeholder="Search dhikr…" aria-label="Search dhikr"></div>
+        <div id="libraryList" class="library-list"></div>
+        <p class="disclaimer">Translations are brief meanings for convenience. Verify wording, virtues, and prescribed counts with reliable scholarly sources.</p>
+      </div>
+      </section>
+
+      <section class="screen" id="salahScreen"></section>
+      <section class="screen" id="progressScreen">
+        <button class="back-link" type="button" data-back="homeScreen">‹ Home</button>
+        <div class="screen-heading"><span class="eyebrow">STEADY, NOT PERFECT</span><h1>Your journey</h1><p class="muted">A private record of your remembrance, stored on this device.</p></div>
+        <div class="progress-hero"><span class="eyebrow">CURRENT STREAK</span><div><strong id="progressStreak">0</strong><span> days</span></div><p id="progressStreakText" class="muted">Complete your daily goal to start a streak.</p><div class="streak-line"><span id="streakFill"></span></div><div class="streak-meta"><span>Best: <b id="progressBest">0 days</b></span><span id="streakMilestone">Next milestone: 3 days</span></div></div>
+        <div class="stats-grid progress-stats"><div class="stat-card"><span class="stat-icon">✦</span><span class="stat-label">TOTAL COUNTS</span><strong id="allCounts">0</strong></div><div class="stat-card"><span class="stat-icon">◷</span><span class="stat-label">SESSIONS</span><strong id="allSessions">0</strong></div></div>
+        <div class="section-heading"><div><span class="eyebrow">MILESTONES</span><h2>Achievements</h2></div></div>
+        <div class="achievement-grid" id="achievementGrid"></div>
+        <div class="section-heading"><div><span class="eyebrow">LAST 7 DAYS</span><h2>Consistency</h2></div></div>
+        <div class="week-chart" id="weekChart"></div>
+      </section>
+
+      <section class="screen" id="settingsScreen">
+        <div class="screen-heading"><span class="eyebrow">YOUR SPACE</span><h1>Settings</h1><p class="muted">Keep the experience quiet and personal.</p></div>
+        <details class="st-group" id="stAccount"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"/></svg></span><span class="st-title"><strong>Account</strong><small id="stAccountSub">Your name and picture</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="ac-card"><div class="ac-avatar" id="acAvatar" aria-hidden="true">ن</div><div class="ac-fields"><label for="acName">Name</label><input id="acName" type="text" maxlength="40" placeholder="Your name" autocomplete="name"></div></div><div class="rm-actions"><label class="st-btn st-file">Choose picture<input type="file" id="acPhoto" accept="image/*" hidden></label><button type="button" class="st-btn" id="acRemovePhoto" hidden>Remove picture</button></div><p class="tiny-note" id="acNote">Saved on this device only. There is no sign-in and nothing is uploaded.</p></div>
+        </details>
+        <details class="st-group" id="stSalah"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c0 2.2-2.6 3-2.6 5.2h5.2c0-2.2-2.6-3-2.6-5.2z"/><path d="M6 20.5v-7.3a6 6 0 0 1 12 0v7.3"/><path d="M3.5 20.5h17"/></svg></span><span class="st-title"><strong>Salah</strong><small>Location, method, adjustments, Jamaat</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"></div>
+        </details>
+        <details class="st-group" id="stAdhkar"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2.5 2.5 0 0 1 2.5 2.5v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H18"/></svg></span><span class="st-title"><strong>Adhkar</strong><small>Daily goal</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Daily adhkar goal</strong><p>Complete both routines for streak credit</p></div><span class="setting-value">2 routines</span></div></div>
+        </details>
+        <details class="st-group" id="stNotifications"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg></span><span class="st-title"><strong>Notifications</strong><small>Adhan, Jamaat and sounds</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"></div>
+        </details>
+        <details class="st-group" id="stAppearance"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8v16.4a8.2 8.2 0 0 0 0-16.4z" fill="currentColor" stroke="none"/></svg></span><span class="st-title"><strong>Appearance</strong><small>Dark or light</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body">
+            <div class="setting-row"><div><strong>Theme</strong><p>Dark is the default</p></div><div class="st-seg" id="stThemeSeg" role="group" aria-label="Theme"><button type="button" data-theme="dark" aria-pressed="false">Dark</button><button type="button" data-theme="light" aria-pressed="false">Light</button></div></div>
+            <div class="accent-setting"><div class="accent-heading"><div><strong>Accent colour</strong><p>Personalise highlights across Naseem</p></div><span class="accent-current" id="accentCurrentLabel">Islamic emerald</span></div>
+              <div class="accent-palette" id="accentPalette" role="group" aria-label="Accent colour">
+                <button type="button" class="accent-swatch" data-accent="emerald" aria-label="Islamic emerald" title="Islamic emerald"><span style="--swatch:#20a875"></span><small>Emerald</small></button>
+                <button type="button" class="accent-swatch" data-accent="forest" aria-label="Deep forest green" title="Deep forest green"><span style="--swatch:#2f9b63"></span><small>Forest</small></button>
+                <button type="button" class="accent-swatch" data-accent="blue" aria-label="Royal blue" title="Royal blue"><span style="--swatch:#4f8fe8"></span><small>Blue</small></button>
+                <button type="button" class="accent-swatch" data-accent="purple" aria-label="Midnight purple" title="Midnight purple"><span style="--swatch:#9a7bea"></span><small>Purple</small></button>
+                <button type="button" class="accent-swatch" data-accent="gold" aria-label="Muted gold" title="Muted gold"><span style="--swatch:#c4a15b"></span><small>Gold</small></button>
+                <button type="button" class="accent-swatch" data-accent="silver" aria-label="Silver grey" title="Silver grey"><span style="--swatch:#a8b3c2"></span><small>Silver</small></button>
+                <label class="accent-swatch accent-custom" for="accentCustom"><span id="accentCustomPreview"></span><small>Custom</small><input id="accentCustom" type="color" value="#20a875" aria-label="Choose custom accent colour"></label>
+              </div>
+            </div>
+            <div class="setting-row"><div><strong>Motion</strong><p id="stMotionNote">Auto adapts to your phone</p></div><div class="st-seg" id="stMotionSeg" role="group" aria-label="Motion"><button type="button" data-motion="auto" aria-pressed="true">Auto</button><button type="button" data-motion="full" aria-pressed="false">Full</button><button type="button" data-motion="smooth" aria-pressed="false">Smooth</button></div></div>
+          </div>
+        </details>
+        <details class="st-group" id="stAudio"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><span class="st-title"><strong>Audio &amp; Haptics</strong><small>Vibration and background audio</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Haptic feedback</strong><p>Vibrate when counting</p></div><button class="toggle" id="settingsVibrate" aria-pressed="false">OFF</button></div><div class="setting-row"><div><strong>Background audio</strong><p id="bgAudioLabel">Choose any audio file you like. It plays until you stop it or close the app.</p></div><button class="toggle" id="bgAudioToggle" aria-pressed="false">OFF</button></div><div class="setting-row"><div><strong>Your audio</strong><p id="bgAudioFileLabel">No file chosen</p></div><label class="st-btn st-file">Choose<input type="file" id="bgAudioFile" accept="audio/*" hidden></label></div><audio id="bgAudio" loop preload="none"></audio></div>
+        </details>
+        <details class="st-group" id="stData"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v6c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6"/><path d="M5 12v6c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8v-6"/></svg></span><span class="st-title"><strong>Data & Backup</strong><small>Export, restore and reset</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Back up my data</strong><p>Saves all progress, presets, prayer times and settings to a file</p></div><button class="st-btn" type="button" id="stExport">Export</button></div><div class="setting-row"><div><strong>Restore from backup</strong><p>Checks the file first and asks before replacing anything</p></div><label class="st-btn st-file">Choose file<input type="file" id="stRestoreFile" accept="application/json,.json" hidden></label></div><div class="setting-row" id="stUndoRow" hidden><div><strong>Undo last restore or reset</strong><p id="stUndoInfo"></p></div><button class="st-btn" type="button" id="stUndo">Undo</button></div><div class="setting-row"><div><strong>Reset progress</strong><p>Clears counts, sessions and streaks. Settings and prayer times stay.</p></div><button class="st-btn st-danger" type="button" id="stResetProgress">Reset</button></div><div class="setting-row"><div><strong>Erase everything</strong><p>Removes all Naseem data from this device</p></div><button class="st-btn st-danger" type="button" id="stEraseAll">Erase</button></div><p class="tiny-note" id="stDataNote">Your data stays on this device. Back it up before uninstalling Naseem or switching to a differently signed build.</p></div>
+        </details>
+        <details class="st-group" id="stAbout"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 11v5.2"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></svg></span><span class="st-title"><strong>About Naseem</strong><small>Version, credits and creator</small></span><span class="st-chev" aria-hidden="true"></span></summary>
+          <div class="st-body"><div class="setting-row"><div><strong>Version</strong><p><span id="stVersion"></span></p></div></div><div class="setting-row"><div><strong>Created by</strong><p>Mir Midhat ul Ahad — designer and developer of Naseem</p></div></div><div class="setting-row"><div><strong>Instagram</strong><p><a href="https://www.instagram.com/mir.filmy/" target="_blank" rel="noopener noreferrer">@mir.filmy</a></p></div></div><div class="setting-row"><div><strong>Adhan recording</strong><p>Omar Hisham Al Arabi</p></div></div><p class="tiny-note">Salah content defaults to a Hanafi learning path. Please review Arabic, transliteration, translations and references with a qualified editor before public release.</p></div>
+        </details>
+        <div class="about-card"><div class="brand-mark">ن</div><h2>Naseem · نسيم</h2><p class="muted">A gentle breeze · An Islamic daily companion.</p><span class="eyebrow">OFFLINE-FIRST · PRIVATE BY DESIGN</span></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item active" data-screen="homeScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4l8 7.2V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg></span><small>Home</small></button>
+      <button class="nav-item" data-screen="dhikrScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/></svg></span><small>Dhikr</small></button>
+      <button class="nav-item" data-screen="salahScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c0 2.2-2.6 3-2.6 5.2h5.2c0-2.2-2.6-3-2.6-5.2z"/><path d="M6 20.5v-7.3a6 6 0 0 1 12 0v7.3"/><path d="M3.5 20.5h17"/></svg></span><small>Salah</small></button>
+      <button class="nav-item" data-screen="settingsScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.8 5.8l1.5 1.5M16.7 16.7l1.5 1.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5"/></svg></span><small>Settings</small></button>
+    </nav>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script src="accent.js"></script>
+  <script src="intro.js"></script>
+  <script src="native.bundle.js"></script>
+  <script src="sheet.js"></script>
+  <script src="app.js"></script>
+  <script src="v3.js"></script>
+  <script src="time12.js"></script>
+  <script src="salah.js"></script>
+  <script src="prayer-dashboard.js"></script>
+  <script src="salah-settings.js"></script>
+  <script src="reminders.js"></script>
+  <script src="profile.js"></script>
+  <script src="settings.js"></script>
+  <script src="motion.js"></script>
+</body>
+</html>
