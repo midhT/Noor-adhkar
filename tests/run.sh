@@ -5,8 +5,13 @@ set -euo pipefail
 cd "$(dirname "$0")"
 rm -rf .build && mkdir -p .build && cp -r ../www .build/wwwtest
 S=$PWD/stubs
-npx esbuild ../www/native.js --bundle --platform=browser --format=iife --outfile=.build/wwwtest/native.bundle.js \
+ESB="npx --no-install esbuild"; command -v esbuild >/dev/null 2>&1 && ESB=esbuild
+[ -x ../node_modules/.bin/esbuild ] || ESB="/opt/npm-tools/node_modules/.bin/esbuild"
+[ -x ../node_modules/.bin/esbuild ] && ESB="../node_modules/.bin/esbuild"
+$ESB ../www/native.js --bundle --platform=browser --format=iife --outfile=.build/wwwtest/native.bundle.js \
   --alias:@capacitor/core=$S/core.js --alias:@capacitor/haptics=$S/haptics.js --alias:@capacitor/status-bar=$S/statusbar.js \
   --alias:@capacitor/local-notifications=$S/ln.js --alias:@capacitor/filesystem=$S/fs.js --alias:@capacitor/share=$S/share.js --log-level=warning
-python3 test_m1_ui.py
-python3 test_reminders_widgets.py
+python3 test_m2_ui.py
+python3 test_scheduling.py
+python3 test_motion.py
+python3 verify_salah_engine.py

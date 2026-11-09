@@ -2,8 +2,8 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const VERSION = '3.3.0';
-  const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1'];
+  const VERSION = '4.0.1';
+  const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1', 'noorSalahV1', 'noorProfileV1', 'noorAccentV1'];
   const SAFETY = 'noorSafetyBackupV1';
   const MAX_BYTES = 5 * 1024 * 1024;
   const SCHEDULE_FIELDS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'sunrise'];
@@ -14,17 +14,7 @@
   // ---------- groups ----------
   const groups = [...document.querySelectorAll('.st-group')];
   groups.forEach(g => g.addEventListener('toggle', () => { if (g.open) groups.forEach(o => { if (o !== g) o.open = false; }); }));
-  $('stVersion').textContent = `Noor ${VERSION}`;
-
-  // ---------- Salah / Notifications shortcuts ----------
-  const goHome = then => { switchScreen('homeScreen'); setTimeout(then, 320); };
-  document.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
-    if (b.dataset.act === 'edit-times') goHome(() => { const e = $('pdEditor'); if (e) { e.open = true; e.scrollIntoView({ behavior: 'smooth', block: 'center' }); } });
-    if (b.dataset.act === 'reminders') goHome(() => $('rmCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-  }));
-  const syncReminderStatus = () => { const s = $('rmStatus'); if ($('stRemStatus')) $('stRemStatus').textContent = s ? s.textContent : 'Open the Home screen to set up reminders'; };
-  syncReminderStatus();
-  const rs = $('rmStatus'); if (rs) new MutationObserver(syncReminderStatus).observe(rs, { childList: true, characterData: true, subtree: true });
+  $('stVersion').textContent = `Naseem ${VERSION}`;
 
   // ---------- Theme ----------
   const syncTheme = () => document.querySelectorAll('#stThemeSeg button').forEach(b => b.setAttribute('aria-pressed', String((state.theme === 'light' ? 'light' : 'dark') === b.dataset.theme)));
@@ -34,28 +24,51 @@
   $('themeBtn')?.addEventListener('click', () => setTimeout(syncTheme, 0));
   syncTheme();
 
-  // ---------- Background audio ----------
-  const audio = $('bgAudio'), tog = $('bgAudioToggle');
+  // ---------- Accent colour ----------
+  const accentPalette = $('accentPalette');
+  const customAccent = $('accentCustom');
+  const syncAccentUi = () => {
+    const current = window.NaseemAccent?.get?.() || { preset: 'emerald', color: '#20a875' };
+    accentPalette?.querySelectorAll('[data-accent]').forEach(b => {
+      const active = b.dataset.accent === current.preset;
+      b.setAttribute('aria-pressed', String(active));
+      b.classList.toggle('selected', active);
+    });
+    if (customAccent) customAccent.value = current.color;
+    const label = $('accentCurrentLabel');
+    if (label) label.textContent = current.preset === 'custom' ? 'Custom colour' : ({emerald:'Islamic emerald',forest:'Deep forest green',blue:'Royal blue',purple:'Midnight purple',gold:'Muted gold',silver:'Silver / grey'}[current.preset] || 'Islamic emerald');
+    const customLabel = document.querySelector('.accent-custom');
+    if (customLabel) customLabel.classList.toggle('selected', current.preset === 'custom');
+    const preview = $('accentCustomPreview');
+    if (preview) preview.style.setProperty('--swatch', current.preset === 'custom' ? current.color : 'conic-gradient(#ed5d5d,#e9c64c,#45bd78,#4a9de8,#a477e8,#ed5d5d)');
+  };
+  accentPalette?.querySelectorAll('[data-accent]').forEach(b => b.addEventListener('click', () => {
+    window.NaseemAccent?.set?.(b.dataset.accent); syncAccentUi(); say('Accent colour updated');
+  }));
+  customAccent?.addEventListener('input', e => {
+    window.NaseemAccent?.set?.('custom', e.target.value); syncAccentUi();
+  });
+  syncAccentUi();
+
+  // ---------- Background audio: the person chooses what plays ----------
+  const audio = $('bgAudio'), tog = $('bgAudioToggle'), fileIn = $('bgAudioFile');
   let ownUrl = null;
   const setAudioUi = on => { tog.textContent = on ? 'ON' : 'OFF'; tog.setAttribute('aria-pressed', String(on)); };
   audio.addEventListener('pause', () => setAudioUi(false));
   audio.addEventListener('playing', () => setAudioUi(true));
   tog.addEventListener('click', async () => {
     if (!audio.paused) { audio.pause(); return; }
-    if (!audio.getAttribute('src')) audio.setAttribute('src', 'audio/night_pad.wav');
-    try { await audio.play(); $('bgAudioLabel').textContent = ownUrl ? 'Playing your chosen audio' : 'Soft ambient pad'; }
-    catch (_) {
-      setAudioUi(false);
-      if (!ownUrl) { audio.removeAttribute('src'); $('bgAudioLabel').textContent = 'night_pad.wav is not included in this build.'; say('Background audio file not found'); }
-      else say('Audio could not start. Try again.');
-    }
+    if (!ownUrl) { fileIn.click(); return; }            // nothing chosen yet: open the picker
+    try { await audio.play(); } catch (_) { say('Audio could not start. Try choosing the file again.'); }
   });
-  $('bgAudioFile').addEventListener('change', e => {
+  fileIn.addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     if (ownUrl) URL.revokeObjectURL(ownUrl);
     ownUrl = URL.createObjectURL(f); audio.pause(); audio.setAttribute('src', ownUrl);
-    $('bgAudioFileLabel').textContent = `Selected: ${f.name}. Plays only until the app is closed.`; $('bgAudioLabel').textContent = 'Your chosen audio';
+    $('bgAudioFileLabel').textContent = f.name;
+    $('bgAudioLabel').textContent = 'Plays until you stop it or close the app.';
     e.target.value = '';
+    try { await audio.play(); } catch (_) { say('Tap the switch to start your audio'); }
   });
 
   // ---------- Backup ----------
@@ -68,10 +81,10 @@
   const fail = error => ({ ok: false, error });
   function validate(text) {
     if (typeof text !== 'string' || !text.trim()) return fail('The file is empty.');
-    if (text.length > MAX_BYTES) return fail('The file is too large to be a Noor backup.');
+    if (text.length > MAX_BYTES) return fail('The file is too large to be a Naseem backup.');
     let b; try { b = JSON.parse(text); } catch (_) { return fail('This is not a valid backup file (it could not be read as JSON).'); }
-    if (!isObj(b) || b.app !== 'noor') return fail('This file is not a Noor backup.');
-    if (b.format !== 1) return fail(b.format > 1 ? 'This backup was made by a newer version of Noor. Update Noor first.' : 'This backup format is not supported.');
+    if (!isObj(b) || b.app !== 'noor') return fail('This file is not a Naseem backup.');
+    if (b.format !== 1) return fail(b.format > 1 ? 'This backup was made by a newer version of Naseem. Update Naseem first.' : 'This backup format is not supported.');
     if (!isObj(b.data) || !Object.keys(b.data).length) return fail('The backup contains no data.');
     const parsed = {};
     for (const [k, v] of Object.entries(b.data)) {
@@ -91,14 +104,32 @@
     if (sch) for (const [k, v] of Object.entries(sch)) if (!SCHEDULE_FIELDS.includes(k) || (v !== '' && !NoorTime.valid(v))) return fail('Saved prayer times are damaged.');
     const rem = parsed['noorRemindersV1'];
     if (rem) {
-      if ('offset' in rem && ![0, 5, 10, 15, 30].includes(rem.offset)) return fail('Reminder settings are damaged.');
-      if ('on' in rem && !isObj(rem.on)) return fail('Reminder settings are damaged.');
+      for (const f of ['pre', 'offset']) if (f in rem && ![0, 5, 10, 15, 30].includes(rem[f])) return fail('Reminder settings are damaged.');
+      if ('lead' in rem && ![5, 10, 15, 30].includes(rem.lead)) return fail('Reminder settings are damaged.');
+      for (const f of ['on', 'sound', 'jam']) if (f in rem && !isObj(rem[f])) return fail('Reminder settings are damaged.');
+      for (const v of Object.values(rem.sound || {})) if (!['adhan', 'tone', 'silent'].includes(v)) return fail('Reminder sounds are damaged.');
+    }
+    const sal = parsed['noorSalahV1'];
+    if (sal) {
+      const loc = sal.loc;
+      if (loc && (!isObj(loc) || !(Math.abs(loc.lat) <= 90) || !(Math.abs(loc.lng) <= 180) || typeof loc.tz !== 'string' || typeof loc.name !== 'string')) return fail('Saved location is damaged.');
+      if (loc) { try { new Intl.DateTimeFormat('en-US', { timeZone: loc.tz }); } catch (_) { return fail('Saved location has an unknown time zone.'); } }
+      if ('method' in sal && !['karachi', 'mwl', 'isna', 'egypt', 'makkah'].includes(sal.method)) return fail('Saved calculation method is not recognised.');
+      if ('asr' in sal && !['hanafi', 'standard'].includes(sal.asr)) return fail('Saved Asr setting is not recognised.');
+      if ('mode' in sal && !['calculated', 'manual'].includes(sal.mode)) return fail('Saved prayer-time mode is not recognised.');
+      for (const v of Object.values(sal.adj || {})) if (!Number.isInteger(v) || Math.abs(v) > 60) return fail('Saved prayer adjustments are damaged.');
+      for (const j of Object.values(sal.jamaat || {})) if (!isObj(j) || !(j.offset >= 0 && j.offset <= 120) || (j.fixed && !NoorTime.valid(j.fixed))) return fail('Saved Jamaat settings are damaged.');
+    }
+    const prof = parsed['noorProfileV1'];
+    if (prof) {
+      if (typeof prof.name !== 'string' || prof.name.length > 60) return fail('Saved profile name is damaged.');
+      if (prof.photo && (typeof prof.photo !== 'string' || !prof.photo.startsWith('data:image/') || prof.photo.length > 400000)) return fail('Saved profile picture is damaged.');
     }
     const sum = {
       days: Object.keys((p && p.days) || {}).length,
       sessions: p && Array.isArray(p.sessions) ? p.sessions.length : 0,
       counts: Object.values((p && p.counts) || {}).reduce((a, n) => a + n, 0),
-      times: !!(sch && Object.values(sch).some(Boolean)),
+      times: !!((sch && Object.values(sch).some(Boolean)) || parsed['noorSalahV1']),
       date: b.exportedAt
     };
     return { ok: true, backup: b, summary: sum };
@@ -112,9 +143,9 @@
   async function exportBackup() {
     const snap = snapshot();
     const text = JSON.stringify(snap, null, 2);
-    const name = `noor-backup-${new Date().toLocaleDateString('en-CA')}.json`;
+    const name = `naseem-backup-${new Date().toLocaleDateString('en-CA')}.json`;
     try {
-      if (window.NoorNative?.files) await window.NoorNative.files.shareText(name, text, 'Noor backup');
+      if (window.NoorNative?.files) await window.NoorNative.files.shareText(name, text, 'Naseem backup');
       else {
         const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
         const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
@@ -132,7 +163,7 @@
   $('stRestoreFile').addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; e.target.value = '';
     if (!f) return;
-    if (f.size > MAX_BYTES) { note('That file is too large to be a Noor backup.', true); return; }
+    if (f.size > MAX_BYTES) { note('That file is too large to be a Naseem backup.', true); return; }
     let text; try { text = await f.text(); } catch (_) { note('The file could not be read.', true); return; }
     const r = validate(text);
     if (!r.ok) { note(`Restore cancelled. ${r.error} Your current data was not changed.`, true); say('Not a valid backup'); return; }
@@ -165,8 +196,8 @@
     save(); renderAll(); renderUndo(); note('Progress reset. You can undo this from Data & Backup.'); say('Progress reset');
   });
   $('stEraseAll').addEventListener('click', () => {
-    if (!confirm('Erase everything?\n\nThis removes all Noor data from this device: progress, presets, prayer times, reminders and settings.\n\nA safety copy is kept so you can undo. Export a backup first if you want a copy you can keep.')) return;
-    if (!confirm('Are you sure? This cannot be undone once Noor is uninstalled.')) return;
+    if (!confirm('Erase everything?\n\nThis removes all Naseem data from this device: progress, presets, prayer times, reminders and settings.\n\nA safety copy is kept so you can undo. Export a backup first if you want a copy you can keep.')) return;
+    if (!confirm('Are you sure? This cannot be undone once Naseem is uninstalled.')) return;
     if (!keepSafetyCopy()) { note('Erase stopped: not enough space to keep a safety copy.', true); return; }
     APP_KEYS.forEach(k => localStorage.removeItem(k));
     afterReload('All data erased');

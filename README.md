@@ -1,59 +1,56 @@
-# Noor V3.2 — Islamic Daily Companion
+# Noor Project V4 — Naseem (نسيم)
 
-Noor is an offline-first mobile web app packaged for Android with Capacitor. The default Salah learning path is Hanafi-oriented.
+**Project/repository identity:** Noor  
+**App name shown to users:** Naseem (نسيم)  
+**Android application ID:** `com.noor.adhkar` (intentionally preserved)
 
-## Included in this V3 source
-- Tasbeeh counter, starter Dhikr library, local progress, streaks, and JSON data export.
-- Salah & Duas learning cards with Arabic, transliteration, meanings, and contextual notes.
-- Focus Studio with 5/10/20/30-minute sessions.
-- Optional celestial motion and reduced-motion support.
-- Optional user-selected audio file. No unlicensed nasheed is bundled; audio is off by default and must be selected again after a restart.
-- App icon, responsive layout, and an updated offline cache including the V3 script.
+Naseem is the public-facing name of the Noor project. This delivery starts the V4 development track from the existing Noor V3.3 M2.1 Capacitor Android source. The repository and internal identifiers remain Noor to preserve compatibility with existing app data, native bridges and Android installations.
+
+## What is in this delivery
+
+- Existing V3.3 M2.1 application source and Android widget/notification integration.
+- Naseem display-name and visual identity foundation.
+- Emerald-forward dark theme baseline.
+- Arabic Naseem launcher/splash source artwork.
+- Updated PWA metadata and GitHub Actions APK artifact naming.
+- `docs/NASEEM_V4_BLUEPRINT.md`: complete approved product blueprint.
+- `docs/IMPLEMENTATION_STATUS.md`: implemented vs planned scope and compatibility notes.
+- `docs/design/naseem-product-vision-mockup.png`: concept reference only, not a screenshot of a running app.
 
 ## Build a test APK with GitHub Actions
-1. Extract this ZIP. Upload the **contents** of the `noor-adhkar` folder to the root of your GitHub repository (including the hidden `.github` folder). Do not upload the ZIP as a single file.
-2. Open the repository's **Actions** tab and run **Build Noor APK**, or push to the `main` branch.
-3. Open the successful workflow run and download the `Noor-debug-APK` artifact.
-4. Extract the artifact ZIP and install `app-debug.apk` on your Android phone for testing.
 
-The debug APK is for testing only. Public Google Play distribution requires a signed release build (usually an Android App Bundle, `.aab`) and secure release-key handling. Do not commit a signing key or passwords to GitHub.
+1. Extract the ZIP and upload the **contents** of the `noor-adhkar` folder to the root of the existing Noor GitHub repository, including hidden files such as `.github`.
+2. Open Actions and run **Build Naseem APK**, or push to the branch configured by the workflow.
+3. Download the `Naseem-debug-APK` artifact from a successful run.
+4. Install `app-debug.apk` for device testing.
 
-## Important scope notes
-- This build does **not** yet implement scheduled reminders, native notification permissions, a full Qur'an reader, automatic prayer-time calculations, or cloud sync. Browser vibration support varies by Android/WebView.
-- The audio picker uses a temporary local object URL. Audio is not uploaded, and the file must be selected again after the app restarts.
-- Progress is stored locally. Export it before clearing app data; uninstalling or clearing app storage can remove it.
-- Focus timers may pause when the app process is closed or suspended; this version does not promise a background timer or system-level focus blocking.
+The debug APK is for testing only. Public Google Play distribution requires a signed release build (usually an Android App Bundle, `.aab`), secure release-key handling, policy review and a privacy policy. Never commit signing keys or passwords.
 
-## Religious-content review before public release
-The Salah section is a learning aid, not a fatwa. The Arabic, transliteration, translation, and references—especially long Qur'anic and prayer passages—must be reviewed by a qualified Hanafi scholar/editor before public release. Transliteration is approximate, and recognised differences should be labelled respectfully rather than presented as errors.
+## Compatibility rule
 
-## Privacy
-Core data stays in local app/browser storage. No account or analytics service is configured in this source build. A public release still needs a store-compliant privacy policy and accurate data-safety disclosures.
+Do not change `appId: com.noor.adhkar` for this rebrand. The app display name is Naseem; the project/repository remains Noor. Internal Java package names, native plugin identifiers, local storage keys and event names are intentionally retained. This is important for upgrade compatibility and preserving user data.
 
+## Important scope note
 
-### Android system bars and haptics
-The build bundles Capacitor Haptics and Status Bar plugins. The status bar is explicitly shown with a dark navy background and light icons, and WebView content does not overlay it. Haptic feedback uses native Android impact feedback in the APK; browser preview uses the vibration API when available. Test on a physical device.
+This ZIP is the first V4 development foundation, not the finished implementation of every feature in the approved blueprint. See `docs/IMPLEMENTATION_STATUS.md` for what is included now and what remains planned. The advanced Qibla, full Zakat engine, complete Hijri calendar, expanded Dhikr/Dua content, multi-tradition learning, onboarding and expanded widgets require subsequent development and testing.
 
+## Testing
 
-## Noor celestial identity
-- `assets/icon.png` is the source artwork used to generate the native Android launcher icon.
-- `assets/splash.png` is the source artwork used for the native Android splash screen.
-- `www/intro.js` and the intro styles provide the short animated crescent/wordmark reveal after the web app starts.
-- The GitHub Actions workflow generates Android icon/splash resources with `@capacitor/assets`.
+Run `npm install`, `npm run build`, and `bash tests/run.sh` with the dependencies listed in the test instructions. Native Android alarms/widgets and upgrade behaviour must be tested on a physical device. Review all religious text and calculations with qualified sources/editors before public release.
 
+## V4.0.1 accent update
 
-## V3.1 dashboard update
-The home screen now includes a compact prayer dashboard inspired by the supplied reference: next-prayer panel, five-prayer timetable, sunrise/Dhuhr banners, paired circular countdown cards, and a date panel. Prayer times are deliberately left blank until the user enters a trusted local timetable; this update does not invent times or claim automatic location-based calculation. Values are saved locally on the device.
+This incremental update adds a persistent accent-colour selector under **Settings → Appearance**:
+- Islamic emerald (default), deep forest, royal blue, midnight purple, muted gold, silver/grey, and a custom colour picker.
+- Applies across the existing dark and light theme tokens.
+- Saved locally and included in JSON backup/restore.
+- Android build metadata is set from `package.json` by `scripts/patch-android.mjs` (`versionName 4.0.1`, `versionCode 40001`). The application ID remains `com.noor.adhkar`.
 
+### Installing as an update
+Android only installs an APK over an existing app when the application ID **and signing certificate** match and the incoming version code is higher. This source preserves the application ID and raises the version code. The current GitHub workflow still produces a debug APK; a debug key generated on a fresh GitHub runner is not guaranteed to match a previously installed APK. For reliable in-place updates, configure one persistent signing keystore in GitHub Actions secrets and use it for every subsequent build. Otherwise Android may require uninstalling the old app first, which can erase local data; export a Naseem backup before doing that.
 
-## V3.2 — graphite theme, salah alarms, widgets
-- **Theme:** `www/theme.css` (loaded after `styles.css`) restyles the whole app to the supplied reference: near-black graphite cards, hairline borders, small letter-spaced captions, white progress rings, floating icon navigation. Light theme is kept (toggle in the header). Layout is phone-first (safe-area aware, 44 px touch targets, tested 320–412 px wide).
-- **Salah reminders:** a "Salah reminders" card on Home (under the prayer dashboard). Per-prayer switches, alert at the prayer time or 5/10/15/30 minutes before, and a "Test alarm in 10 s" button. Alarms are repeating exact alarms (`@capacitor/local-notifications`) on a max-importance "Salah alarms" channel, restored after reboot, and rescheduled automatically when you edit prayer times. They use the times you enter in the dashboard — there is still no automatic calculation.
-- **Widgets (Android home screen):** *Noor · Prayer times* (next prayer, live countdown, the five times) and *Noor · Tasbeeh* (tap to count). Taps on the Tasbeeh widget are added to the app's counter, daily totals and history the next time Noor opens. Native sources live in `android-native/`; `scripts/patch-android.mjs` (run by the workflow after `cap add android`) copies them in and adds the permissions and widget receivers.
-- **Permissions added:** POST_NOTIFICATIONS, VIBRATE, RECEIVE_BOOT_COMPLETED, SCHEDULE_EXACT_ALARM (Android 12 and below), USE_EXACT_ALARM (Android 13+). Google Play restricts USE_EXACT_ALARM to alarm/calendar-type apps, so review that before a Play release.
-
-### Known limits
-- The alarm uses the phone's default notification sound on a high-priority channel. No adhan audio is bundled (licensing); a custom sound can be added later as an Android raw resource.
-- Alarms and widgets only work in the installed Android app. In a browser the reminders card says "Preview only".
-- Some phone makers (Xiaomi, Oppo, Samsung power saving, etc.) kill background alarms; if an alarm is missed, exclude Noor from battery optimisation.
-- The Java widget code, manifest patch and Gradle build could not be compiled in the authoring environment (no Android SDK or network); the first GitHub Actions build is the real compile test. Test the alarm and both widgets on a physical phone.
+### Validation performed for 4.0.1
+- JavaScript syntax checks passed for the new accent module and settings integration.
+- Runtime checks passed for default emerald, preset selection, custom colour selection, persistence and CSS variable application.
+- Existing prayer-engine comparison: 9,840 comparisons passed within 1 minute.
+- Browser-driven scheduling/UI tests could not run here because the Playwright Chromium executable is not installed. No APK build or physical-device test is claimed.

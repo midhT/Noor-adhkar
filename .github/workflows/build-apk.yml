@@ -13,9 +13,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout project
+      - name: Check out project
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -38,11 +37,14 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Patch Android native components
+      - name: Add Noor widgets, alarm permissions and native plugin
         run: node scripts/patch-android.mjs
 
-      - name: Generate launcher assets
+      - name: Generate launcher icon and splash assets
         run: npx --yes @capacitor/assets generate --android
+
+      - name: Add themed (monochrome) icon layer
+        run: node scripts/patch-icons.mjs
 
       - name: Sync Capacitor
         run: npx cap sync android
@@ -51,7 +53,7 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
 
-      - name: Upload Naseem APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: Naseem-debug-APK
