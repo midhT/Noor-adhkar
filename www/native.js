@@ -9,7 +9,8 @@ const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && win
 // Custom Android plugin (android-native/java/NoorWidgetsPlugin.java) that feeds the home-screen widgets.
 const NoorWidgets = isNative ? registerPlugin('NoorWidgets') : null;
 
-const CHANNEL_ID = 'noor-salah-alarm';
+const CH = { adhan: 'noor-adhan-v1', tone: 'noor-salah-alarm', silent: 'noor-silent-v1' };
+const ADHAN_FILE = 'adhan.mp3'; // android/app/src/main/res/raw/adhan.mp3 (copied by scripts/patch-android.mjs)
 
 window.NoorNative = {
   isNative,
@@ -31,8 +32,9 @@ window.NoorNative = {
     } catch (e) { console.warn('Noor native system-bar setup failed', e); }
   },
 
-  /* ---- Salah alarms (Android local notifications on a high-importance channel) ---- */
+  /* ---- Salah alarms: Android local notifications. Three channels: full Adhan, short tone, silent. ---- */
   notifications: isNative ? {
+    CH,
     async permission() {
       try { return (await LocalNotifications.checkPermissions()).display; } catch (_) { return 'denied'; }
     },
@@ -45,25 +47,28 @@ window.NoorNative = {
     async openExactAlarmSettings() {
       try { return (await LocalNotifications.changeExactNotificationSetting()).exact_alarm; } catch (_) { return 'denied'; }
     },
-    async ensureChannel() {
+    async ensureChannels() {
+      const base = { importance: 5, visibility: 1, vibration: true, lights: true };
       try {
-        await LocalNotifications.createChannel({
-          id: CHANNEL_ID, name: 'Salah alarms', description: 'Prayer time alarms',
-          importance: 5, visibility: 1, vibration: true, lights: true
-        });
+        await LocalNotifications.createChannel({ ...base, id: CH.adhan, name: 'Adhan (full call to prayer)', description: 'Plays the Adhan at prayer time', sound: ADHAN_FILE });
+        await LocalNotifications.createChannel({ ...base, id: CH.tone, name: 'Salah tone', description: 'Short notification tone' });
+        await LocalNotifications.createChannel({ id: CH.silent, name: 'Salah silent', description: 'Notification without sound', importance: 2, visibility: 1, vibration: false, lights: false });
       } catch (_) {}
     },
-    async cancel(ids) {
-      try { await LocalNotifications.cancel({ notifications: ids.map(id => ({ id })) }); } catch (_) {}
+    /** Cancels every pending Noor prayer notification with an id in [lo, hi). */
+    async cancelRange(lo, hi) {
+      try {
+        const ids = (await LocalNotifications.getPending()).notifications.map(n => n.id).filter(id => id >= lo && id < hi);
+        if (ids.length) await LocalNotifications.cancel({ notifications: ids.map(id => ({ id })) });
+      } catch (_) {}
     },
     async schedule(list) {
-      await LocalNotifications.schedule({
-        notifications: list.map(n => ({
-          id: n.id, title: n.title, body: n.body, channelId: CHANNEL_ID,
-          schedule: n.at ? { at: new Date(n.at), allowWhileIdle: true }
-                         : { on: { hour: n.hour, minute: n.minute }, allowWhileIdle: true }
-        }))
-      });
+      const mapped = list.map(n => ({
+        id: n.id, title: n.title, body: n.body, channelId: CH[n.channel] || CH.tone,
+        ...(n.channel === 'adhan' ? { sound: ADHAN_FILE } : {}),
+        schedule: { at: new Date(n.at), allowWhileIdle: true }
+      }));
+      for (let i = 0; i < mapped.length; i += 40) await LocalNotifications.schedule({ notifications: mapped.slice(i, i + 40) });
     },
     async pending() {
       try { return (await LocalNotifications.getPending()).notifications.map(n => n.id); } catch (_) { return []; }

@@ -59,13 +59,25 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
         return PendingIntent.getBroadcast(context, 7, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    /** Parsed minutes-after-midnight for each prayer, or -1 when unset. */
-    private static int[] readMinutes(Context context) {
+    private static String dateKey(Calendar c) {
+        return String.format(java.util.Locale.US, "%04d-%02d-%02d", c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
+    }
+
+    /**
+     * Minutes-after-midnight for each prayer on the given day offset (0 = today), or -1 when unset.
+     * The app pushes a map of the next 21 dates ({"2026-11-09": {"fajr": "05:31", ...}, ...}) because calculated
+     * times change daily. A flat {"fajr": "05:31", ...} object (older builds) is still understood.
+     */
+    private static int[] readMinutes(Context context, int dayOffset) {
         int[] out = {-1, -1, -1, -1, -1};
         String json = NoorWidgetStore.prefs(context).getString(NoorWidgetStore.PRAYER_JSON, "{}");
         try {
-            JSONObject o = new JSONObject(json);
-            for (int i = 0; i < IDS.length; i++) out[i] = parse(o.optString(IDS[i], ""));
+            JSONObject root = new JSONObject(json);
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.DAY_OF_YEAR, dayOffset);
+            JSONObject day = root.optJSONObject(dateKey(c));
+            if (day == null && root.has("fajr")) day = root;
+            if (day != null) for (int i = 0; i < IDS.length; i++) out[i] = parse(day.optString(IDS[i], ""));
         } catch (Exception ignored) { }
         return out;
     }
@@ -101,19 +113,20 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
         return c.getTimeInMillis();
     }
 
-    /** Index of the next prayer and its trigger time (today or tomorrow); null when no times are set. */
-    private static long[] findNext(int[] mins) {
+    /** {index, triggerMillis} of the next prayer (today, otherwise the earliest tomorrow); null when no times are set. */
+    private static long[] findNext(Context context) {
         long now = System.currentTimeMillis();
-        int best = -1, first = -1;
-        long bestAt = Long.MAX_VALUE;
-        for (int i = 0; i < mins.length; i++) {
-            if (mins[i] < 0) continue;
-            if (first < 0 || mins[i] < mins[first]) first = i;
-            long at = millisFor(mins[i], 0);
-            if (at > now && at < bestAt) { best = i; bestAt = at; }
+        for (int day = 0; day < 2; day++) {
+            int[] mins = readMinutes(context, day);
+            int best = -1;
+            long bestAt = Long.MAX_VALUE;
+            for (int i = 0; i < mins.length; i++) {
+                if (mins[i] < 0) continue;
+                long at = millisFor(mins[i], day);
+                if (at > now && at < bestAt) { best = i; bestAt = at; }
+            }
+            if (best >= 0) return new long[]{best, bestAt, day};
         }
-        if (best >= 0) return new long[]{best, bestAt};
-        if (first >= 0) return new long[]{first, millisFor(mins[first], 1)};
         return null;
     }
 
@@ -124,8 +137,8 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
             v.setOnClickPendingIntent(R.id.pw_root,
                 PendingIntent.getActivity(context, 0, launch, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         }
-        int[] mins = readMinutes(context);
-        long[] next = findNext(mins);
+        int[] mins = readMinutes(context, 0);
+        long[] next = findNext(context);
         for (int i = 0; i < 5; i++) {
             boolean isNext = next != null && next[0] == i;
             v.setTextViewText(NAME_VIEWS[i], LABELS[i]);
@@ -144,7 +157,7 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
         int idx = (int) next[0];
         long at = next[1];
         v.setTextViewText(R.id.pw_title, LABELS[idx]);
-        v.setTextViewText(R.id.pw_time, fmt(mins[idx]));
+        v.setTextViewText(R.id.pw_time, fmt(readMinutes(context, (int) next[2])[idx]));
         if (Build.VERSION.SDK_INT >= 24) {
             v.setViewVisibility(R.id.pw_timer, android.view.View.VISIBLE);
             v.setViewVisibility(R.id.pw_hint, android.view.View.GONE);
@@ -162,7 +175,7 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
     private static void scheduleRefresh(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-        long[] next = findNext(readMinutes(context));
+        long[] next = findNext(context);
         PendingIntent pi = refreshIntent(context);
         am.cancel(pi);
         if (next != null) am.set(AlarmManager.RTC, next[1] + 1500, pi);

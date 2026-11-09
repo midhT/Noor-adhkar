@@ -3,7 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const VERSION = '3.3.0';
-  const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1'];
+  const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1', 'noorSalahV1', 'noorProfileV1'];
   const SAFETY = 'noorSafetyBackupV1';
   const MAX_BYTES = 5 * 1024 * 1024;
   const SCHEDULE_FIELDS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'sunrise'];
@@ -16,16 +16,6 @@
   groups.forEach(g => g.addEventListener('toggle', () => { if (g.open) groups.forEach(o => { if (o !== g) o.open = false; }); }));
   $('stVersion').textContent = `Noor ${VERSION}`;
 
-  // ---------- Salah / Notifications shortcuts ----------
-  const goHome = then => { switchScreen('homeScreen'); setTimeout(then, 320); };
-  document.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
-    if (b.dataset.act === 'edit-times') goHome(() => { const e = $('pdEditor'); if (e) { e.open = true; e.scrollIntoView({ behavior: 'smooth', block: 'center' }); } });
-    if (b.dataset.act === 'reminders') goHome(() => $('rmCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-  }));
-  const syncReminderStatus = () => { const s = $('rmStatus'); if ($('stRemStatus')) $('stRemStatus').textContent = s ? s.textContent : 'Open the Home screen to set up reminders'; };
-  syncReminderStatus();
-  const rs = $('rmStatus'); if (rs) new MutationObserver(syncReminderStatus).observe(rs, { childList: true, characterData: true, subtree: true });
-
   // ---------- Theme ----------
   const syncTheme = () => document.querySelectorAll('#stThemeSeg button').forEach(b => b.setAttribute('aria-pressed', String((state.theme === 'light' ? 'light' : 'dark') === b.dataset.theme)));
   document.querySelectorAll('#stThemeSeg button').forEach(b => b.addEventListener('click', () => {
@@ -34,28 +24,25 @@
   $('themeBtn')?.addEventListener('click', () => setTimeout(syncTheme, 0));
   syncTheme();
 
-  // ---------- Background audio ----------
-  const audio = $('bgAudio'), tog = $('bgAudioToggle');
+  // ---------- Background audio: the person chooses what plays ----------
+  const audio = $('bgAudio'), tog = $('bgAudioToggle'), fileIn = $('bgAudioFile');
   let ownUrl = null;
   const setAudioUi = on => { tog.textContent = on ? 'ON' : 'OFF'; tog.setAttribute('aria-pressed', String(on)); };
   audio.addEventListener('pause', () => setAudioUi(false));
   audio.addEventListener('playing', () => setAudioUi(true));
   tog.addEventListener('click', async () => {
     if (!audio.paused) { audio.pause(); return; }
-    if (!audio.getAttribute('src')) audio.setAttribute('src', 'audio/night_pad.wav');
-    try { await audio.play(); $('bgAudioLabel').textContent = ownUrl ? 'Playing your chosen audio' : 'Soft ambient pad'; }
-    catch (_) {
-      setAudioUi(false);
-      if (!ownUrl) { audio.removeAttribute('src'); $('bgAudioLabel').textContent = 'night_pad.wav is not included in this build.'; say('Background audio file not found'); }
-      else say('Audio could not start. Try again.');
-    }
+    if (!ownUrl) { fileIn.click(); return; }            // nothing chosen yet: open the picker
+    try { await audio.play(); } catch (_) { say('Audio could not start. Try choosing the file again.'); }
   });
-  $('bgAudioFile').addEventListener('change', e => {
+  fileIn.addEventListener('change', async e => {
     const f = e.target.files && e.target.files[0]; if (!f) return;
     if (ownUrl) URL.revokeObjectURL(ownUrl);
     ownUrl = URL.createObjectURL(f); audio.pause(); audio.setAttribute('src', ownUrl);
-    $('bgAudioFileLabel').textContent = `Selected: ${f.name}. Plays only until the app is closed.`; $('bgAudioLabel').textContent = 'Your chosen audio';
+    $('bgAudioFileLabel').textContent = f.name;
+    $('bgAudioLabel').textContent = 'Plays until you stop it or close the app.';
     e.target.value = '';
+    try { await audio.play(); } catch (_) { say('Tap the switch to start your audio'); }
   });
 
   // ---------- Backup ----------
@@ -91,14 +78,32 @@
     if (sch) for (const [k, v] of Object.entries(sch)) if (!SCHEDULE_FIELDS.includes(k) || (v !== '' && !NoorTime.valid(v))) return fail('Saved prayer times are damaged.');
     const rem = parsed['noorRemindersV1'];
     if (rem) {
-      if ('offset' in rem && ![0, 5, 10, 15, 30].includes(rem.offset)) return fail('Reminder settings are damaged.');
-      if ('on' in rem && !isObj(rem.on)) return fail('Reminder settings are damaged.');
+      for (const f of ['pre', 'offset']) if (f in rem && ![0, 5, 10, 15, 30].includes(rem[f])) return fail('Reminder settings are damaged.');
+      if ('lead' in rem && ![5, 10, 15, 30].includes(rem.lead)) return fail('Reminder settings are damaged.');
+      for (const f of ['on', 'sound', 'jam']) if (f in rem && !isObj(rem[f])) return fail('Reminder settings are damaged.');
+      for (const v of Object.values(rem.sound || {})) if (!['adhan', 'tone', 'silent'].includes(v)) return fail('Reminder sounds are damaged.');
+    }
+    const sal = parsed['noorSalahV1'];
+    if (sal) {
+      const loc = sal.loc;
+      if (loc && (!isObj(loc) || !(Math.abs(loc.lat) <= 90) || !(Math.abs(loc.lng) <= 180) || typeof loc.tz !== 'string' || typeof loc.name !== 'string')) return fail('Saved location is damaged.');
+      if (loc) { try { new Intl.DateTimeFormat('en-US', { timeZone: loc.tz }); } catch (_) { return fail('Saved location has an unknown time zone.'); } }
+      if ('method' in sal && !['karachi', 'mwl', 'isna', 'egypt', 'makkah'].includes(sal.method)) return fail('Saved calculation method is not recognised.');
+      if ('asr' in sal && !['hanafi', 'standard'].includes(sal.asr)) return fail('Saved Asr setting is not recognised.');
+      if ('mode' in sal && !['calculated', 'manual'].includes(sal.mode)) return fail('Saved prayer-time mode is not recognised.');
+      for (const v of Object.values(sal.adj || {})) if (!Number.isInteger(v) || Math.abs(v) > 60) return fail('Saved prayer adjustments are damaged.');
+      for (const j of Object.values(sal.jamaat || {})) if (!isObj(j) || !(j.offset >= 0 && j.offset <= 120) || (j.fixed && !NoorTime.valid(j.fixed))) return fail('Saved Jamaat settings are damaged.');
+    }
+    const prof = parsed['noorProfileV1'];
+    if (prof) {
+      if (typeof prof.name !== 'string' || prof.name.length > 60) return fail('Saved profile name is damaged.');
+      if (prof.photo && (typeof prof.photo !== 'string' || !prof.photo.startsWith('data:image/') || prof.photo.length > 400000)) return fail('Saved profile picture is damaged.');
     }
     const sum = {
       days: Object.keys((p && p.days) || {}).length,
       sessions: p && Array.isArray(p.sessions) ? p.sessions.length : 0,
       counts: Object.values((p && p.counts) || {}).reduce((a, n) => a + n, 0),
-      times: !!(sch && Object.values(sch).some(Boolean)),
+      times: !!((sch && Object.values(sch).some(Boolean)) || parsed['noorSalahV1']),
       date: b.exportedAt
     };
     return { ok: true, backup: b, summary: sum };

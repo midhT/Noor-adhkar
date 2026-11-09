@@ -3,7 +3,7 @@ name: Build Noor APK
 on:
   workflow_dispatch:
   push:
-    branches: [ main, noor-v3.3-m1 ]
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -40,6 +40,9 @@ jobs:
 
       - name: Generate launcher icon and splash assets
         run: npx --yes @capacitor/assets generate --android
+
+      - name: Add themed (monochrome) icon layer
+        run: node scripts/patch-icons.mjs
 
       - name: Sync Capacitor
         run: npx cap sync android

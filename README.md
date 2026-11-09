@@ -70,3 +70,7 @@ git commit -m "Noor V3.3 Milestone 1: five-tab navigation, Settings, 12-hour tim
 git push -u origin v3.3-milestone-1
 ```
 Then open a pull request on GitHub, check that the Build Noor APK run passes, and merge.
+
+## V3.3 Milestone 2
+Default Kashmir prayer times, editable in Settings › Salah; account; Adhan notifications; adaptive icon. See CHANGELOG.md and TESTING_REPORT.md.
+Run tests: `bash tests/run.sh` (needs node, esbuild, python playwright).

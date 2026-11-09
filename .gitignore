@@ -6,3 +6,4 @@ android/build/
 node_modules/
 tests/.build/
 www/native.bundle.js
+__pycache__/

@@ -265,3 +265,35 @@ body.light .tiny-note.st-error{color:#a2402f}
 .t12 select{min-height:44px;padding:0 8px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-size:16px;font-variant-numeric:tabular-nums;text-align:center}
 .t12 select[data-p="ap"]{min-width:64px}
 .pd-sunrise-input{flex-direction:row!important;align-items:center!important;justify-content:space-between!important;text-align:left}
+
+/* ---------- V3.3 M2: Account, Salah settings, notifications ---------- */
+button.brand-mark{padding:0;font:inherit;cursor:pointer;overflow:hidden}
+.brand-mark img,.ac-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.ac-card{display:flex;align-items:center;gap:16px;padding:14px 0 4px}
+.ac-avatar{width:68px;height:68px;flex:none;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);color:var(--gold);font-size:28px}
+.ac-fields{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.ac-fields label{font-size:8.5px;letter-spacing:.2em;font-weight:600;color:var(--muted)}
+.ac-fields input{width:100%;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-size:16px}
+.st-select{flex:none;max-width:52%;min-height:44px;padding:0 10px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-size:14px}
+.ss-head,.st-body .rm-label{display:block;font-size:8.5px;letter-spacing:.2em;font-weight:600;color:var(--muted);margin:18px 0 6px}
+.ss-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:8px 0;border-bottom:1px solid var(--hair)}
+.ss-row>div:first-child{min-width:0;display:flex;flex-direction:column;gap:3px}
+.ss-row strong{font-size:14px;font-weight:600}
+.ss-row small{font-size:11.5px;color:var(--muted);line-height:1.4}
+.ss-row small b{color:var(--text);font-weight:600}
+.ss-step{flex:none;display:inline-flex;align-items:center;gap:6px}
+.ss-step button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-size:18px;line-height:1}
+.ss-step span{min-width:56px;text-align:center;font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--text)}
+.ss-jam{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.ss-jam select{min-height:36px;padding:0 8px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit;font-size:12.5px}
+.pd-next-jamaat{display:block;margin-top:4px;font-size:11.5px;color:var(--muted);letter-spacing:.01em}
+.rm-prayer{padding:12px 0;border-bottom:1px solid var(--hair)}
+.rm-prayer.is-off .rm-seg,.rm-prayer.is-off .rm-jam{opacity:.5}
+.rm-prayer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.rm-prayer-head>div{display:flex;flex-direction:column;gap:3px}
+.rm-prayer-head strong{font-size:15px;font-weight:600}
+.rm-prayer-head small{font-size:11.5px;color:var(--muted)}
+.rm-prayer .rm-seg{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rm-jam{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+#rmBody .rm-seg[role="group"]:not([aria-label]){grid-template-columns:repeat(5,minmax(0,1fr))}
+#rmBody .rm-actions button:disabled{opacity:.45}

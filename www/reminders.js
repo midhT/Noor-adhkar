@@ -1,115 +1,114 @@
-/* Noor V3.2 — Salah alarm reminders.
-   Uses the prayer times the user saved in the dashboard. On Android (the installed app) each enabled
-   prayer gets a repeating exact alarm via a high-importance notification channel. In a plain browser
-   there is no way to fire background alarms, so the card says so instead of pretending. */
+/* Noor V3.3 — Salah notifications (Settings › Notifications).
+   Per prayer: Adhan notification (full Adhan audio, short tone or silent) and a separate Jamaat reminder.
+   Alarms are scheduled one-by-one for the next 21 days from the calculated (or user-entered) times, so they
+   follow the seasons; they are rebuilt every time the app opens or any prayer/Jamaat setting changes, and
+   restored after a reboot by the notification plugin. A browser cannot ring background alarms, so there the
+   card says so rather than pretending. */
 (() => {
   'use strict';
-  const dash = document.getElementById('prayerDashboard');
-  if (!dash || document.getElementById('rmCard')) return;
-
-  const KEY = 'noorRemindersV1';
-  const SCHEDULE_KEY = 'noorPrayerScheduleV1';
-  const PRAYERS = [
-    { id: 'fajr', label: 'Fajr', nid: 1001 },
-    { id: 'dhuhr', label: 'Dhuhr', nid: 1002 },
-    { id: 'asr', label: 'Asr', nid: 1003 },
-    { id: 'maghrib', label: 'Maghrib', nid: 1004 },
-    { id: 'isha', label: 'Isha', nid: 1005 }
-  ];
-  const TEST_ID = 1999;
-  const OFFSETS = [0, 5, 10, 15, 30];
-  const N = window.NoorNative || {};
+  const root = document.querySelector('#stNotifications .st-body');
+  const S = window.NoorSalah, T = window.NoorTime, N = window.NoorNative || {};
+  if (!root || !S) return;
   const native = !!(N.isNative && N.notifications);
-
-  const defaults = { master: false, offset: 0, on: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true } };
+  const KEY = 'noorRemindersV1';
+  const DAYS = 21, ID_LO = 1000, ID_HI = 90000, TEST_ADHAN = 99991, TEST_TONE = 99992;
+  const PRAYERS = S.PRAYERS, LABEL = S.LABELS;
+  const PRE = [0, 5, 10, 15, 30], LEAD = [5, 10, 15, 30];
+  const defaults = () => ({ master: false, pre: 0, lead: 10,
+    on: { fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true },
+    sound: { fajr: 'adhan', dhuhr: 'adhan', asr: 'adhan', maghrib: 'adhan', isha: 'adhan' },
+    jam: { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false } });
   const load = () => {
+    const d = defaults();
     try {
       const v = JSON.parse(localStorage.getItem(KEY) || '{}');
-      return { ...defaults, ...v, on: { ...defaults.on, ...(v.on || {}) } };
-    } catch (_) { return { ...defaults, on: { ...defaults.on } }; }
+      const pre = v.pre !== undefined ? v.pre : v.offset;           // V3.2 stored "offset"
+      return { ...d, ...v, pre: PRE.includes(pre) ? pre : 0, lead: LEAD.includes(v.lead) ? v.lead : 10,
+        on: { ...d.on, ...(v.on || {}) }, sound: { ...d.sound, ...(v.sound || {}) }, jam: { ...d.jam, ...(v.jam || {}) } };
+    } catch (_) { return d; }
   };
+  let cfg = load(), note = '', exactNeeded = false, previewing = false;
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (_) {} };
-  const schedule = () => { try { return JSON.parse(localStorage.getItem(SCHEDULE_KEY) || '{}'); } catch (_) { return {}; } };
-  const toMin = v => {
-    if (!/^\d{2}:\d{2}$/.test(v || '')) return null;
-    const [h, m] = v.split(':').map(Number);
-    return h < 24 && m < 60 ? h * 60 + m : null;
-  };
-  const toast = msg => { const el = document.getElementById('toast'); if (!el) return; el.textContent = msg; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2400); };
+  const toast2 = m => { try { toast(m); } catch (_) {} };
 
-  let cfg = load();
-  let note = '';
+  const bell = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg>';
+  const sw = (attrs, on, label) => `<button type="button" class="rm-switch" role="switch" aria-checked="${on}" aria-label="${label}" ${attrs}></button>`;
+  const seg = (attr, opts, cur, fmt) => `<div class="rm-seg" role="group">${opts.map(o => `<button type="button" ${attr}="${o}" aria-pressed="${cur === o}">${fmt(o)}</button>`).join('')}</div>`;
 
-  const bell = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg>';
-  const card = document.createElement('section');
-  card.id = 'rmCard';
-  card.className = 'rm-card';
-  card.innerHTML = `
-    <div class="rm-head">
-      <div class="rm-bell">${bell}</div>
-      <div><strong>Salah reminders</strong><small id="rmStatus">Off</small></div>
-      <button type="button" class="rm-switch" id="rmMaster" role="switch" aria-checked="false" aria-label="Salah reminders"></button>
-    </div>
-    <div class="rm-body" id="rmBody" hidden>
-      <div id="rmRows"></div>
-      <span class="rm-label">ALERT ME</span>
-      <div class="rm-seg" id="rmSeg" role="group" aria-label="When to alert"></div>
-      <div class="rm-actions">
-        <button type="button" id="rmTest">Test alarm in 10 s</button>
-        <button type="button" id="rmExact" hidden>Allow exact alarms</button>
-      </div>
-      <p class="rm-note" id="rmNote" role="status" aria-live="polite"></p>
-    </div>`;
-  const editor = dash.querySelector('#pdEditor');
-  (editor || dash.lastElementChild).insertAdjacentElement('afterend', card);
-  const $ = id => card.querySelector('#' + id);
-
-  const offsetLabel = o => (o === 0 ? 'At time' : `${o} min`);
-  const rowsFor = () => {
-    const sch = schedule();
-    return PRAYERS.map(p => ({ ...p, time: sch[p.id] || '', min: toMin(sch[p.id]) }));
-  };
-
+  function statusText() {
+    if (!cfg.master) return 'Off. Turn on to be notified at each prayer.';
+    if (!native) return 'Preview only. Alarms need the installed Android app.';
+    const n = PRAYERS.filter(p => cfg.on[p]).length, j = PRAYERS.filter(p => cfg.jam[p]).length;
+    return `On · ${n} Adhan${n === 1 ? '' : 's'}${j ? ` · ${j} Jamaat` : ''}`;
+  }
   function render() {
-    const rows = rowsFor();
-    const active = rows.filter(r => cfg.on[r.id] && r.min !== null);
-    $('rmMaster').setAttribute('aria-checked', String(cfg.master));
-    $('rmBody').hidden = !cfg.master;
-    $('rmRows').innerHTML = rows.map(r => `
-      <div class="rm-row"><span>${r.label}</span><em>${r.time ? NoorTime.to12(r.time) : 'Set time'}</em>
-        <button type="button" class="rm-switch" data-id="${r.id}" role="switch" aria-checked="${cfg.on[r.id]}" aria-label="${r.label} reminder"></button>
-      </div>`).join('');
-    $('rmSeg').innerHTML = OFFSETS.map(o => `<button type="button" data-off="${o}" aria-pressed="${cfg.offset === o}">${offsetLabel(o)}</button>`).join('');
-    let status;
-    if (!cfg.master) status = 'Off — tap to get an alarm at each prayer';
-    else if (!native) status = 'Preview only — alarms need the Android app';
-    else if (!rows.some(r => r.min !== null)) status = 'Add your prayer times to start';
-    else status = `On · ${active.length} prayer${active.length === 1 ? '' : 's'} · ${cfg.offset ? cfg.offset + ' min before' : 'at prayer time'}`;
-    $('rmStatus').textContent = status;
-    $('rmNote').textContent = note || (native ? 'Alarms repeat daily and are restored after a restart. Change prayer times above and they update automatically.' : 'Reminders are scheduled by the installed Android app. A browser cannot ring an alarm in the background.');
-    $('rmTest').disabled = !native;
+    const now = new Date(), t = S.timesFor(now), j = S.jamaatFor(now);
+    root.innerHTML = `
+      <div class="setting-row"><div><strong>Salah reminders</strong><p id="rmStatus">${statusText()}</p></div>${sw('id="rmMaster"', cfg.master, 'Salah reminders')}</div>
+      <div id="rmBody" ${cfg.master ? '' : 'hidden'}>
+        ${PRAYERS.map(p => `
+          <div class="rm-prayer ${cfg.on[p] ? '' : 'is-off'}">
+            <div class="rm-prayer-head"><div><strong>${LABEL[p]}</strong><small>Adhan ${T.to12(t[p])} · Jamaat ${T.to12(j[p])}</small></div>${sw(`data-adhan="${p}"`, cfg.on[p], LABEL[p] + ' Adhan notification')}</div>
+            <div class="rm-seg" role="group" aria-label="${LABEL[p]} sound">${[['adhan', 'Adhan'], ['tone', 'Tone'], ['silent', 'Silent']].map(([v, l]) => `<button type="button" data-sound="${p}:${v}" aria-pressed="${cfg.sound[p] === v}">${l}</button>`).join('')}</div>
+            <div class="rm-jam"><span>Jamaat reminder · ${cfg.lead} min before</span>${sw(`data-jam="${p}"`, cfg.jam[p], LABEL[p] + ' Jamaat reminder')}</div>
+          </div>`).join('')}
+        <span class="rm-label">HEADS-UP BEFORE ADHAN</span>
+        ${seg('data-pre', PRE, cfg.pre, o => (o === 0 ? 'Off' : o + ' min'))}
+        <span class="rm-label">JAMAAT REMINDER LEAD TIME</span>
+        ${seg('data-lead', LEAD, cfg.lead, o => o + ' min')}
+        <div class="rm-actions">
+          <button type="button" id="rmPreview">${previewing ? 'Stop Adhan preview' : 'Preview Adhan'}</button>
+          <button type="button" id="rmTestAdhan" ${native ? '' : 'disabled'}>Test Adhan alarm</button>
+          <button type="button" id="rmTestTone" ${native ? '' : 'disabled'}>Test tone</button>
+          <button type="button" id="rmExact" ${exactNeeded ? '' : 'hidden'}>Allow exact alarms</button>
+        </div>
+        <p class="rm-note" id="rmNote" role="status" aria-live="polite">${note || (native ? 'The Adhan plays as the notification sound. If your phone shortens it, choose Tone. Heads-up reminders and Jamaat reminders use a short tone (or stay silent if that prayer is Silent).' : 'Reminders are scheduled by the installed Android app. A browser cannot ring an alarm in the background.')}</p>
+        <p class="rm-note">If alarms arrive late or not at all on your phone, set Noor to Unrestricted in Android Settings › Apps › Noor › Battery.</p>
+      </div>`;
   }
 
-  async function apply() {
-    // Keep the prayer-times widget in sync regardless of reminder state.
-    if (N.widgets) N.widgets.setPrayerTimes(schedule());
-    if (!native) return;
-    const nt = N.notifications;
-    await nt.cancel(PRAYERS.map(p => p.nid));
-    if (!cfg.master) return;
-    await nt.ensureChannel();
-    const list = [];
-    for (const r of rowsFor()) {
-      if (!cfg.on[r.id] || r.min === null) continue;
-      const at = (r.min - cfg.offset + 1440) % 1440;
-      list.push({
-        id: r.nid, hour: Math.floor(at / 60), minute: at % 60,
-        title: cfg.offset ? `${r.label} in ${cfg.offset} minutes` : `Time for ${r.label}`,
-        body: cfg.offset ? `${r.label} is at ${NoorTime.to12(r.time)}.` : `It is ${NoorTime.to12(r.time)}. Take a moment to pray.`
+  const startOf = (d, hhmm) => { const m = S.toMin(hhmm); const x = new Date(d); x.setHours(Math.floor(m / 60), m % 60, 0, 0); return x.getTime(); };
+  const pad = n => String(n).padStart(2, '0');
+  const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  /** Builds every notification for the next 21 days. id = (day+1)*1000 + prayer*10 + kind (0 Adhan, 1 heads-up, 2 Jamaat). */
+  function plan() {
+    const out = [], nowMs = Date.now() + 3000;
+    for (let d = 0; d < DAYS; d++) {
+      const date = new Date(); date.setDate(date.getDate() + d);
+      const t = S.timesFor(date), j = S.jamaatFor(date);
+      PRAYERS.forEach((p, i) => {
+        const base = (d + 1) * 1000 + i * 10, adhanAt = startOf(date, t[p]), quiet = cfg.sound[p] === 'silent' ? 'silent' : 'tone';
+        if (cfg.on[p]) {
+          if (adhanAt > nowMs) out.push({ id: base, at: adhanAt, channel: cfg.sound[p], title: `Time for ${LABEL[p]}`, body: `${LABEL[p]} · ${T.to12(t[p])}. Jamaat at ${T.to12(j[p])}.` });
+          const pre = adhanAt - cfg.pre * 60000;
+          if (cfg.pre && pre > nowMs) out.push({ id: base + 1, at: pre, channel: quiet, title: `${LABEL[p]} in ${cfg.pre} minutes`, body: `Adhan at ${T.to12(t[p])}.` });
+        }
+        if (cfg.jam[p]) {
+          const at = startOf(date, j[p]) - cfg.lead * 60000;
+          if (at > nowMs) out.push({ id: base + 2, at, channel: quiet, title: `${LABEL[p]} Jamaat in ${cfg.lead} minutes`, body: `Jamaat at ${T.to12(j[p])}.` });
+        }
       });
     }
-    if (list.length) await nt.schedule(list);
+    return out;
   }
+  function widgetMap() {
+    const map = {};
+    for (let d = 0; d < DAYS; d++) { const date = new Date(); date.setDate(date.getDate() + d); map[dayKey(date)] = S.timesFor(date); }
+    return map;
+  }
+
+  let applying = Promise.resolve();
+  const apply = () => (applying = applying.then(async () => {
+    if (N.widgets) N.widgets.setPrayerTimes(widgetMap());
+    if (!native) return;
+    const nt = N.notifications;
+    await nt.cancelRange(ID_LO, ID_HI - 10);          // rebuild from scratch so nothing is ever duplicated
+    if (!cfg.master) return;
+    await nt.ensureChannels();
+    const list = plan();
+    if (list.length) await nt.schedule(list);
+  }).catch(e => { note = 'Could not schedule alarms: ' + (e && e.message ? e.message : e); render(); }));
 
   async function turnOn() {
     if (!native) { cfg.master = true; save(); note = ''; render(); return; }
@@ -121,64 +120,53 @@
       note = 'Notifications are blocked for Noor. Allow them in Android Settings › Apps › Noor › Notifications.';
       render(); return;
     }
-    const exact = await nt.exactAlarm();
-    $('rmExact').hidden = exact === 'granted';
+    exactNeeded = (await nt.exactAlarm()) !== 'granted';
     cfg.master = true; save(); note = '';
-    try { await apply(); } catch (e) { note = 'Could not schedule alarms: ' + (e && e.message ? e.message : e); }
-    render();
+    render(); await apply();
   }
 
-  $('rmMaster').addEventListener('click', async () => {
-    if (cfg.master) {
-      cfg.master = false; save(); note = '';
-      try { await apply(); } catch (_) {}
-      render();
-    } else { await turnOn(); }
-  });
-  card.addEventListener('click', async e => {
-    const sw = e.target.closest('.rm-row .rm-switch');
-    const off = e.target.closest('#rmSeg button');
-    if (sw) {
-      cfg.on[sw.dataset.id] = !cfg.on[sw.dataset.id]; save();
-      try { await apply(); } catch (_) {} render();
-    } else if (off) {
-      cfg.offset = Number(off.dataset.off); save();
-      try { await apply(); } catch (_) {} render();
+  const audio = new Audio('audio/adhan.mp3');
+  audio.addEventListener('ended', () => { previewing = false; const b = root.querySelector('#rmPreview'); if (b) b.textContent = 'Preview Adhan'; });
+
+  root.addEventListener('click', async e => {
+    const el = e.target.closest('button'); if (!el) return;
+    if (el.id === 'rmMaster') { if (cfg.master) { cfg.master = false; save(); note = ''; render(); await apply(); } else await turnOn(); return; }
+    if (el.dataset.adhan) { cfg.on[el.dataset.adhan] = !cfg.on[el.dataset.adhan]; }
+    else if (el.dataset.jam) { cfg.jam[el.dataset.jam] = !cfg.jam[el.dataset.jam]; }
+    else if (el.dataset.sound) { const [p, v] = el.dataset.sound.split(':'); cfg.sound[p] = v; }
+    else if (el.dataset.pre !== undefined) { cfg.pre = Number(el.dataset.pre); }
+    else if (el.dataset.lead !== undefined) { cfg.lead = Number(el.dataset.lead); }
+    else if (el.id === 'rmPreview') {
+      if (previewing) { audio.pause(); audio.currentTime = 0; previewing = false; }
+      else { try { await audio.play(); previewing = true; } catch (_) { note = 'The Adhan preview could not play.'; } }
+      render(); return;
     }
-  });
-  $('rmTest').addEventListener('click', async () => {
-    if (!native) return;
-    const nt = N.notifications;
-    let perm = await nt.permission();
-    if (perm !== 'granted') perm = await nt.request();
-    if (perm !== 'granted') { note = 'Allow notifications first to test the alarm.'; render(); return; }
-    await nt.ensureChannel();
-    try {
-      await nt.schedule([{ id: TEST_ID, title: 'Noor test alarm', body: 'Your salah alarms are working.', at: Date.now() + 10000 }]);
-      toast('Test alarm in 10 seconds — you can lock the screen');
-    } catch (e) { note = 'Test failed: ' + (e && e.message ? e.message : e); render(); }
-  });
-  $('rmExact').addEventListener('click', async () => {
-    const r = await N.notifications.openExactAlarmSettings();
-    $('rmExact').hidden = r === 'granted';
+    else if (el.id === 'rmTestAdhan' || el.id === 'rmTestTone') {
+      const nt = N.notifications;
+      let perm = await nt.permission(); if (perm !== 'granted') perm = await nt.request();
+      if (perm !== 'granted') { note = 'Allow notifications first to test.'; render(); return; }
+      await nt.ensureChannels();
+      const adhan = el.id === 'rmTestAdhan';
+      try { await nt.schedule([{ id: adhan ? TEST_ADHAN : TEST_TONE, at: Date.now() + 10000, channel: adhan ? 'adhan' : 'tone', title: adhan ? 'Noor Adhan test' : 'Noor tone test', body: 'Your salah notifications are working.' }]); toast2('Test in 10 seconds. You can lock the screen.'); }
+      catch (err) { note = 'Test failed: ' + (err && err.message ? err.message : err); render(); }
+      return;
+    }
+    else if (el.id === 'rmExact') { exactNeeded = (await N.notifications.openExactAlarmSettings()) !== 'granted'; render(); return; }
+    else return;
+    save(); render(); await apply();
   });
 
-  window.addEventListener('noor:schedule', async () => {
-    render();
-    try { await apply(); } catch (_) {}
-  });
-
+  window.addEventListener('noor:schedule', () => { render(); apply(); });
   render();
-  // Re-apply once per launch so alarms self-heal after updates or cleared state.
+  // Rebuild once per launch so alarms self-heal after updates, date changes, time-zone changes or edits made elsewhere.
   (async () => {
     try {
       if (native && cfg.master) {
-        const perm = await N.notifications.permission();
-        if (perm !== 'granted') { cfg.master = false; save(); note = 'Notifications were turned off in Android settings.'; render(); return; }
-        const exact = await N.notifications.exactAlarm();
-        $('rmExact').hidden = exact === 'granted';
+        if ((await N.notifications.permission()) !== 'granted') { cfg.master = false; save(); note = 'Notifications were turned off in Android settings.'; render(); }
+        else { exactNeeded = (await N.notifications.exactAlarm()) !== 'granted'; render(); }
       }
       await apply();
     } catch (_) {}
   })();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') apply(); });
 })();
