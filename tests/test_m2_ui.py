@@ -18,8 +18,8 @@ with sync_playwright() as p:
     ev = pg.evaluate
     # ---------- navigation + scrolling ----------
     labels = ev("[...document.querySelectorAll('.nav-item small')].map(e=>e.textContent)")
-    ok('four tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'Settings'], str(labels))
-    for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'settingsScreen']:
+    ok('five tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'Explore', 'Settings'], str(labels))
+    for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'settingsScreen']:
         pg.click(f'.nav-item[data-screen="{sid}"]'); pg.wait_for_timeout(450)
         ev("window.scrollTo(0,0)"); pg.wait_for_timeout(100)
         h = ev("document.documentElement.scrollHeight")
@@ -41,7 +41,7 @@ with sync_playwright() as p:
     ok('Prayer settings button opens Settings › Salah', (pg.click('#pdSettings'), pg.wait_for_timeout(700), ev("document.querySelector('.screen.active').id=='settingsScreen' && document.getElementById('stSalah').open"))[2])
     # ---------- Settings structure ----------
     groups = ev("[...document.querySelectorAll('.st-group .st-title strong')].map(e=>e.textContent)")
-    ok('settings groups', groups == ['Account', 'Salah', 'Adhkar', 'Notifications', 'Appearance', 'Audio & Haptics', 'Data & Backup', 'About Noor'], str(groups))
+    ok('settings groups', groups == ['Account', 'Salah', 'Adhkar', 'Notifications', 'Appearance', 'Audio & Haptics', 'Data & Backup', 'About Naseem'], str(groups))
     ok('Salah settings 12-hour only', not TWELVE_BAD.findall(pg.inner_text('#stSalah .st-body')), str(TWELVE_BAD.findall(pg.inner_text('#stSalah .st-body')))[:80])
     # ---------- method / Asr ----------
     asr_h = ev("NoorSalah.timesFor(new Date()).asr"); fajr_k = ev("NoorSalah.timesFor(new Date()).fajr")

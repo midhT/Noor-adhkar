@@ -40,3 +40,13 @@ This delivery is a branded development foundation and implementation handover, n
 - Accent selection persists locally and is included in JSON backup/restore.
 - Accent variables apply to the existing theme tokens, so dark and light modes both inherit the selected colour.
 - This release does not claim that the remaining V4 blueprint features are implemented.
+
+
+## V4.0.2 first-pass feature expansion (2026-11-09)
+- Public app branding remains **Naseem (نسيم)**; repository/internal project identity remains Noor. Android application ID remains `com.noor.adhkar`.
+- Replaced the previous launcher artwork with a new mosque-and-crescent emerald emblem; updated SVG, Capacitor icon layers, splash artwork and Android monochrome icon.
+- Added an Explore hub. New roadmap cards are UI previews marked **Under development** and do not pretend to work.
+- Added a first-pass Zakat estimate: user-entered INR asset values, liabilities, manually verified nisab, lunar-year toggle and simple 2.5% estimate. It is educational only and is not a complete fiqh calculator.
+- Added a first-pass Qibla finder: bearing/distance from the Kaaba using saved prayer-city coordinates or device geolocation, plus a device-orientation compass where the device/browser exposes a supported sensor.
+- Neither new tool has been validated on a physical Android phone yet. Compass sensor support, location permission flow and sensor calibration require device testing. Zakat formulas require scholarly/fiqh review before release.
+- Home dashboard now uses the English countdown circle as a compact Qibla compass preview; the Arabic prayer-countdown circle is preserved. The home compass reflects the calculated bearing and follows the live sensor once compass access is enabled in the finder.

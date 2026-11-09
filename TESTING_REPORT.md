@@ -31,3 +31,10 @@ UI suite is now 57 checks; scheduling 16.
 - Prayer-engine comparison — 9,840 comparisons, all within 1.0 minute.
 - Playwright browser tests were blocked because the Chromium executable is unavailable in this environment.
 - APK build and real-device installation were not performed.
+
+
+## V4.0.2 first-pass tool checks
+- `node tests/test_new_tools.js`: 16 assertions passed for Zakat arithmetic (2.5% estimate, below-nisab, lunar-year gate, liabilities) and Qibla bearing/distance/cardinal direction validation.
+- `node --check` passed for the new tool scripts and changed app scripts; HTML parsing passed.
+- Existing prayer-engine regression: 9,840 comparisons; worst difference 0.55 minutes; all within the 1-minute test tolerance.
+- Full browser suite and Android APK build were not run in this environment: package installation timed out, and the local browser launch was blocked by the container. Compass/GPS behaviour still needs testing on a physical Android device.

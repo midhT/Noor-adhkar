@@ -54,3 +54,12 @@ Android only installs an APK over an existing app when the application ID **and 
 - Runtime checks passed for default emerald, preset selection, custom colour selection, persistence and CSS variable application.
 - Existing prayer-engine comparison: 9,840 comparisons passed within 1 minute.
 - Browser-driven scheduling/UI tests could not run here because the Playwright Chromium executable is not installed. No APK build or physical-device test is claimed.
+
+
+## V4.0.2 — Explore, Qibla and Zakat first pass
+- Added an Explore tab separating available tools from roadmap previews. Planned modules are labelled **Under development** and do not simulate unfinished behaviour.
+- Added a first-pass Qibla finder with Kaaba bearing/distance calculations, saved prayer-city coordinates, optional device location and device-orientation sensor support. The Home English countdown circle is now a Qibla compass preview; the Arabic prayer countdown remains.
+- Added a preliminary Zakat estimate using user-entered INR asset values, due liabilities, a manually verified nisab value and a lunar-year confirmation. The estimate applies 2.5% only when the simplified conditions are met.
+- Replaced the previous launcher artwork with an emerald mosque-and-crescent emblem.
+- The Android application ID remains `com.noor.adhkar`; build metadata advances to version 4.0.2 / versionCode 40002.
+- Physical-device checks are still required for compass sensor behaviour and GPS permissions. The Zakat estimator requires additional asset-specific and scholarly review before public release.

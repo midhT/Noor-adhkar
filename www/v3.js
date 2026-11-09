@@ -28,7 +28,7 @@
 
   // Add compact feature entry points to the home dashboard without replacing existing data.
   const home=$('homeScreen');
-  if(home){const section=document.createElement('section');section.className='v3-home';section.innerHTML='<div class="section-heading"><div><span class="eyebrow">EXPLORE NOOR</span><h2>More than a counter</h2></div></div><div class="v3-grid"><button class="v3-tile" data-go="salahScreen"><span class="tile-icon">۞</span><strong>Salah & Duas</strong><small>Learn each recitation and its meaning.</small></button><button class="v3-tile" data-go="progressScreen"><span class="tile-icon">✦</span><strong>Your journey</strong><small>Streaks, history and weekly consistency.</small></button></div>';
+  if(home){const section=document.createElement('section');section.className='v3-home';section.innerHTML='<div class="section-heading"><div><span class="eyebrow">EXPLORE NASEEM</span><h2>More than a counter</h2></div></div><div class="v3-grid"><button class="v3-tile" data-go="salahScreen"><span class="tile-icon">۞</span><strong>Salah & Duas</strong><small>Learn each recitation and its meaning.</small></button><button class="v3-tile" data-go="progressScreen"><span class="tile-icon">✦</span><strong>Your journey</strong><small>Streaks, history and weekly consistency.</small></button></div>';
     const stats=home.querySelector('.stats-grid'); if(stats)stats.insertAdjacentElement('afterend',section); else home.appendChild(section);
     section.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>switchScreen(b.dataset.go)));}
 })();

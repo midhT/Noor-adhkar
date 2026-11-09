@@ -5,8 +5,8 @@ on:
   push:
     branches:
       - main
-      - naseem-v4.0.1
-      - naseem-v4.0.2
+      - 'naseem-*'
+      - 'noor-*'
 
 permissions:
   contents: read

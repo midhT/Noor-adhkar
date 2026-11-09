@@ -61,12 +61,14 @@ with sync_playwright() as p:
     ok('slide direction class set', ev("document.querySelector('.screen.active').dataset.dir") == 'next')
     swipe(cdp, 330, 60, y=300); ok('swipe left inside Dhikr: Counter -> Adhkar panel', cur() == 'dhikrScreen' and ev("!document.getElementById('libraryScreen').hidden"))
     swipe(cdp, 330, 60, y=300); ok('swipe left again: -> Salah', cur() == 'salahScreen', cur())
+    swipe(cdp, 330, 60, y=300); ok('swipe left again: -> Explore', cur() == 'featuresScreen', cur())
     swipe(cdp, 330, 60, y=300); ok('swipe left again: -> Settings', cur() == 'settingsScreen', cur())
     swipe(cdp, 330, 60, y=300); ok('no wrap past the last tab', cur() == 'settingsScreen')
-    swipe(cdp, 60, 330, y=300); ok('swipe right: Settings -> Salah', cur() == 'salahScreen', cur())
-    ok('bottom nav follows swipe', ev("document.querySelector('.nav-item.active').dataset.screen") == 'salahScreen')
-    swipe(cdp, 60, 330, y=300); swipe(cdp, 60, 330, y=300)
-    ok('swipe right from Adhkar panel returns to Counter first', cur() == 'dhikrScreen' and ev("!document.getElementById('counterScreen').hidden"), cur())
+    swipe(cdp, 60, 330, y=300); ok('swipe right: Settings -> Explore', cur() == 'featuresScreen', cur())
+    ok('bottom nav follows swipe', ev("document.querySelector('.nav-item.active').dataset.screen") == 'featuresScreen')
+    swipe(cdp, 60, 330, y=300); ok('swipe right: Explore -> Salah', cur() == 'salahScreen', cur())
+    swipe(cdp, 60, 330, y=300); ok('swipe right: Salah -> Dhikr library', cur() == 'dhikrScreen' and ev("!document.getElementById('libraryScreen').hidden"), cur())
+    swipe(cdp, 60, 330, y=300); ok('swipe right from Adhkar panel returns to Counter first', cur() == 'dhikrScreen' and ev("!document.getElementById('counterScreen').hidden"), cur())
     h = ev("scrollY"); ok('mostly-vertical drag does not change tab', (swipe(cdp, 200, 230, y=300), cur() == 'dhikrScreen')[1])
     before = ev("state.count||0"); ev("document.getElementById('countButton').scrollIntoView({block:'center'})"); pg.wait_for_timeout(400)
     by = ev("(()=>{const r=document.getElementById('countButton').getBoundingClientRect();return r.y+r.height/2})()"); bx = ev("(()=>{const r=document.getElementById('countButton').getBoundingClientRect();return r.x+r.width*0.8})()")
@@ -90,7 +92,7 @@ with sync_playwright() as p:
     for w in (320, 360, 393, 412, 600):
         c2 = b.new_context(viewport={'width': w, 'height': 800}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata'); q = c2.new_page(); q.goto(srv.url()); q.wait_for_timeout(2300)
         bad = []
-        for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'settingsScreen']:
+        for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'settingsScreen']:
             q.click(f'.nav-item[data-screen="{sid}"]'); q.wait_for_timeout(450)
             if sid == 'settingsScreen':
                 for g in ['stAccount', 'stSalah', 'stNotifications', 'stAppearance']:

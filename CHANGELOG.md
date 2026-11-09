@@ -68,3 +68,11 @@ Baseline: V3.2 + the scroll fix. This milestone changes structure and data safet
 - Added persistent seven-choice accent colour settings (six presets plus custom).
 - Added live accent application for dark and light themes.
 - Included accent preferences in backup and restore.
+
+## 4.0.2 — Naseem UI and tools preview
+- Added Qibla finder and preliminary Zakat calculator screens.
+- Added Explore hub with honest under-development labels for planned features.
+- Replaced launcher artwork with the mosque-and-crescent Naseem emblem.
+- Qibla and Zakat are first-pass functional tools; their sensor, permission and fiqh edge cases remain to be debugged and reviewed.
+- Home's English countdown ring now shows the Qibla direction; the Arabic prayer-countdown ring is retained.
+- Version metadata is 4.0.2, and the APK workflow now listens to `naseem-*` and `noor-*` branches as well as `main`.

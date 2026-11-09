@@ -72,10 +72,10 @@
     $('pdNextMeta').textContent = `${next.label} in ${remaining}${tomorrow ? ' · tomorrow' : ''}`;
     $('pdNextJamaat').textContent = `Adhan ${fmt(nextTimes[next.id])} · Jamaat ${fmt(jam)}`;
     $('pdNextArabic').textContent = next.ar;
-    $('pdRingPrayer').textContent = next.label; $('pdRingTime').textContent = fmt(nextTimes[next.id]); $('pdRingRemain').textContent = `in ${remaining}`;
+    if ($('pdRingPrayer')) $('pdRingPrayer').textContent = next.label; if ($('pdRingTime')) $('pdRingTime').textContent = fmt(nextTimes[next.id]); if ($('pdRingRemain')) $('pdRingRemain').textContent = `in ${remaining}`;
     $('pdRingTimeTwo').textContent = fmt(nextTimes[next.id]); $('pdRingArabic').textContent = next.ar; $('pdRingRemainTwo').textContent = `in ${remaining}`;
     const angle = Math.max(12, Math.min(348, (1 - diff / 86400) * 360));
-    $('pdRingOne').style.setProperty('--ring-angle', `${angle}deg`); $('pdRingTwo').style.setProperty('--ring-angle', `${angle}deg`);
+    if ($('pdRingOne')) $('pdRingOne').style.setProperty('--ring-angle', `${angle}deg`); if ($('pdRingTwo')) $('pdRingTwo').style.setProperty('--ring-angle', `${angle}deg`);
     const st = S.get();
     $('pdDate').textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
     $('pdPlace').textContent = st.mode === 'manual' ? 'YOUR OWN TIMES' : st.loc.name.toUpperCase();

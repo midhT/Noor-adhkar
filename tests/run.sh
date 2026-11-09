@@ -3,6 +3,7 @@
 # Needs: node + `npm install` already done, and `pip install playwright && playwright install chromium`.
 set -euo pipefail
 cd "$(dirname "$0")"
+node test_new_tools.js
 rm -rf .build && mkdir -p .build && cp -r ../www .build/wwwtest
 S=$PWD/stubs
 ESB="npx --no-install esbuild"; command -v esbuild >/dev/null 2>&1 && ESB=esbuild

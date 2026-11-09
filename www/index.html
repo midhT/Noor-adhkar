@@ -8,6 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="features.css">
   <title>Naseem — Islamic Daily Companion</title>
 </head>
 <body class="intro-pending">
@@ -96,6 +97,73 @@
       </section>
 
       <section class="screen" id="salahScreen"></section>
+
+      <section class="screen" id="featuresScreen">
+        <div class="screen-heading"><span class="eyebrow">THE NASEEM EXPERIENCE</span><h1>Explore</h1><p class="muted">Tools available now, with more being prepared thoughtfully.</p></div>
+        <div class="feature-status-row"><span class="status-dot"></span><span>Available now</span><small>2 new tools · early preview</small></div>
+        <div class="feature-grid">
+          <button class="feature-card feature-live" type="button" data-open-feature="qiblaScreen"><span class="feature-icon">⌖</span><span class="feature-name">Qibla finder</span><span class="feature-desc">Find the direction of the Kaaba using your location and compass.</span><span class="feature-state live">Available now ↗</span></button>
+          <button class="feature-card feature-live" type="button" data-open-feature="zakatScreen"><span class="feature-icon">◈</span><span class="feature-name">Zakat calculator</span><span class="feature-desc">Estimate 2.5% on eligible wealth above your entered nisab.</span><span class="feature-state live">Available now ↗</span></button>
+        </div>
+        <div class="section-heading"><div><span class="eyebrow">ON THE ROADMAP</span><h2>More is on the way</h2></div><span class="pill">IN DEVELOPMENT</span></div>
+        <div class="feature-grid" id="plannedFeatureGrid">
+          <button class="feature-card" type="button" data-planned="Hijri calendar"><span class="feature-icon">▦</span><span class="feature-name">Hijri calendar</span><span class="feature-desc">Month view, date conversion, Ramadan and Islamic occasions.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Dua library"><span class="feature-icon">۞</span><span class="feature-name">Dua library</span><span class="feature-desc">Organised duas with Arabic, meaning, references and favourites.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Structured Adhkar"><span class="feature-icon">◌</span><span class="feature-name">Guided Adhkar sessions</span><span class="feature-desc">Structured morning and evening routines with authentic texts and repetitions.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Salah learning centre"><span class="feature-icon">☾</span><span class="feature-name">Expanded Salah learning</span><span class="feature-desc">Wudu, ghusl, guided lessons and recognised school-specific guidance.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Masjid finder"><span class="feature-icon">⌂</span><span class="feature-name">Masjid finder</span><span class="feature-desc">Nearby masjids, multiple Jamaat schedules and saved locations.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Widgets studio"><span class="feature-icon">▣</span><span class="feature-name">Widgets studio</span><span class="feature-desc">Customisable prayer, Dhikr and daily reminder widgets.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Zakat records"><span class="feature-icon">◫</span><span class="feature-name">Zakat records</span><span class="feature-desc">Yearly records, asset history and payment tracking.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Islamic occasions"><span class="feature-icon">✧</span><span class="feature-name">Islamic occasions</span><span class="feature-desc">Ramadan planning, important dates and gentle reminders.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Madhhab and tradition profiles"><span class="feature-icon">◇</span><span class="feature-name">Tradition profiles</span><span class="feature-desc">Clear learning paths for recognised Islamic traditions.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Daily ayah reflections"><span class="feature-icon">۝</span><span class="feature-name">Daily ayah reflection</span><span class="feature-desc">A carefully sourced Quranic reminder within the Home experience.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card" type="button" data-planned="Prayer history"><span class="feature-icon">◷</span><span class="feature-name">Prayer history</span><span class="feature-desc">Private prayer completion logs and consistent progress tracking.</span><span class="feature-state planned">Under development</span></button>
+        </div>
+        <div class="feature-footnote">Planned features are interface previews only. They are not active services yet, and their content will be reviewed before release.</div>
+        <button class="feature-link" type="button" data-open-feature="progressScreen">View your remembrance progress ↗</button>
+      </section>
+
+      <section class="screen" id="qiblaScreen">
+        <button class="back-link" type="button" data-back="featuresScreen">‹ Explore</button>
+        <div class="screen-heading"><span class="eyebrow">DIRECTION OF PRAYER</span><h1>Qibla finder</h1><p class="muted">Point your phone towards the Kaaba in Makkah.</p></div>
+        <div class="qibla-card card-surface">
+          <div class="qibla-topline"><span class="eyebrow">LIVE COMPASS</span><span class="qibla-compass-state" id="qiblaCompassState">Compass not enabled</span></div>
+          <div class="qibla-compass-wrap"><div class="qibla-compass" id="qiblaCompass">
+            <div class="qibla-rose" id="qiblaRose"><span class="qdir q-n">N</span><span class="qdir q-e">E</span><span class="qdir q-s">S</span><span class="qdir q-w">W</span><span class="qibla-tick tick-1"></span><span class="qibla-tick tick-2"></span><span class="qibla-tick tick-3"></span><span class="qibla-tick tick-4"></span></div>
+            <div class="qibla-needle" id="qiblaNeedle"><span class="needle-head"></span><span class="needle-tail"></span></div>
+            <div class="qibla-centre">⌂</div>
+          </div></div>
+          <div class="qibla-reading"><strong id="qiblaBearing">—°</strong><span id="qiblaCardinal">Waiting for location</span></div>
+          <div class="qibla-alignment" id="qiblaAlignment">Enable the compass to align the direction.</div>
+        </div>
+        <div class="qibla-info-grid"><div class="qibla-info card-surface"><span class="eyebrow">YOUR LOCATION</span><strong id="qiblaPlace">Prayer location</strong><small id="qiblaCoords">Approximate saved city coordinates</small></div><div class="qibla-info card-surface"><span class="eyebrow">DISTANCE TO MAKKAH</span><strong id="qiblaDistance">— km</strong><small>Approximate great-circle distance</small></div></div>
+        <div class="qibla-actions"><button class="primary-button" type="button" id="qiblaEnableCompass">Enable compass</button><button class="secondary-button" type="button" id="qiblaUseLocation">Use device location</button></div>
+        <p class="tiny-note">Compass readings depend on your phone’s sensors and may need calibration. Keep the phone flat, away from magnetic objects, and compare with a trusted Qibla reference if the reading seems unstable. Saved prayer-city coordinates are used until device location is granted.</p>
+      </section>
+
+      <section class="screen" id="zakatScreen">
+        <button class="back-link" type="button" data-back="featuresScreen">‹ Explore</button>
+        <div class="screen-heading"><span class="eyebrow">A PRELIMINARY ESTIMATE</span><h1>Zakat calculator</h1><p class="muted">Enter your eligible assets and the nisab value you have verified.</p></div>
+        <div class="zakat-note card-surface"><strong>Before you calculate</strong><p>This first version uses a simple 2.5% estimate. Nisab prices are not fetched live, and asset rules can differ by school and situation. Enter a current nisab value from a trusted local source.</p></div>
+        <div class="zakat-form card-surface">
+          <div class="zakat-section-title"><span>01</span><div><strong>Eligible assets</strong><small>Enter current values in Indian rupees (₹)</small></div></div>
+          <label class="zakat-field">Cash and bank balances<input type="number" min="0" step="1" inputmode="decimal" id="zCash" placeholder="0"></label>
+          <label class="zakat-field">Gold value<input type="number" min="0" step="1" inputmode="decimal" id="zGold" placeholder="0"></label>
+          <label class="zakat-field">Silver value<input type="number" min="0" step="1" inputmode="decimal" id="zSilver" placeholder="0"></label>
+          <label class="zakat-field">Investments held for trade / eligible shares<input type="number" min="0" step="1" inputmode="decimal" id="zInvestments" placeholder="0"></label>
+          <label class="zakat-field">Business inventory / trade goods<input type="number" min="0" step="1" inputmode="decimal" id="zInventory" placeholder="0"></label>
+          <label class="zakat-field">Money owed to you and expected to be repaid<input type="number" min="0" step="1" inputmode="decimal" id="zReceivable" placeholder="0"></label>
+          <div class="zakat-section-title zakat-later"><span>02</span><div><strong>Deductible liabilities</strong><small>Debts or payments currently due</small></div></div>
+          <label class="zakat-field">Short-term debts / due liabilities<input type="number" min="0" step="1" inputmode="decimal" id="zDebts" placeholder="0"></label>
+          <div class="zakat-section-title zakat-later"><span>03</span><div><strong>Nisab and timing</strong><small>Use the threshold appropriate to your chosen guidance</small></div></div>
+          <label class="zakat-field">Verified nisab value (₹)<input type="number" min="1" step="1" inputmode="decimal" id="zNisab" placeholder="Enter current nisab"></label>
+          <label class="zakat-check"><input type="checkbox" id="zHaul"><span><strong>A full lunar year has passed</strong><small>Tick only if the applicable lunar-year condition is met for these assets.</small></span></label>
+          <div class="zakat-result" aria-live="polite"><span class="eyebrow">ESTIMATED ZAKAT</span><strong id="zResult">₹0</strong><p id="zResultNote">Enter your assets and nisab to calculate.</p><div class="zakat-result-meta"><span>Net eligible wealth</span><b id="zNet">₹0</b></div><div class="zakat-result-meta"><span>Calculation rate</span><b>2.5%</b></div></div>
+          <div class="zakat-actions"><button class="primary-button" type="button" id="zCalculate">Calculate</button><button class="secondary-button" type="button" id="zReset">Clear</button></div>
+        </div>
+        <p class="tiny-note">This is an educational estimate, not a personal fatwa or full fiqh assessment. It does not calculate every asset category, business structure, agricultural obligation, pension, jewellery use, or school-specific deduction. Check your circumstances with a qualified scholar before paying.</p>
+      </section>
+
       <section class="screen" id="progressScreen">
         <button class="back-link" type="button" data-back="homeScreen">‹ Home</button>
         <div class="screen-heading"><span class="eyebrow">STEADY, NOT PERFECT</span><h1>Your journey</h1><p class="muted">A private record of your remembrance, stored on this device.</p></div>
@@ -155,6 +223,7 @@
       <button class="nav-item active" data-screen="homeScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4l8 7.2V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg></span><small>Home</small></button>
       <button class="nav-item" data-screen="dhikrScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/></svg></span><small>Dhikr</small></button>
       <button class="nav-item" data-screen="salahScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c0 2.2-2.6 3-2.6 5.2h5.2c0-2.2-2.6-3-2.6-5.2z"/><path d="M6 20.5v-7.3a6 6 0 0 1 12 0v7.3"/><path d="M3.5 20.5h17"/></svg></span><small>Salah</small></button>
+      <button class="nav-item" data-screen="featuresScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></span><small>Explore</small></button>
       <button class="nav-item" data-screen="settingsScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.8 5.8l1.5 1.5M16.7 16.7l1.5 1.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5"/></svg></span><small>Settings</small></button>
     </nav>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -173,5 +242,8 @@
   <script src="profile.js"></script>
   <script src="settings.js"></script>
   <script src="motion.js"></script>
+  <script src="qibla-core.js"></script>
+  <script src="zakat-core.js"></script>
+  <script src="features.js"></script>
 </body>
 </html>
