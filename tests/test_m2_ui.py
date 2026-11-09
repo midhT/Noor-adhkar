@@ -96,8 +96,12 @@ with sync_playwright() as p:
     open_group(pg, 'stAccount')
     pg.fill('#acName', 'Mir Midhat'); pg.wait_for_timeout(200)
     ok('name shown in greeting and stored', 'Assalamu alaikum, Mir.' in pg.evaluate("document.querySelector('.greeting .muted').textContent") and ev("JSON.parse(localStorage.getItem('noorProfileV1')).name") == 'Mir Midhat')
-    from PIL import Image
-    img = os.path.join(BUILD, 'face.png'); Image.new('RGB', (800, 500), (200, 120, 40)).save(img)
+    import zlib, struct
+    def png(w, h, rgb):  # dependency-free PNG writer (no Pillow needed in CI)
+        raw = b''.join(b'\x00' + bytes(rgb) * w for _ in range(h))
+        ch = lambda t, d: struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t + d) & 0xffffffff)
+        return b'\x89PNG\r\n\x1a\n' + ch(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)) + ch(b'IDAT', zlib.compress(raw)) + ch(b'IEND', b'')
+    img = os.path.join(BUILD, 'face.png'); open(img, 'wb').write(png(800, 500, (200, 120, 40)))
     pg.set_input_files('#acPhoto', img); pg.wait_for_timeout(700)
     prof = ev("JSON.parse(localStorage.getItem('noorProfileV1'))")
     ok('profile picture stored small and square', prof['photo'].startswith('data:image/jpeg') and len(prof['photo']) < 60000 and ev("document.querySelector('#acAvatar img').naturalWidth") == 256, str(len(prof['photo'])))

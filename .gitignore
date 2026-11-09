@@ -6,12 +6,3 @@ android/build/
 node_modules/
 tests/.build/
 www/native.bundle.js
-
-# Local Android configuration and signing keys
-android/local.properties
-android/app/*.keystore
-android/app/*.jks
-
-# Python cache
-__pycache__/
-*.pyc
