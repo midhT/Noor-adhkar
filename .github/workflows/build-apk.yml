@@ -1,9 +1,11 @@
-name: Build Noor APK
+name: Build Naseem APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - naseem-v4.0.1
 
 permissions:
   contents: read
@@ -11,8 +13,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out project
+      - name: Checkout project
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -35,10 +38,10 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Add Noor widgets, alarm permissions and native plugin
+      - name: Patch Android native components
         run: node scripts/patch-android.mjs
 
-      - name: Generate launcher icon and splash assets
+      - name: Generate launcher assets
         run: npx --yes @capacitor/assets generate --android
 
       - name: Sync Capacitor
@@ -48,9 +51,9 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK artifact
+      - name: Upload Naseem APK
         uses: actions/upload-artifact@v4
         with:
-          name: Noor-debug-APK
+          name: Naseem-debug-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
