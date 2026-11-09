@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="noor_prayer_widget_label">Noor · Prayer times</string>
+    <string name="noor_prayer_widget_desc">Next prayer with a live countdown and today\'s five times.</string>
+    <string name="noor_tasbeeh_widget_label">Noor · Tasbeeh</string>
+    <string name="noor_tasbeeh_widget_desc">Tap to count your dhikr straight from the home screen.</string>
+</resources>
