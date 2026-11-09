@@ -24,10 +24,15 @@ const permissions = [
   '<uses-permission android:name="android.permission.VIBRATE" />',
   '<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />',
   '<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />',
-  '<uses-permission android:name="android.permission.USE_EXACT_ALARM" />'
+  '<uses-permission android:name="android.permission.USE_EXACT_ALARM" />',
+  // Optional GPS prayer times. Noor works without location; this only lets Android ask.
+  '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
+  '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
+  '<uses-feature android:name="android.hardware.location.gps" android:required="false" />'
 ];
 for (const line of permissions) {
   const name = line.match(/android:name="([^"]+)"/)[1];
+  // (the same loop adds <uses-feature>; it is matched by name too)
   if (!manifest.includes(name)) manifest = manifest.replace('</manifest>', `    ${line}\n</manifest>`);
 }
 

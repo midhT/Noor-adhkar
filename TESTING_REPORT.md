@@ -1,28 +1,24 @@
-# Noor V3.3 — Milestone 1 testing report
+# Noor V3.3 — Milestone 2 / 2.1 testing report
 
-Method: phone-sized Chromium (393×852, touch), real touch-drag gestures, native Capacitor layer replaced by recording stubs (`tests/`). Run with `tests/run.sh`.
-**Not tested:** anything that needs a real Android device, the Android SDK or GitHub Actions — see "Not verified".
+## Verified (automated, run `bash tests/run.sh`)
+- 58 UI checks, all passing: five tabs, touch scrolling on every screen, Kashmir defaults pre-filled in 12-hour time, Home has no editor, Settings groups, method/Asr/city/GPS (mocked fix)/±minutes/reset, Jamaat offset and fixed time, My own times, account name and photo, user-chosen audio, backup export and 10 kinds of rejected restore, restore of Salah/profile/progress.
+- 16 scheduling checks, all passing (mocked notification plugin): three channels, Adhan sound file, 21-day horizon, unique ids, no duplicates after changes, Fajr silent, heads-up and Jamaat separate, reschedule on prayer edits, cancel on off, test alarm, 21 dated widget entries.
+- Calculation engine vs independent NOAA-series reference: 9,840 comparisons across 5 cities, 4 methods, 2 Asr modes; worst 0.55 min.
 
-## Verified (automated, 50 UI checks + 19 reminder/widget-sync checks, all passing)
-- Exactly five tabs in the required order; Focus gone; each tab opens its screen.
-- Touch scrolling works on Home, Adhkar, Tasbeeh, Salah and Settings; no horizontal overflow at 320, 360, 393 and 412 px.
-- Progress reachable from Home, back link works, Home tab stays highlighted.
-- Home shows only 12-hour times; the editor stores 12 AM as 00:00 and 12 PM as 12:00; edits display as AM/PM; notification text is 12-hour.
-- Seven Settings groups present; creator, version and Instagram placeholder shown; theme switch persists.
-- Missing `night_pad.wav` is reported honestly; a chosen audio file plays and stops.
-- Backup export file shape; nine kinds of bad file are rejected with no data change; declining the confirmation changes nothing; the confirmation summarises the backup.
-- Reset → Restore round trip returns identical history and prayer times; Undo works after restore, reset and erase; Erase asks twice.
-- Native path: export goes through file write + share sheet; alarms scheduled per prayer, offsets wrap midnight, edits reschedule, master-off cancels, denied permission reverts with an explanation; widget taps merge into the app counter.
+## Added in 2.1 (automated, 40 checks, all passing)
+Merged Dhikr tab, themed sheet menus (open, choose, close by tap/drag, no un-themed select left), swipe navigation incl. ignored cases, Smooth/Full mode persistence, no horizontal overflow at 320/360/393/412/600 px.
+UI suite is now 57 checks; scheduling 16.
 
-## Not verified (needs a device or CI)
-- The APK builds (new plugins, Java widget code, manifest patch have never been compiled).
-- Alarms actually ring when the phone is locked, after reboot, and under battery optimisation.
-- Both widgets on a home screen, resizing and refresh; the 12-hour widget layout.
-- The Android share sheet for backups; file picker for restore on a real WebView.
-- GPS, prayer calculation, Jamaat, Adhan audio, Adhkar collections, Tasbeeh presets, new streak logic, quote widget, update system, release signing — **not built yet** (Milestones 2–4).
+## Not verified (needs a real phone / CI)
+- APK build in GitHub Actions.
+- Alarms ringing with screen locked, after reboot, under battery restrictions.
+- Full-length Adhan as a channel sound (Android may shorten it; Tone is the fallback).
+- Location permission prompt inside the Android WebView.
+- Real-device smoothness (Samsung A17 5G) and swipe feel; automated tests cannot measure frame rate.
+- Instagram link opening the Instagram app/browser from the WebView.
+- Widgets (prayer, tasbeeh) on a launcher; themed monochrome icon.
+- Agreement with local Kashmir mosque timetables (they may differ by a few minutes; use adjustments).
 
-## Known issues found (not fixed yet)
-- Choosing a different dhikr in Tasbeeh resets the live count without saving it as a session.
-- Routine cards on Home are manual "mark complete" toggles, not tied to actually completing a collection (Milestone 3).
-- Streak is recalculated from `goalComplete` flags and has no per-user goal yet (Milestone 3).
-- Status-bar icon style may be wrong on dark backgrounds; check on device.
+## Known limits
+- High-latitude fallback is night-middle only.
+- USE_EXACT_ALARM may need justification if published on Google Play.
