@@ -50,3 +50,10 @@ This delivery is a branded development foundation and implementation handover, n
 - Added a first-pass Qibla finder: bearing/distance from the Kaaba using saved prayer-city coordinates or device geolocation, plus a device-orientation compass where the device/browser exposes a supported sensor.
 - Neither new tool has been validated on a physical Android phone yet. Compass sensor support, location permission flow and sensor calibration require device testing. Zakat formulas require scholarly/fiqh review before release.
 - Home dashboard now uses the English countdown circle as a compact Qibla compass preview; the Arabic prayer-countdown circle is preserved. The home compass reflects the calculated bearing and follows the live sensor once compass access is enabled in the finder.
+
+
+## V4.0.3 progress (2026-11-10)
+- Implemented and covered by automated browser/unit tests (headless Chromium, not a real phone): accent in light+dark, Zakat tab, live Home Qibla heading, Adhkar sessions with per-item counters, automatic completion, both-sessions streak, day rollover, reset and backup validation for session records.
+- Not verified on device: compass sensor behaviour on the Samsung WebView, six-tab nav ergonomics, haptics.
+- Content caveat: the Adhkar list is a starter set with `verified:false` on every entry.
+- Still planned: nav drag gesture, Android back handling (needs `@capacitor/app`), Home dashboard additions, Dhikr enhancements, statistics, achievements, personalisation.

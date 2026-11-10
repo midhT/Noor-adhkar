@@ -18,8 +18,8 @@ with sync_playwright() as p:
     ev = pg.evaluate
     # ---------- navigation + scrolling ----------
     labels = ev("[...document.querySelectorAll('.nav-item small')].map(e=>e.textContent)")
-    ok('five tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'Explore', 'Settings'], str(labels))
-    for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'settingsScreen']:
+    ok('six tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'Explore', 'Zakat', 'Settings'], str(labels))
+    for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen']:
         pg.click(f'.nav-item[data-screen="{sid}"]'); pg.wait_for_timeout(450)
         ev("window.scrollTo(0,0)"); pg.wait_for_timeout(100)
         h = ev("document.documentElement.scrollHeight")

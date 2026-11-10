@@ -31,14 +31,17 @@
   }
   function apply(value) {
     const color = validHex(value.color) ? value.color : PRESETS.emerald;
-    const root = document.documentElement;
+    // body.light in theme.css redefines --gold/--accent on <body>, which shadows anything set on <html>.
+    // Set the variables on both so the chosen accent wins in light and dark themes.
     const dark = shade(color, .72);
-    root.style.setProperty('--gold', color);
-    root.style.setProperty('--gold2', dark);
-    root.style.setProperty('--accent', color);
-    root.style.setProperty('--on-accent', contrast(color));
-    root.style.setProperty('--accent-soft', `color-mix(in srgb, ${color} 14%, transparent)`);
-    root.style.setProperty('--accent-line', `color-mix(in srgb, ${color} 28%, transparent)`);
+    [document.documentElement, document.body].filter(Boolean).forEach(root => {
+      root.style.setProperty('--gold', color);
+      root.style.setProperty('--gold2', dark);
+      root.style.setProperty('--accent', color);
+      root.style.setProperty('--on-accent', contrast(color));
+      root.style.setProperty('--accent-soft', `color-mix(in srgb, ${color} 14%, transparent)`);
+      root.style.setProperty('--accent-line', `color-mix(in srgb, ${color} 28%, transparent)`);
+    });
     document.querySelectorAll('.accent-swatch span').forEach(el => {
       if (el.parentElement?.dataset.accent === value.preset) el.style.setProperty('--swatch', color);
     });

@@ -142,7 +142,6 @@
       </section>
 
       <section class="screen" id="zakatScreen">
-        <button class="back-link" type="button" data-back="featuresScreen">‹ Explore</button>
         <div class="screen-heading"><span class="eyebrow">A PRELIMINARY ESTIMATE</span><h1>Zakat calculator</h1><p class="muted">Enter your eligible assets and the nisab value you have verified.</p></div>
         <div class="zakat-note card-surface"><strong>Before you calculate</strong><p>This first version uses a simple 2.5% estimate. Nisab prices are not fetched live, and asset rules can differ by school and situation. Enter a current nisab value from a trusted local source.</p></div>
         <div class="zakat-form card-surface">
@@ -162,6 +161,15 @@
           <div class="zakat-actions"><button class="primary-button" type="button" id="zCalculate">Calculate</button><button class="secondary-button" type="button" id="zReset">Clear</button></div>
         </div>
         <p class="tiny-note">This is an educational estimate, not a personal fatwa or full fiqh assessment. It does not calculate every asset category, business structure, agricultural obligation, pension, jewellery use, or school-specific deduction. Check your circumstances with a qualified scholar before paying.</p>
+      </section>
+
+      <section class="screen" id="adhkarSessionScreen">
+        <button class="back-link" type="button" data-back="homeScreen">‹ Home</button>
+        <div class="screen-heading"><span class="eyebrow" id="asEyebrow">ADHKAR</span><h1 id="asTitle">Adhkar</h1><p class="muted" id="asSub"></p></div>
+        <div class="as-progress"><div class="progress-track"><div id="asBar"></div></div><div class="as-progress-meta"><span id="asItems"></span><button type="button" class="subtle-link" id="asUndo">Undo last count</button></div></div>
+        <div class="as-done card-surface" id="asDone" hidden role="status"><strong>✓ Alhamdulillah</strong><p id="asDoneText"></p></div>
+        <div id="asList"></div>
+        <p class="tiny-note">This is a starter list. Texts, counts and sources are marked “to be verified” until reviewed.</p>
       </section>
 
       <section class="screen" id="progressScreen">
@@ -224,6 +232,7 @@
       <button class="nav-item" data-screen="dhikrScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/></svg></span><small>Dhikr</small></button>
       <button class="nav-item" data-screen="salahScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c0 2.2-2.6 3-2.6 5.2h5.2c0-2.2-2.6-3-2.6-5.2z"/><path d="M6 20.5v-7.3a6 6 0 0 1 12 0v7.3"/><path d="M3.5 20.5h17"/></svg></span><small>Salah</small></button>
       <button class="nav-item" data-screen="featuresScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></span><small>Explore</small></button>
+      <button class="nav-item" data-screen="zakatScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 20 8v8l-8 4.5L4 16V8z"/><path d="M12 8.5v7M9.5 10.5h4a1.6 1.6 0 0 1 0 3h-3a1.6 1.6 0 0 0 0 3h4"/></svg></span><small>Zakat</small></button>
       <button class="nav-item" data-screen="settingsScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.8 5.8l1.5 1.5M16.7 16.7l1.5 1.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5"/></svg></span><small>Settings</small></button>
     </nav>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -232,6 +241,8 @@
   <script src="intro.js"></script>
   <script src="native.bundle.js"></script>
   <script src="sheet.js"></script>
+  <script src="adhkar-core.js"></script>
+  <script src="adhkar-data.js"></script>
   <script src="app.js"></script>
   <script src="v3.js"></script>
   <script src="time12.js"></script>

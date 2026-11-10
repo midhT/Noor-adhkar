@@ -1,0 +1,34 @@
+/* Starter Morning/Evening adhkar set.
+   IMPORTANT: this is a deliberately small starter list. The Arabic text, counts and references were entered
+   by the developer assistant and have NOT yet been verified by a scholar or against a printed source (verified:false).
+   Verify each entry, then set verified:true and extend the list. Only items that read identically in the
+   morning and the evening are included; items with morning/evening wording differences must be added as separate entries. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.NaseemAdhkarData = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  const SHARED = [
+    { id: 'ayat-al-kursi', title: 'Ayat al-Kursi', count: 1, verified: false,
+      arabic: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ',
+      meaning: 'Surah Al-Baqarah, verse 255.', source: 'Qur’an 2:255' },
+    { id: 'ikhlas', title: 'Surah Al-Ikhlas', count: 3, verified: false,
+      arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ اللَّهُ الصَّمَدُ لَمْ يَلِدْ وَلَمْ يُولَدْ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ',
+      meaning: 'Surah 112, recited three times.', source: 'Qur’an 112 · Abu Dawud 5082, at-Tirmidhi 3575' },
+    { id: 'falaq', title: 'Surah Al-Falaq', count: 3, verified: false,
+      arabic: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ مِن شَرِّ مَا خَلَقَ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ',
+      meaning: 'Surah 113, recited three times.', source: 'Qur’an 113 · Abu Dawud 5082, at-Tirmidhi 3575' },
+    { id: 'nas', title: 'Surah An-Nas', count: 3, verified: false,
+      arabic: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَٰهِ النَّاسِ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ مِنَ الْجِنَّةِ وَالنَّاسِ',
+      meaning: 'Surah 114, recited three times.', source: 'Qur’an 114 · Abu Dawud 5082, at-Tirmidhi 3575' },
+    { id: 'bismillah-protection', title: 'Protection from harm', count: 3, verified: false,
+      arabic: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ',
+      meaning: 'In the name of Allah, with whose name nothing on earth or in heaven can cause harm, and He is the All-Hearing, the All-Knowing.', source: 'Abu Dawud 5088, at-Tirmidhi 3388' },
+    { id: 'tasbih-100', title: 'Glorify Allah', count: 100, verified: false,
+      arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+      meaning: 'Glory and praise be to Allah.', source: 'Muslim 2692' }
+  ];
+  const sessions = { morning: SHARED, evening: SHARED };
+  return { sessions, items: which => sessions[which] || [], starterSet: true };
+});

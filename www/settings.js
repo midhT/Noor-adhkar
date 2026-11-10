@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const VERSION = '4.0.2';
+  const VERSION = '4.0.3';
   const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1', 'noorSalahV1', 'noorProfileV1', 'noorAccentV1'];
   const SAFETY = 'noorSafetyBackupV1';
   const MAX_BYTES = 5 * 1024 * 1024;
@@ -95,7 +95,7 @@
     }
     const p = parsed['noor-adhkar-v1'];
     if (p) {
-      for (const f of ['days', 'counts', 'completed']) if (f in p && !isObj(p[f])) return fail(`Progress data is damaged (${f}).`);
+      for (const f of ['days', 'counts', 'completed', 'adhkar']) if (f in p && !isObj(p[f])) return fail(`Progress data is damaged (${f}).`);
       if ('sessions' in p && !Array.isArray(p.sessions)) return fail('Progress data is damaged (sessions).');
       for (const [d, v] of Object.entries(p.days || {})) if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !isObj(v)) return fail('Progress history contains an invalid day.');
       for (const [n, v] of Object.entries(p.counts || {})) if (!Number.isFinite(v) || v < 0) return fail(`Progress data is damaged (count for ${n}).`);
@@ -192,7 +192,7 @@
   $('stResetProgress').addEventListener('click', () => {
     if (!confirm('Reset all progress?\n\nThis clears your counts, sessions, streaks and history. Your settings and prayer times stay. A safety copy is kept so you can undo.')) return;
     if (!keepSafetyCopy()) { note('Reset stopped: not enough space to keep a safety copy.', true); return; }
-    Object.assign(state, { counts: {}, sessions: [], days: {}, completed: {}, streak: 0, best: 0, count: 0, date: null });
+    Object.assign(state, { counts: {}, sessions: [], days: {}, completed: {}, adhkar: {}, streak: 0, best: 0, count: 0, date: null });
     save(); renderAll(); renderUndo(); note('Progress reset. You can undo this from Data & Backup.'); say('Progress reset');
   });
   $('stEraseAll').addEventListener('click', () => {

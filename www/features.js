@@ -145,4 +145,16 @@
   $('qiblaUseLocation')?.addEventListener('click',useDeviceLocation);
   window.addEventListener('noor:schedule',()=>{if(location.source==='saved')savedPrayerLocation();});
   savedPrayerLocation();
+
+  // Home compass: always attach the sensor listeners at launch so the Home arrow shows the real Qibla,
+  // not just the bearing from "up". Where a platform requires a permission prompt (iOS-style), these listeners
+  // simply receive no events until the user taps Enable on the Qibla screen, which still handles the prompt.
+  // Do not gate on typeof requestPermission: recent Chromium/WebView builds expose it without needing a prompt.
+  function autoStartCompass(){
+    if(!('DeviceOrientationEvent' in window) || sensorStarted)return;
+    window.addEventListener('deviceorientationabsolute',applyHeading,true);
+    window.addEventListener('deviceorientation',applyHeading,true);
+    sensorStarted=true;
+  }
+  autoStartCompass();
 })();

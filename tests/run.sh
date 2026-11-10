@@ -4,6 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 node test_new_tools.js
+node test_adhkar_core.js
 rm -rf .build && mkdir -p .build && cp -r ../www .build/wwwtest
 S=$PWD/stubs
 ESB="npx --no-install esbuild"; command -v esbuild >/dev/null 2>&1 && ESB=esbuild
@@ -15,4 +16,6 @@ $ESB ../www/native.js --bundle --platform=browser --format=iife --outfile=.build
 python3 test_m2_ui.py
 python3 test_scheduling.py
 python3 test_motion.py
+python3 test_p0.py
+python3 test_adhkar_ui.py
 python3 verify_salah_engine.py

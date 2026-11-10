@@ -1,3 +1,14 @@
+# V4.0.3 (in progress) — P0 fixes and genuine Adhkar completion
+
+- **Accent colours** now apply in the light theme too (`body.light` was shadowing the accent variables). Covered by tests for all presets and a custom colour, in both themes.
+- **Zakat** has its own main-navigation tab (calculator unchanged; Explore card still opens it).
+- **Home Qibla** compass starts its sensor at launch so the arrow points at the real Qibla.
+- **Adhkar routines are no longer a manual toggle.** Tapping Morning/Evening opens a session with per-item counters. A session completes automatically when every item reaches its prescribed count; completion is saved per day and per session, and re-opening a finished session awards nothing. Undo-last-count works until completion.
+- **Streak** is derived from genuine completions only. Policy: a day counts when BOTH morning and evening are complete. A missed day ends the streak; a streak stays alive through today until today ends. Dates are local calendar days; the app rolls over on return to the foreground.
+- **Starter adhkar list** (6 items) is marked "to be verified". Text, counts and references must be checked by the owner before release.
+- Data compatibility: existing storage keys are unchanged; new `adhkar` records live inside `noor-adhkar-v1` and are included in backup/restore and reset. Earlier button-press history in `completed` is kept and still counts toward streaks (it cannot be distinguished from genuine completions).
+- Not yet done in this release: swipe-drag on the nav bar, Android back-button handling, Home dashboard extras, P2 items. Nothing here has been run on a physical Android device yet.
+
 # V4 development foundation — Naseem (نسيم)
 
 - Public app display name changed to Naseem; Noor remains the project/repository identity.
