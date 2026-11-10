@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - 'naseem-*'
-      - 'main'
 
 permissions:
   contents: read
@@ -16,53 +15,45 @@ jobs:
     steps:
       - name: Check out project
         uses: actions/checkout@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+
       - name: Install dependencies
         run: npm install
+
       - name: Build web app
         run: npm run build
-      - name: Add Android platform
+
+      - name: Set up Android
         run: npx cap add android
-      - name: Install native Android widgets and manifest
-        run: node scripts/patch-android.mjs
+
       - name: Generate Naseem icon and splash
         run: npx --yes --package=@capacitor/assets capacitor-assets generate --android
-      - name: Apply themed launcher icon
+
+      - name: Apply Android themed icon layer
         run: node scripts/patch-icons.mjs
-      - name: Sync Android plugins and web assets
-        run: npx cap sync android
-      - name: Restore signing key from GitHub secret when configured
-        env:
-          NASEEM_KEYSTORE_BASE64: ${{ secrets.NASEEM_KEYSTORE_BASE64 }}
-        run: |
-          if [ -n "$NASEEM_KEYSTORE_BASE64" ] && [ ! -f signing/naseem.keystore ]; then
-            mkdir -p signing
-            printf '%s' "$NASEEM_KEYSTORE_BASE64" | base64 --decode > signing/naseem.keystore
-          fi
-      - name: Apply stable signing key when available
-        env:
-          NASEEM_STORE_PASSWORD: ${{ secrets.NASEEM_STORE_PASSWORD }}
-          NASEEM_KEY_PASSWORD: ${{ secrets.NASEEM_KEY_PASSWORD }}
-          NASEEM_KEY_ALIAS: ${{ secrets.NASEEM_KEY_ALIAS }}
-        run: |
-          if [ -f signing/naseem.keystore ]; then
-            node scripts/apply-signing.mjs
-          else
-            echo '::warning::No stable keystore found. This APK will use the temporary Android debug key and may not update an existing installation.'
-          fi
+
+      - name: Integrate native Android widgets and back handling
+        run: node scripts/patch-android.mjs
+
+      - name: Use stable signing key
+        run: node scripts/apply-signing.mjs
+
       - name: Build APK
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Naseem-4.0.4-debug-APK
+          name: Naseem-debug-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk

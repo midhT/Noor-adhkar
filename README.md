@@ -6,28 +6,25 @@
 
 Naseem is the public-facing name of the Noor project. This delivery starts the V4 development track from the existing Noor V3.3 M2.1 Capacitor Android source. The repository and internal identifiers remain Noor to preserve compatibility with existing app data, native bridges and Android installations.
 
-## What is in this V4.0.4 development source
+## What is in this delivery
 
-- Existing V3.3/V4.0.3 app behaviour and data model retained.
-- Functional first-pass Hijri calendar, Dua Library, traditional learning profiles, Islamic occasions, expanded Salah learning, Widget Studio and Glance client.
-- First-launch onboarding, emerald startup animation, Home shortcuts and Android back-button handling.
-- Native Android widget integration is applied by `scripts/patch-android.mjs` during CI, including Java classes, resources and manifest receivers.
-- GitHub Pages Glance feed starter project in `glance-feed-template/`.
-- Product blueprint, implementation status, and testing notes in `docs/` and `TESTING_REPORT.md`.
-
-This is a development build. See `docs/V4.0.4_STATUS.md` for verified checks and remaining release gates.
+- Existing V3.3 M2.1 application source and Android widget/notification integration.
+- Naseem display-name and visual identity foundation.
+- Emerald-forward dark theme baseline.
+- Arabic Naseem launcher/splash source artwork.
+- Updated PWA metadata and GitHub Actions APK artifact naming.
+- `docs/NASEEM_V4_BLUEPRINT.md`: complete approved product blueprint.
+- `docs/IMPLEMENTATION_STATUS.md`: implemented vs planned scope and compatibility notes.
+- `docs/design/naseem-product-vision-mockup.png`: concept reference only, not a screenshot of a running app.
 
 ## Build a test APK with GitHub Actions
 
-1. Extract the ZIP and copy the **contents** of `noor-adhkar` into the root of your existing private `midhT/Noor-adhkar` repository, including hidden `.github` files.
-2. **Preserve your existing `signing/naseem.keystore` separately.** It is intentionally excluded from source ZIPs. Do not generate a replacement key if you want in-place APK updates.
-3. Push to a `naseem-*` branch or `main`, or manually run **Build Naseem APK** in Actions.
-4. Download the `Naseem-4.0.4-debug-APK` artifact from the successful run.
-5. Install over the previous build only if it is signed with the same key and has a higher version code. Back up app data before device testing.
+1. Extract the ZIP and upload the **contents** of the `noor-adhkar` folder to the root of the existing Noor GitHub repository, including hidden files such as `.github`.
+2. Open Actions and run **Build Naseem APK**, or push to the branch configured by the workflow.
+3. Download the `Naseem-debug-APK` artifact from a successful run.
+4. Install `app-debug.apk` for device testing.
 
-The workflow can also restore a signing key from `NASEEM_KEYSTORE_BASE64` and use `NASEEM_STORE_PASSWORD`, `NASEEM_KEY_PASSWORD` and `NASEEM_KEY_ALIAS` GitHub Actions secrets. If no stable key is present, it produces a temporary debug-signed APK that may not update an existing installation.
-
-Public Google Play distribution requires a production release build / Android App Bundle (`.aab`), secure Play signing setup, policy review and a privacy policy. Do not publish the sideload key or its passwords.
+The debug APK is for testing only. Public Google Play distribution requires a signed release build (usually an Android App Bundle, `.aab`), secure release-key handling, policy review and a privacy policy. Never commit signing keys or passwords.
 
 ## Compatibility rule
 
@@ -35,7 +32,7 @@ Do not change `appId: com.noor.adhkar` for this rebrand. The app display name is
 
 ## Important scope note
 
-The new V4.0.4 modules are first-pass implementations and still require physical-device testing and content review. The Hijri date may vary by moon-sighting authority; Salah/Dua learning content needs qualified review; widget behaviour, notifications, compass sensors and signing compatibility need real-device verification. See `docs/V4.0.4_STATUS.md` for the full list.
+This ZIP is the first V4 development foundation, not the finished implementation of every feature in the approved blueprint. See `docs/IMPLEMENTATION_STATUS.md` for what is included now and what remains planned. The advanced Qibla, full Zakat engine, complete Hijri calendar, expanded Dhikr/Dua content, multi-tradition learning, onboarding and expanded widgets require subsequent development and testing.
 
 ## Testing
 
@@ -68,5 +65,11 @@ Android only installs an APK over an existing app when the application ID **and 
 - Physical-device checks are still required for compass sensor behaviour and GPS permissions. The Zakat estimator requires additional asset-specific and scholarly review before public release.
 
 
-## V4.0.4 development notes
-See `docs/V4.0.4_STATUS.md` and `docs/GLANCE_BACKEND.md`. The separate Glance repository is not created yet; set the public feed URL in `www/glance-config.js` after publishing the feed template.
+## V4.0.4 feature work
+
+See `docs/IMPLEMENTATION_STATUS.md` for the exact implemented/pending split and `TESTING_REPORT.md` for what has and has not been verified. Glance feed structure and setup are documented in `docs/glance-content/`. The APK workflow installs the Capacitor Android platform, generates icons, integrates native widget sources/manifest entries, applies the existing signing configuration, and builds the debug APK. Keep the signing key out of shared source archives and back it up securely.
+
+
+## V4.0.4 feature work
+
+See `docs/IMPLEMENTATION_STATUS.md` for the exact implemented/pending split and `TESTING_REPORT.md` for what has and has not been verified. Glance feed structure and setup are documented in `docs/glance-content/`. The APK workflow installs the Capacitor Android platform, generates icons, integrates native widget sources/manifest entries, applies the existing signing configuration, and builds the debug APK. Keep the signing key out of shared source archives and back it up securely.

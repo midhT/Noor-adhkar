@@ -1,56 +1,22 @@
-# Noor V3.3 — Milestone 2 / 2.1 testing report
+# Naseem V4.0.4 — source validation report
 
-## Verified (automated, run `bash tests/run.sh`)
-- 58 UI checks, all passing: five tabs, touch scrolling on every screen, Kashmir defaults pre-filled in 12-hour time, Home has no editor, Settings groups, method/Asr/city/GPS (mocked fix)/±minutes/reset, Jamaat offset and fixed time, My own times, account name and photo, user-chosen audio, backup export and 10 kinds of rejected restore, restore of Salah/profile/progress.
-- 16 scheduling checks, all passing (mocked notification plugin): three channels, Adhan sound file, 21-day horizon, unique ids, no duplicates after changes, Fajr silent, heads-up and Jamaat separate, reschedule on prayer edits, cancel on off, test alarm, 21 dated widget entries.
-- Calculation engine vs independent NOAA-series reference: 9,840 comparisons across 5 cities, 4 methods, 2 Asr modes; worst 0.55 min.
+## Passed in this environment
 
-## Added in 2.1 (automated, 40 checks, all passing)
-Merged Dhikr tab, themed sheet menus (open, choose, close by tap/drag, no un-themed select left), swipe navigation incl. ignored cases, Smooth/Full mode persistence, no horizontal overflow at 320/360/393/412/600 px.
-UI suite is now 57 checks; scheduling 16.
+- JavaScript syntax checks for application scripts and build scripts.
+- `tests/test_v404_source.js`: feature routes, package version, feed, onboarding and backup registration.
+- `tests/test_android_patch.mjs`: simulates a generated Capacitor Android project and verifies MainActivity/plugin Java, widget resources, manifest receivers/permissions and version code are copied.
+- `tests/test_new_tools.js`: Qibla and Zakat unit tests.
+- `tests/test_adhkar_core.js`: Adhkar session logic tests.
+- `tests/test_signing.mjs`: signing Gradle patch tests.
+- `tests/verify_salah_engine.py`: 9,840 prayer-engine comparisons; worst difference 0.55 minutes, within 1 minute.
 
-## Not verified (needs a real phone / CI)
-- APK build in GitHub Actions.
-- Alarms ringing with screen locked, after reboot, under battery restrictions.
-- Full-length Adhan as a channel sound (Android may shorten it; Tone is the fallback).
-- Location permission prompt inside the Android WebView.
-- Real-device smoothness (Samsung A17 5G) and swipe feel; automated tests cannot measure frame rate.
-- Instagram link opening the Instagram app/browser from the WebView.
-- Widgets (prayer, tasbeeh) on a launcher; themed monochrome icon.
-- Agreement with local Kashmir mosque timetables (they may differ by a few minutes; use adjustments).
+## Not verified here
 
-## Known limits
-- High-latitude fallback is night-middle only.
-- USE_EXACT_ALARM may need justification if published on Google Play.
+- `npm install` timed out, so `npm run build` could not be completed in this environment. GitHub Actions must install dependencies and run the build.
+- Browser UI tests could not run: the environment blocks local browser navigation (`ERR_BLOCKED_BY_ADMINISTRATOR`).
+- No Android Gradle APK was built here.
+- No Samsung device was available. All sensors, local notifications, widgets, first-run onboarding, update installation and actual rendering still require testing on the user's Galaxy device.
 
-## V4.0.1 accent selector checks
-- `node --check www/accent.js` — passed.
-- `node --check www/settings.js` — passed.
-- `node --check scripts/patch-android.mjs` — passed.
-- Accent runtime smoke test (default, preset, custom, persisted value, CSS token) — passed.
-- Prayer-engine comparison — 9,840 comparisons, all within 1.0 minute.
-- Playwright browser tests were blocked because the Chromium executable is unavailable in this environment.
-- APK build and real-device installation were not performed.
+## Release gate
 
-
-## V4.0.2 first-pass tool checks
-- `node tests/test_new_tools.js`: 16 assertions passed for Zakat arithmetic (2.5% estimate, below-nisab, lunar-year gate, liabilities) and Qibla bearing/distance/cardinal direction validation.
-- `node --check` passed for the new tool scripts and changed app scripts; HTML parsing passed.
-- Existing prayer-engine regression: 9,840 comparisons; worst difference 0.55 minutes; all within the 1-minute test tolerance.
-- Full browser suite and Android APK build were not run in this environment: package installation timed out, and the local browser launch was blocked by the container. Compass/GPS behaviour still needs testing on a physical Android device.
-
-## V4.0.4 source update checks (2026-11-10)
-
-Passed:
-- `node --check` for every `www/*.js` file.
-- `node tests/test_new_tools.js` — 16 assertions.
-- `node tests/test_adhkar_core.js` — all assertions.
-- `node tests/test_signing.mjs` — all mock signing assertions.
-- `python3 tests/verify_salah_engine.py` — 9,840 comparisons, worst difference 0.55 minutes.
-- Static check for unique IDs in `index.html` and presence of all seven new feature screens.
-- Simulated Android platform patch: native Java files copied into `com/noor/adhkar`, two widget receivers inserted, versionCode set to 40004.
-
-Blocked / not run:
-- `npm install` timed out in this environment, so `npm run build` could not be completed.
-- Playwright UI tests could not launch because the Chromium executable is unavailable.
-- No Gradle APK build or physical Samsung test was run here.
+A successful GitHub Actions build is not proof of runtime correctness. Install the APK on the Samsung, verify the new Explore cards and each flow, check widgets via the launcher, then verify an in-place update using the existing signing key before considering public distribution.

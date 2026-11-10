@@ -5,7 +5,6 @@
 
   // Feature hub: planned entries are honest UI previews, not simulated functionality.
   document.querySelectorAll('[data-open-feature]').forEach(button => button.addEventListener('click', () => switchScreen(button.dataset.openFeature)));
-  document.querySelectorAll('[data-planned]').forEach(button => button.addEventListener('click', () => toast(`${button.dataset.planned} is under development.`)));
 
   // Add practical shortcuts below the existing home feature tiles.
   const home = $('homeScreen');

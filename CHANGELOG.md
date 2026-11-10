@@ -1,3 +1,20 @@
+# V4.0.4 — Feature integration build
+
+- Added offline Hijri calendar and Gregorian date conversion using Android/browser ICU Islamic calendar data.
+- Added Quranic Dua starter library with search, categories and local favourites.
+- Added introductory Salah learning lessons and selectable traditional learning profiles.
+- Added Islamic occasions with indicative Hijri dates and explicit moon-sighting/disagreement caveats.
+- Added Widget Studio controls for the existing native Prayer and Tasbeeh widgets.
+- Added Glance with configurable public HTTPS JSON feed, last-known cache and built-in Qur’anic reminder fallback.
+- Added skippable first-run setup with tradition and prayer-city selection; preferences remain local.
+- Added Android back-button navigation via Capacitor App plugin.
+- Fixed CI to copy/register native widget Java/resources and Android manifest receivers.
+- Existing Qibla, Adhkar, Zakat and prayer features remain in place.
+
+**Verification caveat:** this source requires a fresh GitHub Actions build and physical Samsung testing. Calendar conventions, religious content, widget behaviour, notifications and in-place update compatibility must be verified before public release.
+
+---
+
 # V4.0.3 (in progress) — P0 fixes and genuine Adhkar completion
 
 - **Accent colours** now apply in the light theme too (`body.light` was shadowing the accent variables). Covered by tests for all presets and a custom colour, in both themes.
@@ -90,18 +107,3 @@ Baseline: V3.2 + the scroll fix. This milestone changes structure and data safet
 - Qibla and Zakat are first-pass functional tools; their sensor, permission and fiqh edge cases remain to be debugged and reviewed.
 - Home's English countdown ring now shows the Qibla direction; the Arabic prayer-countdown ring is retained.
 - Version metadata is 4.0.2, and the APK workflow now listens to `naseem-*` and `noor-*` branches as well as `main`.
-
-## V4.0.4 — Feature expansion and release foundations (development build)
-- Added an offline Hijri calendar with Gregorian/Hijri conversion, manual date correction and optional AlAdhan API cross-check for today's date.
-- Added a searchable Dua Library with Quranic supplications, transliteration, meanings, references and saved favourites.
-- Added selectable Hanafi, Shafi'i, Maliki, Hanbali and Ja'fari learning profiles; profile choice is kept separate from prayer-time calculation settings.
-- Added upcoming Islamic occasion estimates and optional local Android reminders; all dates are labelled as subject to local moon sighting.
-- Added expanded Salah learning index covering purification, preparation, prayer sequence and common learning topics. Tradition-specific details require qualified review.
-- Added Widget Studio for the existing Prayer and Tasbeeh Android widgets. Actual widget size remains controlled by the launcher.
-- Added Glance with a configurable public JSON feed, cache, expiry handling and built-in Qur'an 2:152 fallback. Added a separate GitHub Pages feed template; no write credentials are embedded in Naseem.
-- Added first-launch setup wizard, optional location/notification permissions, Home shortcuts, Hijri date and Glance preview.
-- Refreshed the startup animation with an emerald identity.
-- Added Android back-button handling through `@capacitor/app`.
-- Fixed APK workflow to install native Android widget classes/resources/receivers, apply themed launcher icon resources, sync plugins and set versionCode from package version. Stable signing is used when the existing key or GitHub signing secrets are available.
-- Existing app ID `com.noor.adhkar`, Noor internal identifiers and existing local data keys are preserved.
-- Automated Node tests and Salah-engine comparisons pass. Full browser suite, npm bundle build, Android Gradle build and Samsung device tests remain outstanding in this environment.

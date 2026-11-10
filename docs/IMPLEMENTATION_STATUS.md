@@ -1,62 +1,31 @@
-# Noor Project V4 / Naseem — Implementation Status
+# Naseem V4.0.4 — implementation status
 
-## Included in this delivery
+## Implemented in source
 
-- Existing Noor V3.3 M2.1 source preserved as the starting point.
-- Capacitor `appName` changed to **Naseem**.
-- Android application ID deliberately remains `com.noor.adhkar` for upgrade compatibility.
-- Web app title, metadata, wordmark, About screen and relevant user-facing Android widget labels updated to Naseem.
-- PWA manifest updated for Naseem and emerald theme colour.
-- Default dark-theme accent shifted toward Islamic emerald.
-- Launcher icon source layers, monochrome icon and splash artwork redrawn around Arabic **نسيم** and breeze motifs.
-- GitHub Actions workflow label/artifact updated to `Build Naseem APK` / `Naseem-debug-APK`.
-- Full product requirements recorded in `docs/NASEEM_V4_BLUEPRINT.md`.
-- Visual direction reference included at `docs/design/naseem-product-vision-mockup.png`.
+- Existing V4.0.3 base retained: Qibla, Salah calculations/scheduling, Adhkar sessions, Zakat estimate, accent controls, backup/restore and existing progress logic.
+- Hijri month calendar and Gregorian ↔ Hijri date conversion using the device ICU Islamic calendar (`islamic-umalqura` where available, otherwise `islamic`). No calendar API is required for this local conversion. Regional moon-sighting differences remain possible.
+- Quranic Dua starter library: five supplications with Arabic, transliteration, concise meaning, Quran reference, search/category filters and local favourites. It is not yet a comprehensive Hadith/Sunnah Dua library. Content must be checked by a qualified Arabic/religious editor before public release.
+- Salah learning starter centre: seven general learning lessons covering preparation, Wudu, prayer sequence, bowing, prostration, final sitting and Ghusl. This is general education, not a tradition-specific fatwa or full course.
+- Traditional learning profile selector: Hanafi, Shafi‘i, Maliki, Hanbali and Ja‘fari preferences are saved locally and included in backup. Current lessons are still general, not yet fully adapted to each profile.
+- Islamic occasions list with approximate dates derived from the device Hijri calendar; local reminders can be scheduled through Android notifications. Some dates/observances vary or are disputed and must be confirmed locally.
+- Widget Studio connects to the existing Android Prayer and Tasbeeh widget implementations. Tasbeeh data can be pushed from the app; Prayer widget data is supplied by the existing Salah schedule service. Users add widgets through the Android launcher.
+- Glance client accepts a configurable public HTTPS JSON feed, selects the latest published item, caches the last successful item locally, and has a bundled Quranic reminder fallback. Feed schema and sample content are in `docs/glance-content/`. The future admin app and hosted public repository are not part of this delivery; the user must configure a feed URL when it exists. Never embed a GitHub token in the APK.
+- First-launch setup is skippable and can be reopened from Settings. It saves a learning profile, optional city/GPS location, theme and optional notification permission choice locally.
+- Android back-button listener uses `@capacitor/app`.
+- GitHub Actions now runs `scripts/patch-icons.mjs` and `scripts/patch-android.mjs`, so the monochrome launcher layer, native widget Java/resources, plugin registration and manifest receivers are copied into the generated Android project before Gradle.
+- App version is 4.0.4. Android application ID remains `com.noor.adhkar`; public display name remains Naseem.
 
-## Not yet implemented in this first V4 development delivery
+## Still pending / not claimed complete
 
-The full blueprint is a multi-phase build, not a claim that every feature is already functional. In particular, the advanced Qibla compass, five-tradition learning system, expanded Dhikr/Dua libraries and audio, full Zakat engine, Hijri calendar, onboarding wizard, seven-choice accent picker and expanded widget set remain planned work unless already present in the inherited V3.3 code. Do not treat the concept mockup as a screenshot of a working app.
+- Full Home dashboard and remaining P2 handover work.
+- Masjid finder, Zakat records/payment history and prayer history.
+- Comprehensive Dua collection (including verified Hadith/Sunnah sources, audio and memorisation mode).
+- Tradition-specific Salah content, detailed comparisons and scholarly review.
+- A real Glance admin application and hosted public feed repository.
+- Any further APIs that need credentials/hosting; the Glance client is ready for a public HTTPS JSON endpoint but no feed is configured by default.
+- Complete physical-device validation: sensors, notifications, widget refresh/reboot, Android back behaviour, backup/restore and in-place update signature.
+- Full browser UI tests and Gradle APK build in CI.
 
-## Compatibility notes
+## Religious-content and date caveats
 
-- Keep `com.noor.adhkar` unchanged. Changing the Android application ID would make this a separate Android app and prevent in-place upgrades.
-- Keep internal identifiers such as `NoorNative`, `NoorWidgets`, storage keys, Java package names, widget resource identifiers and `noor:` events unchanged during the display-name migration. Renaming these risks breaking stored data, native bridges, widget state or event listeners.
-- Existing local user data should remain in place. Back up before installing test builds.
-
-## Build and validation
-
-- Run `npm install` and `npm run build` in an environment with Node.js/network access.
-- Run `bash tests/run.sh` with the test dependencies documented in the repository.
-- Run the GitHub Actions workflow and inspect the APK artifact.
-- Install over an existing Noor build signed with the same key to verify upgrade compatibility. If signing keys differ, Android may reject the update; uninstalling can erase local data.
-- Test native widgets, Adhan/reminders, reboot restoration, location and backup/restore on a physical Android device.
-
-This delivery is a branded development foundation and implementation handover, not a Play Store-ready release or a completed implementation of every blueprint feature.
-
-
-## V4.0.1 — Accent personalisation (implemented in this delivery)
-- Added six named accent presets plus a custom colour picker.
-- Islamic emerald is the default.
-- Accent selection persists locally and is included in JSON backup/restore.
-- Accent variables apply to the existing theme tokens, so dark and light modes both inherit the selected colour.
-- This release does not claim that the remaining V4 blueprint features are implemented.
-
-
-## V4.0.2 first-pass feature expansion (2026-11-09)
-- Public app branding remains **Naseem (نسيم)**; repository/internal project identity remains Noor. Android application ID remains `com.noor.adhkar`.
-- Replaced the previous launcher artwork with a new mosque-and-crescent emerald emblem; updated SVG, Capacitor icon layers, splash artwork and Android monochrome icon.
-- Added an Explore hub. New roadmap cards are UI previews marked **Under development** and do not pretend to work.
-- Added a first-pass Zakat estimate: user-entered INR asset values, liabilities, manually verified nisab, lunar-year toggle and simple 2.5% estimate. It is educational only and is not a complete fiqh calculator.
-- Added a first-pass Qibla finder: bearing/distance from the Kaaba using saved prayer-city coordinates or device geolocation, plus a device-orientation compass where the device/browser exposes a supported sensor.
-- Neither new tool has been validated on a physical Android phone yet. Compass sensor support, location permission flow and sensor calibration require device testing. Zakat formulas require scholarly/fiqh review before release.
-- Home dashboard now uses the English countdown circle as a compact Qibla compass preview; the Arabic prayer-countdown circle is preserved. The home compass reflects the calculated bearing and follows the live sensor once compass access is enabled in the finder.
-
-
-## V4.0.3 progress (2026-11-10)
-- Implemented and covered by automated browser/unit tests (headless Chromium, not a real phone): accent in light+dark, Zakat tab, live Home Qibla heading, Adhkar sessions with per-item counters, automatic completion, both-sessions streak, day rollover, reset and backup validation for session records.
-- Not verified on device: compass sensor behaviour on the Samsung WebView, six-tab nav ergonomics, haptics.
-- Content caveat: the Adhkar list is a starter set with `verified:false` on every entry.
-- Still planned: nav drag gesture, Android back handling (needs `@capacitor/app`), Home dashboard additions, Dhikr enhancements, statistics, achievements, personalisation.
-
-## V4.0.4 feature expansion
-See `docs/V4.0.4_STATUS.md` for the detailed implementation and release gates. This source now includes functional first-pass modules for the Hijri calendar, Dua Library, traditional learning profiles, Islamic occasions, Salah learning, Widget Studio, Glance, onboarding and Android back handling. These are development implementations, not yet real-device or scholarly sign-off.
+All new religious content is a starter implementation. Quranic references and Arabic should be reviewed against a trusted mushaf. Calendar dates are calculated from the device's ICU calendar and may differ from local moon sighting. Do not present this build as a scholarly authority or public-release candidate.

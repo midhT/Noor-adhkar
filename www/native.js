@@ -15,7 +15,6 @@ const ADHAN_FILE = 'adhan.mp3'; // android/app/src/main/res/raw/adhan.mp3 (copie
 
 window.NoorNative = {
   isNative,
-  async exitApp() { try { await App.exitApp(); } catch (_) {} },
   async haptic() {
     if (!isNative) {
       if (navigator.vibrate) navigator.vibrate(12);
@@ -87,14 +86,20 @@ window.NoorNative = {
 
   /* ---- Home-screen widgets ---- */
   widgets: isNative ? {
-    async setPrayerTimes(times) { try { await NoorWidgets.setPrayerTimes({ json: JSON.stringify(times || {}) }); } catch (_) {} },
-    async setTasbeeh(info) { try { await NoorWidgets.setTasbeeh(info); } catch (_) {} },
+    async setPrayerTimes(times) { try { await NoorWidgets.setPrayerTimes({ json: JSON.stringify(times || {}) }); return true; } catch (_) { return false; } },
+    async setTasbeeh(info) { try { await NoorWidgets.setTasbeeh(info); return true; } catch (_) { return false; } },
     async takePending() { try { return (await NoorWidgets.takePending()).count || 0; } catch (_) { return 0; } }
   } : null
 };
-if (isNative) App.addListener('backButton', ({ canGoBack }) => {
-  const unhandled = window.dispatchEvent(new CustomEvent('noor:android-back', { cancelable: true }));
-  if (unhandled && canGoBack) window.history.back();
-  else if (unhandled && !canGoBack) App.exitApp();
-});
+if (isNative) {
+  App.addListener('backButton', ({ canGoBack }) => {
+    const event = new CustomEvent('naseem:back', { cancelable: true });
+    window.dispatchEvent(event);
+    if (!event.defaultPrevented) {
+      if (canGoBack) window.history.back();
+      else App.exitApp();
+    }
+  }).catch(error => console.warn('Naseem back-button listener unavailable', error));
+}
+
 document.addEventListener('DOMContentLoaded', () => { window.NoorNative.init(); });
