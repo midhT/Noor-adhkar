@@ -129,7 +129,8 @@
         <div class="qibla-card card-surface">
           <div class="qibla-topline"><span class="eyebrow">LIVE COMPASS</span><span class="qibla-compass-state" id="qiblaCompassState">Compass not enabled</span></div>
           <div class="qibla-compass-wrap"><div class="qibla-compass" id="qiblaCompass">
-            <div class="qibla-rose" id="qiblaRose"><span class="qdir q-n">N</span><span class="qdir q-e">E</span><span class="qdir q-s">S</span><span class="qdir q-w">W</span><span class="qibla-tick tick-1"></span><span class="qibla-tick tick-2"></span><span class="qibla-tick tick-3"></span><span class="qibla-tick tick-4"></span></div>
+            <span class="qibla-notch" aria-hidden="true"></span>
+            <div class="qibla-rose" id="qiblaRose"><span class="qibla-mark" id="qiblaMark" aria-hidden="true"><b></b></span><span class="qdir q-n">N</span><span class="qdir q-e">E</span><span class="qdir q-s">S</span><span class="qdir q-w">W</span><span class="qibla-tick tick-1"></span><span class="qibla-tick tick-2"></span><span class="qibla-tick tick-3"></span><span class="qibla-tick tick-4"></span></div>
             <div class="qibla-needle" id="qiblaNeedle"><span class="needle-head"></span><span class="needle-tail"></span></div>
             <div class="qibla-centre">⌂</div>
           </div></div>
@@ -227,7 +228,7 @@
       </section>
     </main>
 
-    <nav class="bottom-nav" aria-label="Main navigation">
+    <nav class="bottom-nav" aria-label="Main navigation" data-noswipe>
       <button class="nav-item active" data-screen="homeScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4l8 7.2V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg></span><small>Home</small></button>
       <button class="nav-item" data-screen="dhikrScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/></svg></span><small>Dhikr</small></button>
       <button class="nav-item" data-screen="salahScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c0 2.2-2.6 3-2.6 5.2h5.2c0-2.2-2.6-3-2.6-5.2z"/><path d="M6 20.5v-7.3a6 6 0 0 1 12 0v7.3"/><path d="M3.5 20.5h17"/></svg></span><small>Salah</small></button>

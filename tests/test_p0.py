@@ -43,14 +43,14 @@ with sync_playwright() as p:
         pg.wait_for_timeout(150)
     rot = lambda: ev("(()=>{const m=getComputedStyle(document.getElementById('homeQiblaArrow')).transform;if(m==='none')return null;const v=m.match(/matrix\\(([^)]+)\\)/)[1].split(',').map(Number);let a=Math.atan2(v[1],v[0])*180/Math.PI;return (a+360)%360})()")
     fire(0)   # phone facing north: arrow should sit at the bearing
-    ok('sensor auto-started: Home label switches to live compass without pressing Enable', 'live compass' in pg.inner_text('#homeQiblaMiniDirection'), pg.inner_text('#homeQiblaMiniDirection'))
+    ok('sensor auto-started: Home label leaves "compass off" without pressing Enable', 'compass off' not in pg.inner_text('#homeQiblaMiniDirection'), pg.inner_text('#homeQiblaMiniDirection'))
     ok('Home arrow at the bearing when phone faces north', abs(((rot() - bearing + 180) % 360) - 180) < 2, f'{rot()} vs {bearing}')
     fire(360 - 90)  # phone now facing east (heading 90): arrow = bearing - 90
     want = (bearing - 90) % 360
     ok('Home arrow turns as the phone turns', abs(((rot() - want + 180) % 360) - 180) < 2, f'{rot()} vs {want}')
     fire(360 - bearing)  # facing the Qibla: arrow straight up
     ok('Home arrow points straight up when facing Qibla', min(rot(), 360 - rot()) < 2, str(rot()))
-    ok('Home label says live compass', 'live compass' in pg.inner_text('#homeQiblaMiniDirection'), pg.inner_text('#homeQiblaMiniDirection'))
+    ok('Home label says facing the Qibla when aligned', 'Facing the Qibla' in pg.inner_text('#homeQiblaMiniDirection'), pg.inner_text('#homeQiblaMiniDirection'))
     ok('no page errors', not errs, str(errs))
     b.close()
 srv.stop(); sys.exit(R.done('P0 fixes'))

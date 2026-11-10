@@ -2,6 +2,9 @@ name: Build Naseem APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'naseem-*'
 
 permissions:
   contents: read
@@ -32,6 +35,9 @@ jobs:
 
       - name: Set up Android
         run: npx cap sync android
+
+      - name: Use stable signing key
+        run: node scripts/apply-signing.mjs
 
       - name: Build APK
         working-directory: android

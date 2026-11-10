@@ -69,5 +69,52 @@
     const i = TABS.indexOf(cur) + step; if (i < 0 || i >= TABS.length) return;
     switchScreen(TABS[i], { dir });
   }
+  /* Press-and-drag across the bottom bar (iOS-style): hold on any tab and slide; a highlight follows the finger over
+     the tabs and the screen switches when you lift. While dragging, all tabs are equal width so nothing moves under the
+     finger. A plain tap is untouched; the drag starts only after 8px of horizontal movement. */
+  const nav = doc.querySelector('.bottom-nav');
+  if (nav) {
+    let down = false, dragging = false, sx = 0, pid = null, peek = null;
+    const items = () => [...nav.querySelectorAll('.nav-item')];
+    const itemAt = x => {
+      // Clamp to the first/last tab (not the bar's padded edge) so sliding past either end selects that end tab.
+      const list = items(); if (!list.length) return null;
+      const a = list[0].getBoundingClientRect(), z = list[list.length - 1].getBoundingClientRect();
+      const el = doc.elementFromPoint(Math.min(Math.max(x, a.left + 2), z.right - 2), a.top + a.height / 2);
+      return el && el.closest ? el.closest('.nav-item') : null;
+    };
+    const setPeek = it => { if (it === peek) return; items().forEach(i => i.classList.toggle('peek', i === it)); peek = it; };
+    const finish = commit => {
+      const target = peek, was = dragging;
+      down = false; dragging = false; nav.classList.remove('dragging'); setPeek(null);
+      if (!was) return;
+      // The finger lifted after a drag: do not let the browser also treat it as a tap.
+      const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
+      nav.addEventListener('click', stop, { capture: true, once: true });
+      setTimeout(() => nav.removeEventListener('click', stop, true), 400);
+      const id = target && target.dataset.screen, cur = typeof curScreen !== 'undefined' ? curScreen : '';
+      if (commit && id && id !== cur) {
+        const list = items(), from = list.findIndex(i => i.dataset.screen === cur);
+        switchScreen(id, { dir: list.indexOf(target) > from ? 'next' : 'prev' });
+      }
+    };
+    nav.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (!(e.target.closest && e.target.closest('.nav-item'))) return;
+      down = true; dragging = false; sx = e.clientX; pid = e.pointerId; peek = null;
+    });
+    nav.addEventListener('pointermove', e => {
+      if (!down || e.pointerId !== pid) return;
+      if (!dragging) {
+        if (Math.abs(e.clientX - sx) < 8) return;
+        dragging = true; nav.classList.add('dragging');
+        try { nav.setPointerCapture(pid); } catch (_) {}
+      }
+      const it = itemAt(e.clientX);
+      if (it && it !== peek) { setPeek(it); if (navigator.vibrate && !body.classList.contains('lite')) try { navigator.vibrate(5); } catch (_) {} }
+    });
+    nav.addEventListener('pointerup', e => { if (e.pointerId === pid) finish(true); });
+    nav.addEventListener('pointercancel', () => finish(false));
+  }
   window.NoorSwipe = { go };
 })();

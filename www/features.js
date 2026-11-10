@@ -68,30 +68,41 @@
   const qiblaBearing = window.NaseemQibla.bearing;
   const distanceKm = window.NaseemQibla.distanceKm;
   let location={lat:34.0837,lng:74.7973,name:'Srinagar, Kashmir',source:'saved'};
-  let bearing=null, heading=null, sensorStarted=false, absoluteSeen=false, locationLabel='Approximate saved prayer-city coordinates';
+  let bearing=null, heading=null, unwrapped=0, aligned=false, sensorStarted=false, absoluteSeen=false, locationLabel='Approximate saved prayer-city coordinates';
   function renderQibla(){
     if(!Number.isFinite(location.lat)||!Number.isFinite(location.lng))return;
     bearing=qiblaBearing(location.lat,location.lng);
-    $('qiblaBearing').textContent=`${Math.round(bearing)}°`;
-    $('qiblaCardinal').textContent=`${cardinal(bearing)} · direction of Makkah`;
     $('qiblaPlace').textContent=location.name||'Selected location';
     $('qiblaCoords').textContent=locationLabel;
     $('qiblaDistance').textContent=`${Math.round(distanceKm(location.lat,location.lng)).toLocaleString('en-IN')} km`;
+    const sensor=heading!==null;
+    // Signed angle from where the phone points to the Qibla: negative = turn left, positive = turn right.
+    const rel=sensor?((bearing-heading+540)%360)-180:0, off=Math.abs(rel);
+    // Hysteresis so the "aligned" state does not flicker with sensor noise.
+    const was=aligned; aligned=sensor&&(was?off<=8:off<=4);
+    if(aligned&&!was&&typeof state!=='undefined'&&state.vibrate){try{if(window.NoorNative?.haptic)window.NoorNative.haptic();else if(navigator.vibrate)navigator.vibrate([18,40,18]);}catch(_){}}
+    const turn=`Turn ${rel>0?'right':'left'} ${Math.round(off)}°`;
+    // Continuous (unwrapped) angles keep the dial from spinning the long way round at 359°→0°.
+    const spin=sensor?unwrapped:0;
     const miniArrow=$('homeQiblaArrow'), miniBearing=$('homeQiblaMiniBearing'), miniDirection=$('homeQiblaMiniDirection');
-    if(miniBearing)miniBearing.textContent=`${Math.round(bearing)}°`;
-    if(miniDirection)miniDirection.textContent=heading===null?`${cardinal(bearing)} · compass off`:`${cardinal(bearing)} · live compass`;
-    if(miniArrow)miniArrow.style.transform=`translate(-50%,-50%) rotate(${normalize(bearing-(heading??0))}deg)`;
-    const rose=$('qiblaRose'), needle=$('qiblaNeedle');
-    rose.style.transform=`rotate(${heading===null?0:-heading}deg)`;
-    needle.style.transform=`translate(-50%,-50%) rotate(${normalize(bearing-(heading??0))}deg)`;
-    if(heading===null){
+    if(miniBearing)miniBearing.textContent=sensor?`${Math.round(heading)}°`:`${Math.round(bearing)}°`;
+    if(miniDirection)miniDirection.textContent=!sensor?`${cardinal(bearing)} · compass off`:(aligned?'Facing the Qibla ✓':turn);
+    if(miniArrow){miniArrow.style.transform=`translate(-50%,-50%) rotate(${bearing-spin}deg)`;miniArrow.parentElement.classList.toggle('aligned',aligned);}
+    const rose=$('qiblaRose'), needle=$('qiblaNeedle'), mark=$('qiblaMark');
+    rose.style.transform=`rotate(${-spin}deg)`;
+    needle.style.transform=`translate(-50%,-50%) rotate(${bearing-spin}deg)`;
+    if(mark)mark.style.transform=`rotate(${bearing}deg)`;
+    $('qiblaCompass').classList.toggle('is-aligned',aligned);
+    $('qiblaBearing').textContent=sensor?`${Math.round(heading)}°`:`${Math.round(bearing)}°`;
+    $('qiblaBearing').classList.toggle('aligned',aligned);
+    $('qiblaCardinal').textContent=sensor?`Facing ${cardinal(heading)} · Qibla is at ${Math.round(bearing)}° ${cardinal(bearing)}`:`${cardinal(bearing)} · direction of Makkah`;
+    if(!sensor){
       $('qiblaCompassState').textContent='Compass not enabled';
       $('qiblaAlignment').textContent='Enable the compass to align the dial with your phone.';
+      $('qiblaAlignment').classList.remove('aligned');
     } else {
-      const relative=normalize(bearing-heading);
-      const aligned=Math.min(relative,360-relative)<=5;
-      $('qiblaCompassState').textContent='Compass active';
-      $('qiblaAlignment').textContent=aligned?'You are facing the Qibla.':`Turn ${relative<180?'clockwise':'anticlockwise'} about ${Math.round(Math.min(relative,360-relative))}° to face the Qibla.`;
+      $('qiblaAlignment').textContent=aligned?'You are facing the Qibla.':`${turn} to face the Qibla.`;
+      $('qiblaAlignment').classList.toggle('aligned',aligned);
     }
   }
   function savedPrayerLocation(){
@@ -108,8 +119,11 @@
       h=360-event.alpha+screenAngle;
     }
     if(h!==null && Number.isFinite(h)){
-      heading=normalize(h);renderQibla();
-      $('qiblaCompassState').textContent=event.absolute===false?'Compass active · approximate':'Compass active';
+      // Low-pass filter on the shortest angular path; big jumps (>45°) snap so the dial never lags a real turn.
+      if(heading===null)unwrapped=h;
+      else{const d=((h-heading+540)%360)-180;unwrapped+=Math.abs(d)>45?d:d*0.35;}
+      heading=normalize(unwrapped);renderQibla();
+      $('qiblaCompassState').textContent=aligned?'Facing Qibla ✓':(event.absolute===false?'Compass active · approximate':'Compass active');
     }
   }
   async function enableCompass(){
