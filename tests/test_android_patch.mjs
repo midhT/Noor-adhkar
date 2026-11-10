@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, cpSync, readFileSync, existsSync, rmSync, write
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-const source = process.cwd();
+const source = existsSync(join(process.cwd(), 'package.json')) ? process.cwd() : join(process.cwd(), '..');
 const root = mkdtempSync(join(tmpdir(), 'naseem-android-patch-'));
 try {
   for (const file of ['package.json','capacitor.config.json','scripts/patch-android.mjs']) {
@@ -26,6 +26,6 @@ try {
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/NoorWidgetsPlugin.java')));
   assert.ok(existsSync(join(main,'res/layout/widget_prayer.xml')));
   assert.ok(existsSync(join(main,'res/xml/tasbeeh_widget_info.xml')));
-  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40004/);
+  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40005/);
   console.log('Android native integration patch: all assertions passed.');
 } finally { rmSync(root,{recursive:true,force:true}); }

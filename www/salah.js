@@ -127,7 +127,7 @@
   function defaults() {
     var j = {}; PRAYERS.forEach(function (p) { j[p] = { mode: 'offset', offset: DEFAULT_JAMAAT[p], fixed: '' }; });
     var adj = {}; PRAYERS.forEach(function (p) { adj[p] = 0; }); adj.sunrise = 0;
-    return { loc: { id: 'srinagar', name: 'Srinagar, Kashmir', lat: 34.0837, lng: 74.7973, tz: 'Asia/Kolkata', source: 'default' }, method: 'karachi', asr: 'hanafi', adj: adj, mode: 'calculated', jamaat: j };
+    return { loc: { id: 'srinagar', name: 'Srinagar, Kashmir', lat: 34.0837, lng: 74.7973, tz: 'Asia/Kolkata', source: 'default' }, method: 'karachi', asr: 'standard', adj: adj, mode: 'calculated', jamaat: j };
   }
   var manual = function () { try { return JSON.parse(localStorage.getItem(MANUAL_KEY) || '{}'); } catch (e) { return {}; } };
   var settings;
@@ -139,6 +139,7 @@
       settings.adj = Object.assign(defaults().adj, raw.adj || {});
       settings.jamaat = Object.assign(defaults().jamaat, raw.jamaat || {});
       settings.loc = Object.assign(defaults().loc, raw.loc || {});
+      if (raw.asr === 'hanafi' && raw.asrPreferenceChosen !== true) { settings.asr = 'standard'; settings.asrPreferenceChosen = true; try { localStorage.setItem(KEY, JSON.stringify(settings)); } catch (_) {} }
     } else {
       settings = d;
       // A person who already typed their own prayer times keeps them: start in "my own times" mode.
@@ -170,7 +171,7 @@
     return out;
   }
   api.get = function () { return settings; };
-  api.set = function (patch) { Object.assign(settings, patch); persist(); };
+  api.set = function (patch) { if (Object.prototype.hasOwnProperty.call(patch, 'asr')) settings.asrPreferenceChosen = true; Object.assign(settings, patch); persist(); };
   api.setAdj = function (k, v) { settings.adj[k] = Math.max(-60, Math.min(60, Math.round(v))); persist(); };
   api.resetAdj = function () { Object.keys(settings.adj).forEach(function (k) { settings.adj[k] = 0; }); persist(); };
   api.setJamaat = function (k, patch) { settings.jamaat[k] = Object.assign({}, settings.jamaat[k], patch); persist(); };

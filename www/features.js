@@ -12,9 +12,9 @@
     const shortcuts = document.createElement('section');
     shortcuts.id = 'homeFeatureShortcuts';
     shortcuts.className = 'home-feature-shortcuts';
-    shortcuts.innerHTML = `<div class="section-heading"><div><span class="eyebrow">USEFUL TOOLS</span><h2>Made for your day</h2></div><button type="button" class="subtle-link" id="openExplore">All features ↗</button></div><div class="home-tool-grid"><button type="button" class="home-tool" data-go-feature="qiblaScreen"><span class="home-tool-icon">⌖</span><span><strong>Qibla finder</strong><small>Find your direction</small></span><b>↗</b></button><button type="button" class="home-tool" data-go-feature="zakatScreen"><span class="home-tool-icon">◈</span><span><strong>Zakat calculator</strong><small>Estimate your Zakat</small></span><b>↗</b></button></div>`;
+    shortcuts.innerHTML = `<div class="section-heading"><div><span class="eyebrow">USEFUL TOOLS</span><h2>Made for your day</h2></div><button type="button" class="subtle-link" id="openMore">More tools ↗</button></div><div class="home-tool-grid"><button type="button" class="home-tool" data-go-feature="qiblaScreen"><span class="home-tool-icon">⌖</span><span><strong>Qibla finder</strong><small>Find your direction</small></span><b>↗</b></button><button type="button" class="home-tool" data-go-feature="zakatScreen"><span class="home-tool-icon">◈</span><span><strong>Zakat calculator</strong><small>Estimate your Zakat</small></span><b>↗</b></button></div>`;
     home.appendChild(shortcuts);
-    $('openExplore')?.addEventListener('click', () => switchScreen('featuresScreen'));
+    $('openMore')?.addEventListener('click', () => switchScreen('featuresScreen'));
     shortcuts.querySelectorAll('[data-go-feature]').forEach(button => button.addEventListener('click', () => switchScreen(button.dataset.goFeature)));
   }
 

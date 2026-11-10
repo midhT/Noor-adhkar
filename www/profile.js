@@ -48,5 +48,7 @@
       paint(); $('acNote').textContent = 'Picture saved on this device.'; say('Picture saved');
     } catch (_) { $('acNote').textContent = 'That picture could not be read. Try a different image.'; }
   });
+  window.NaseemProfile = { get: () => ({ ...profile }) };
+  document.addEventListener('naseem:profile-updated', () => { try { const v=JSON.parse(localStorage.getItem(KEY)||'{}'); profile.name=String(v.name||'').slice(0,40); paint(); } catch (_) {} });
   paint();
 })();

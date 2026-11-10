@@ -26,6 +26,12 @@ window.NoorNative = {
   async init() {
     if (!isNative) return;
     try {
+      await LocalNotifications.addListener('localNotificationActionPerformed', event => {
+        const url = event?.notification?.extra?.url;
+        if (typeof url === 'string' && url.startsWith('https://')) window.open(url, '_system');
+      });
+    } catch (_) {}
+    try {
       await StatusBar.setOverlaysWebView({ overlay: false });
       await StatusBar.show();
       await StatusBar.setBackgroundColor({ color: '#0b0b0d' });
@@ -70,6 +76,12 @@ window.NoorNative = {
         schedule: { at: new Date(n.at), allowWhileIdle: true }
       }));
       for (let i = 0; i < mapped.length; i += 40) await LocalNotifications.schedule({ notifications: mapped.slice(i, i + 40) });
+    },
+    async announceUpdate(version, url) {
+      try {
+        await LocalNotifications.schedule({ notifications: [{ id: 99001, title: 'Naseem update available', body: `Version ${version} is ready. Tap to view the release and install it manually.`, schedule: { at: new Date(Date.now() + 1200) }, extra: { url } }] });
+        return true;
+      } catch (_) { return false; }
     },
     async pending() {
       try { return (await LocalNotifications.getPending()).notifications.map(n => n.id); } catch (_) { return []; }

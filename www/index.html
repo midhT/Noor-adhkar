@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0b0d">
   <meta name="description" content="Naseem — an offline-first Islamic daily companion for Dhikr, Salah, Duas, Zakat and reflection.">
+  <meta name="naseem-version" content="4.0.5">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css">
@@ -34,6 +35,9 @@
           <h1>Return to remembrance.</h1>
           <p class="muted">A little, consistently, with intention.</p>
         </div>
+
+        <button type="button" class="home-hijri-card" data-open-v404="hijri"><span><small>ISLAMIC DATE</small><strong id="homeHijriDate">Loading Hijri date…</strong><em>Open calendar ↗</em></span><b aria-hidden="true">☾</b></button>
+        <section class="home-ramadan-card" id="homeRamadanCard" hidden><div><small>RAMADAN · TODAY</small><strong>Sehri & Iftar</strong></div><div class="ramadan-times"><span>Sehri ends <b id="homeSehriTime">—</b></span><span>Iftar <b id="homeIftarTime">—</b></span></div></section>
 
         <div class="streak-card">
           <div class="streak-icon">✦</div>
@@ -100,32 +104,29 @@
       <section class="screen" id="salahScreen"></section>
 
       <section class="screen" id="featuresScreen">
-        <div class="screen-heading"><span class="eyebrow">THE NASEEM EXPERIENCE</span><h1>Explore</h1><p class="muted">Tools available now, with more being prepared thoughtfully.</p></div>
-        <div class="feature-status-row"><span class="status-dot"></span><span>Available now</span><small>Offline-first · device-tested features still require verification</small></div>
+        <div class="screen-heading"><span class="eyebrow">THE NASEEM EXPERIENCE</span><h1>More</h1><p class="muted">Useful tools and learning resources for your daily practice.</p></div>
+        <div class="feature-status-row"><span class="status-dot"></span><span>Available now</span><small>Available daily tools</small></div>
         <div class="feature-grid">
           <button class="feature-card feature-live" type="button" data-open-feature="qiblaScreen"><span class="feature-icon">⌖</span><span class="feature-name">Qibla finder</span><span class="feature-desc">Find the direction of the Kaaba using your location and compass.</span><span class="feature-state live">Available now ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-feature="zakatScreen"><span class="feature-icon">◈</span><span class="feature-name">Zakat calculator</span><span class="feature-desc">Estimate 2.5% on eligible wealth above your entered nisab.</span><span class="feature-state live">Available now ↗</span></button>
         </div>
-        <div class="section-heading"><div><span class="eyebrow">NEW TOOLS</span><h2>Explore Naseem</h2></div><span class="pill">AVAILABLE</span></div>
+        <div class="section-heading"><div><span class="eyebrow">NEW TOOLS</span><h2>More from Naseem</h2></div><span class="pill">AVAILABLE</span></div>
         <div class="feature-grid" id="plannedFeatureGrid">
           <button class="feature-card feature-live" type="button" data-open-v404="hijri"><span class="feature-icon">▦</span><span class="feature-name">Hijri calendar</span><span class="feature-desc">Month view, date conversion, Ramadan and Islamic occasions.</span><span class="feature-state live">Available now ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-v404="duas"><span class="feature-icon">۞</span><span class="feature-name">Dua library</span><span class="feature-desc">Quranic supplications with Arabic, meaning, references and favourites.</span><span class="feature-state live">Available now ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-existing="adhkar"><span class="feature-icon">◌</span><span class="feature-name">Guided Adhkar sessions</span><span class="feature-desc">Morning and evening routines with per-item counters and completion tracking.</span><span class="feature-state live">Available now · starter content</span></button>
           <button class="feature-card feature-live" type="button" data-open-v404="salah-learning"><span class="feature-icon">☾</span><span class="feature-name">Expanded Salah learning</span><span class="feature-desc">Wudu, ghusl, guided lessons and recognised school-specific guidance.</span><span class="feature-state live">Available now ↗</span></button>
-          <button class="feature-card" type="button" data-planned="Masjid finder"><span class="feature-icon">⌂</span><span class="feature-name">Masjid finder</span><span class="feature-desc">Nearby masjids, multiple Jamaat schedules and saved locations.</span><span class="feature-state planned">Under development</span></button>
-          <button class="feature-card feature-live" type="button" data-open-v404="widgets"><span class="feature-icon">▣</span><span class="feature-name">Widgets studio</span><span class="feature-desc">Customisable prayer, Dhikr and daily reminder widgets.</span><span class="feature-state live">Available now ↗</span></button>
-          <button class="feature-card" type="button" data-planned="Zakat records"><span class="feature-icon">◫</span><span class="feature-name">Zakat records</span><span class="feature-desc">Yearly records, asset history and payment tracking.</span><span class="feature-state planned">Under development</span></button>
+          <button class="feature-card feature-live" type="button" data-open-v404="widgets"><span class="feature-icon">▣</span><span class="feature-name">Tasbeeh widget</span><span class="feature-desc">Customise and sync your Tasbeeh home-screen widget.</span><span class="feature-state live">Available now ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-v404="occasions"><span class="feature-icon">✧</span><span class="feature-name">Islamic occasions</span><span class="feature-desc">Ramadan planning, important dates and gentle reminders.</span><span class="feature-state live">Available now ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-v404="profiles"><span class="feature-icon">◇</span><span class="feature-name">Tradition profiles</span><span class="feature-desc">Clear learning paths for recognised Islamic traditions.</span><span class="feature-state live">Available now ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-v404="glance"><span class="feature-icon">۝</span><span class="feature-name">Glance</span><span class="feature-desc">A daily reminder and future publisher updates, with offline fallback.</span><span class="feature-state live">Available now ↗</span></button>
-          <button class="feature-card" type="button" data-planned="Prayer history"><span class="feature-icon">◷</span><span class="feature-name">Prayer history</span><span class="feature-desc">Private prayer completion logs and consistent progress tracking.</span><span class="feature-state planned">Under development</span></button>
         </div>
-        <div class="feature-footnote">New learning content is educational and should be reviewed by qualified editors before public release. Calendar dates may vary by local moon sighting.</div>
+        <div class="feature-footnote">Calendar dates can vary with local moon sighting. Religious learning content is provided as general guidance.</div>
         <button class="feature-link" type="button" data-open-feature="progressScreen">View your remembrance progress ↗</button>
       </section>
 
       <section class="screen" id="qiblaScreen">
-        <button class="back-link" type="button" data-back="featuresScreen">‹ Explore</button>
+        <button class="back-link" type="button" data-back="featuresScreen">‹ More</button>
         <div class="screen-heading"><span class="eyebrow">DIRECTION OF PRAYER</span><h1>Qibla finder</h1><p class="muted">Point your phone towards the Kaaba in Makkah.</p></div>
         <div class="qibla-card card-surface">
           <div class="qibla-topline"><span class="eyebrow">LIVE COMPASS</span><span class="qibla-compass-state" id="qiblaCompassState">Compass not enabled</span></div>
@@ -233,7 +234,7 @@
       <button class="nav-item active" data-screen="homeScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4l8 7.2V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg></span><small>Home</small></button>
       <button class="nav-item" data-screen="dhikrScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/></svg></span><small>Dhikr</small></button>
       <button class="nav-item" data-screen="salahScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c0 2.2-2.6 3-2.6 5.2h5.2c0-2.2-2.6-3-2.6-5.2z"/><path d="M6 20.5v-7.3a6 6 0 0 1 12 0v7.3"/><path d="M3.5 20.5h17"/></svg></span><small>Salah</small></button>
-      <button class="nav-item" data-screen="featuresScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></span><small>Explore</small></button>
+      <button class="nav-item" data-screen="featuresScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></span><small>More</small></button>
       <button class="nav-item" data-screen="zakatScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 20 8v8l-8 4.5L4 16V8z"/><path d="M12 8.5v7M9.5 10.5h4a1.6 1.6 0 0 1 0 3h-3a1.6 1.6 0 0 0 0 3h4"/></svg></span><small>Zakat</small></button>
       <button class="nav-item" data-screen="settingsScreen"><span class="ni" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.8 5.8l1.5 1.5M16.7 16.7l1.5 1.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5"/></svg></span><small>Settings</small></button>
     </nav>
@@ -259,5 +260,6 @@
   <script src="zakat-core.js"></script>
   <script src="features.js"></script>
   <script src="v404.js"></script>
+  <script src="public-updates.js"></script>
 </body>
 </html>

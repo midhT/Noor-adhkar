@@ -1,3 +1,21 @@
+# V4.0.5 — User-focused release candidate
+
+- Reworked first-run setup to include an optional display name and an explicit learning-profile choice.
+- Setup preferences remain local; completion is saved so the setup does not reopen on ordinary launches. The setup can be reopened manually from Settings.
+- Notification permission is requested automatically after setup completion, without a separate checkbox. Denial does not block app use.
+- Changed the implicit Asr default from Hanafi to Standard for fresh installs and migrated older implicit Hanafi defaults once. Users can still choose Hanafi in Salah settings or select a learning profile.
+- Renamed the Explore destination to More and removed unavailable Masjid Finder, Zakat Records and Prayer History tiles.
+- Restricted Widget Studio to Tasbeeh widget customisation/sync; Salah reminders remain in Salah settings.
+- Added Hijri date access from Home, Ramadan Sehri-end (Fajr) and Iftar (Maghrib) times while in Ramadan, and online Hijri date refresh with local/offline fallback.
+- Added a public JSON release-check client for `midhT/Naseem-public`; updates are announced in-app and, where permission exists, by Android notification. Installation remains manual.
+- Added starter public repository content files for release metadata, Dua Library and Glance.
+
+## Validation status
+
+Source-level JavaScript checks, feature integration tests, native Android patch tests, Adhkar core tests, signing patch tests, and 9,840 Salah engine comparisons passed. `npm install` timed out in this environment, so the web bundle and APK were not built here. GitHub Actions and physical-device validation are still required. This is a release candidate, not yet a verified Play Store/public release.
+
+---
+
 # V4.0.4 — Feature integration build
 
 - Added offline Hijri calendar and Gregorian date conversion using Android/browser ICU Islamic calendar data.

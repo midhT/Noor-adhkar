@@ -1,31 +1,28 @@
-# Naseem V4.0.4 — implementation status
+# Naseem V4.0.5 — implementation status
 
-## Implemented in source
+## Updated in this release candidate
+- First-launch setup now includes optional display name and an explicit learning-profile choice; choices are stored locally.
+- Setup completion prevents automatic reappearance. Settings provides a manual setup-reopen action.
+- Android notification permission is requested automatically after setup completion, with graceful behaviour if declined.
+- Asr no longer silently assumes Hanafi on fresh installs. Older unconfirmed Hanafi defaults are migrated to Standard once; explicit user choices are retained.
+- More replaces Explore; unavailable placeholder tiles are removed.
+- Widget Studio now only controls the Tasbeeh widget. Prayer reminders remain in Salah settings.
+- Home has Hijri calendar access and a Ramadan-only Sehri-end/Fajr and Iftar/Maghrib card.
+- Online Hijri date refresh and upcoming occasion-date refresh use AlAdhan (Umm al-Qura calendar) as best-effort sources with device-calendar/cached fallback.
+- Public release checker reads `midhT/Naseem-public/release.json`, shows an in-app update card and can send a local notification when permission is available. It only links to a release for manual installation.
+- `public-content/` contains seed JSON and instructions for the separate public content repository.
 
-- Existing V4.0.3 base retained: Qibla, Salah calculations/scheduling, Adhkar sessions, Zakat estimate, accent controls, backup/restore and existing progress logic.
-- Hijri month calendar and Gregorian ↔ Hijri date conversion using the device ICU Islamic calendar (`islamic-umalqura` where available, otherwise `islamic`). No calendar API is required for this local conversion. Regional moon-sighting differences remain possible.
-- Quranic Dua starter library: five supplications with Arabic, transliteration, concise meaning, Quran reference, search/category filters and local favourites. It is not yet a comprehensive Hadith/Sunnah Dua library. Content must be checked by a qualified Arabic/religious editor before public release.
-- Salah learning starter centre: seven general learning lessons covering preparation, Wudu, prayer sequence, bowing, prostration, final sitting and Ghusl. This is general education, not a tradition-specific fatwa or full course.
-- Traditional learning profile selector: Hanafi, Shafi‘i, Maliki, Hanbali and Ja‘fari preferences are saved locally and included in backup. Current lessons are still general, not yet fully adapted to each profile.
-- Islamic occasions list with approximate dates derived from the device Hijri calendar; local reminders can be scheduled through Android notifications. Some dates/observances vary or are disputed and must be confirmed locally.
-- Widget Studio connects to the existing Android Prayer and Tasbeeh widget implementations. Tasbeeh data can be pushed from the app; Prayer widget data is supplied by the existing Salah schedule service. Users add widgets through the Android launcher.
-- Glance client accepts a configurable public HTTPS JSON feed, selects the latest published item, caches the last successful item locally, and has a bundled Quranic reminder fallback. Feed schema and sample content are in `docs/glance-content/`. The future admin app and hosted public repository are not part of this delivery; the user must configure a feed URL when it exists. Never embed a GitHub token in the APK.
-- First-launch setup is skippable and can be reopened from Settings. It saves a learning profile, optional city/GPS location, theme and optional notification permission choice locally.
-- Android back-button listener uses `@capacitor/app`.
-- GitHub Actions now runs `scripts/patch-icons.mjs` and `scripts/patch-android.mjs`, so the monochrome launcher layer, native widget Java/resources, plugin registration and manifest receivers are copied into the generated Android project before Gradle.
-- App version is 4.0.4. Android application ID remains `com.noor.adhkar`; public display name remains Naseem.
+## Existing features retained
+- Offline Salah calculation and Jamaat settings, Qibla, Adhkar sessions, Tasbeeh, Zakat estimate, Hijri conversion, Dua starter library, learning pages, Glance fallback, backup/restore, and existing Android widget integration.
 
-## Still pending / not claimed complete
+## Still required before public release
+- Create `midhT/Naseem-public` and copy the seed files from `public-content/` to its root. Publish and verify the first GitHub Release and APK link.
+- Verify the update feed notification end-to-end with a later version.
+- Verify the online Islamic-occasion calendar integration against local moon-sighting practice and complete dedicated Zawal/Ramadan timetable validation.
+- Verify remote Dua feed updates and Glance feed on a live public repository.
+- Full Samsung device checks for notifications, prayer scheduling, widgets, location, Qibla sensors, startup/onboarding persistence, backup/restore and in-place APK updates.
+- Confirm the existing signing key is retained in CI. Never replace it casually: Android will reject an update signed with a different key.
+- Review all Arabic text, translations and religious references with qualified reviewers.
+- Prepare privacy policy, Data Safety declarations, store listing, and a signed release build before Play Store submission.
 
-- Full Home dashboard and remaining P2 handover work.
-- Masjid finder, Zakat records/payment history and prayer history.
-- Comprehensive Dua collection (including verified Hadith/Sunnah sources, audio and memorisation mode).
-- Tradition-specific Salah content, detailed comparisons and scholarly review.
-- A real Glance admin application and hosted public feed repository.
-- Any further APIs that need credentials/hosting; the Glance client is ready for a public HTTPS JSON endpoint but no feed is configured by default.
-- Complete physical-device validation: sensors, notifications, widget refresh/reboot, Android back behaviour, backup/restore and in-place update signature.
-- Full browser UI tests and Gradle APK build in CI.
-
-## Religious-content and date caveats
-
-All new religious content is a starter implementation. Quranic references and Arabic should be reviewed against a trusted mushaf. Calendar dates are calculated from the device's ICU calendar and may differ from local moon sighting. Do not present this build as a scholarly authority or public-release candidate.
+This package is a **release candidate**, not a verified public release.

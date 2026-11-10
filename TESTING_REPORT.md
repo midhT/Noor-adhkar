@@ -1,22 +1,20 @@
-# Naseem V4.0.4 — source validation report
+# Naseem V4.0.5 — source validation report
 
 ## Passed in this environment
-
-- JavaScript syntax checks for application scripts and build scripts.
-- `tests/test_v404_source.js`: feature routes, package version, feed, onboarding and backup registration.
-- `tests/test_android_patch.mjs`: simulates a generated Capacitor Android project and verifies MainActivity/plugin Java, widget resources, manifest receivers/permissions and version code are copied.
-- `tests/test_new_tools.js`: Qibla and Zakat unit tests.
-- `tests/test_adhkar_core.js`: Adhkar session logic tests.
-- `tests/test_signing.mjs`: signing Gradle patch tests.
-- `tests/verify_salah_engine.py`: 9,840 prayer-engine comparisons; worst difference 0.55 minutes, within 1 minute.
+- JavaScript syntax checks for changed app modules.
+- `tests/test_new_tools.js`: 16 assertions.
+- `tests/test_v404_source.js`: V4.0.5 onboarding, feature routes, More navigation and public update client assertions.
+- `tests/test_android_patch.mjs`: simulated native Android integration and versionCode 40005.
+- `tests/test_adhkar_core.js`: Adhkar session logic.
+- `tests/test_signing.mjs`: Gradle signing patch logic.
+- `tests/verify_salah_engine.py`: 9,840 prayer-engine comparisons; worst difference 0.55 minutes, within the 1-minute tolerance.
 
 ## Not verified here
+- `npm install` timed out, so `npm run build` and the Android APK build were not completed in this environment.
+- No real Samsung device validation was performed.
+- The public repository `midhT/Naseem-public` must be created and populated before remote Dua/Glance feeds and release checks can return live content. Until then, built-in/cached content remains available.
+- Online Hijri date and upcoming occasion refreshes are best-effort and fall back to the device calendar/cache; local moon-sighting announcements remain authoritative.
+- Ramadan card uses Fajr as the Sehri cutoff and Maghrib as Iftar based on the configured local prayer schedule; users should follow their local mosque timetable.
+- Zawal-specific timing, a dedicated Ramadan timetable API, complete Islamic occasion API integration, final release signing continuity, and Play Store readiness remain to be verified/completed.
 
-- `npm install` timed out, so `npm run build` could not be completed in this environment. GitHub Actions must install dependencies and run the build.
-- Browser UI tests could not run: the environment blocks local browser navigation (`ERR_BLOCKED_BY_ADMINISTRATOR`).
-- No Android Gradle APK was built here.
-- No Samsung device was available. All sensors, local notifications, widgets, first-run onboarding, update installation and actual rendering still require testing on the user's Galaxy device.
-
-## Release gate
-
-A successful GitHub Actions build is not proof of runtime correctness. Install the APK on the Samsung, verify the new Explore cards and each flow, check widgets via the launcher, then verify an in-place update using the existing signing key before considering public distribution.
+**Status: release candidate source package only. Do not describe as public-release ready until GitHub Actions succeeds and device tests pass.**
