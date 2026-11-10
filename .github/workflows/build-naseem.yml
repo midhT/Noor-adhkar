@@ -34,6 +34,9 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
+      - name: Install native Android widgets and manifest
+        run: node scripts/patch-android.mjs
+
       - name: Generate Naseem icons and splash
         run: npx --yes @capacitor/assets generate --android
 
