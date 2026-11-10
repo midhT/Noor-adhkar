@@ -34,7 +34,7 @@ jobs:
         run: npm run build
 
       - name: Set up Android
-        run: npx cap sync android
+        run: npx cap add android
 
       - name: Use stable signing key
         run: node scripts/apply-signing.mjs
