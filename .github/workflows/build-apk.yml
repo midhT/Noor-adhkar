@@ -2,11 +2,6 @@ name: Build Naseem APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - 'naseem-*'
-      - 'noor-*'
 
 permissions:
   contents: read
@@ -21,42 +16,29 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: 22
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: 21
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build native bridge
+      - name: Build web app
         run: npm run build
 
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Add Noor widgets, alarm permissions and native plugin
-        run: node scripts/patch-android.mjs
-
-      - name: Generate launcher icon and splash assets
-        run: npx --yes @capacitor/assets generate --android
-
-      - name: Add themed (monochrome) icon layer
-        run: node scripts/patch-icons.mjs
-
-      - name: Sync Capacitor
+      - name: Set up Android
         run: npx cap sync android
 
-      - name: Build debug APK
+      - name: Build APK
         working-directory: android
-        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+        run: chmod +x gradlew && ./gradlew assembleDebug
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Naseem-debug-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
