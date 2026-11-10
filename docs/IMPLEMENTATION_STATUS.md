@@ -57,3 +57,6 @@ This delivery is a branded development foundation and implementation handover, n
 - Not verified on device: compass sensor behaviour on the Samsung WebView, six-tab nav ergonomics, haptics.
 - Content caveat: the Adhkar list is a starter set with `verified:false` on every entry.
 - Still planned: nav drag gesture, Android back handling (needs `@capacitor/app`), Home dashboard additions, Dhikr enhancements, statistics, achievements, personalisation.
+
+## V4.0.4 feature expansion
+See `docs/V4.0.4_STATUS.md` for the detailed implementation and release gates. This source now includes functional first-pass modules for the Hijri calendar, Dua Library, traditional learning profiles, Islamic occasions, Salah learning, Widget Studio, Glance, onboarding and Android back handling. These are development implementations, not yet real-device or scholarly sign-off.

@@ -1,4 +1,5 @@
 import { registerPlugin } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { LocalNotifications } from '@capacitor/local-notifications';
@@ -14,6 +15,7 @@ const ADHAN_FILE = 'adhan.mp3'; // android/app/src/main/res/raw/adhan.mp3 (copie
 
 window.NoorNative = {
   isNative,
+  async exitApp() { try { await App.exitApp(); } catch (_) {} },
   async haptic() {
     if (!isNative) {
       if (navigator.vibrate) navigator.vibrate(12);
@@ -90,4 +92,9 @@ window.NoorNative = {
     async takePending() { try { return (await NoorWidgets.takePending()).count || 0; } catch (_) { return 0; } }
   } : null
 };
+if (isNative) App.addListener('backButton', ({ canGoBack }) => {
+  const unhandled = window.dispatchEvent(new CustomEvent('noor:android-back', { cancelable: true }));
+  if (unhandled && canGoBack) window.history.back();
+  else if (unhandled && !canGoBack) App.exitApp();
+});
 document.addEventListener('DOMContentLoaded', () => { window.NoorNative.init(); });

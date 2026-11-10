@@ -1,3 +1,4 @@
+try { window.NASEEM_FRESH_INSTALL = !localStorage.getItem('noor-adhkar-v1'); } catch (_) { window.NASEEM_FRESH_INSTALL = false; }
 (() => {
   const intro = document.getElementById('noorIntro');
   if (!intro) return;

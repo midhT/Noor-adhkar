@@ -20,7 +20,7 @@ function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("sho
 const TABS=["homeScreen","dhikrScreen","salahScreen","featuresScreen","zakatScreen","settingsScreen"];
 let curScreen="homeScreen";
 function setDhikrPanel(p){const panels=["counterScreen","libraryScreen"];panels.forEach(id=>{const el=$(id),on=id===p;if(on&&el.hidden){el.hidden=false;el.classList.remove("enter");void el.offsetWidth;el.classList.add("enter");}el.hidden=!on;el.classList.toggle("active",on);});document.querySelectorAll(".seg-switch [data-panel]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.panel===p)));const sw=document.querySelector(".seg-switch");if(sw)sw.dataset.p=p==="libraryScreen"?"1":"0";}
-function switchScreen(id,opts={}){let panel=null;if(id==="counterScreen"||id==="libraryScreen"){panel=id;id="dhikrScreen";}if(panel)setDhikrPanel(panel);const from=TABS.indexOf(curScreen),to=TABS.indexOf(id);const dir=opts.dir||(id!==curScreen&&from>=0&&to>=0?(to>from?"next":"prev"):"");const changed=id!==curScreen;document.querySelectorAll(".screen").forEach(s=>{const on=s.id===id;if(on&&changed)s.dataset.dir=dir;s.classList.toggle("active",on);});const navScreen=((id==="progressScreen"||id==="adhkarSessionScreen")?"homeScreen":(id==="qiblaScreen"?"featuresScreen":id));document.querySelectorAll(".nav-item").forEach(b=>{const on=b.dataset.screen===navScreen;b.classList.toggle("active",on);b.setAttribute("aria-current",on?"page":"false");});curScreen=id;window.scrollTo(0,0);if(id==="progressScreen")renderProgress();document.dispatchEvent(new CustomEvent("noor:screen",{detail:id,bubbles:false}));}
+function switchScreen(id,opts={}){let panel=null;if(id==="counterScreen"||id==="libraryScreen"){panel=id;id="dhikrScreen";}if(panel)setDhikrPanel(panel);const from=TABS.indexOf(curScreen),to=TABS.indexOf(id);const dir=opts.dir||(id!==curScreen&&from>=0&&to>=0?(to>from?"next":"prev"):"");const changed=id!==curScreen;document.querySelectorAll(".screen").forEach(s=>{const on=s.id===id;if(on&&changed)s.dataset.dir=dir;s.classList.toggle("active",on);});const navScreen=((id==="progressScreen"||id==="adhkarSessionScreen")?"homeScreen":(["qiblaScreen","hijriScreen","duaScreen","traditionScreen","occasionScreen","salahLearnScreen","widgetStudioScreen","glanceScreen"].includes(id)?"featuresScreen":id));document.querySelectorAll(".nav-item").forEach(b=>{const on=b.dataset.screen===navScreen;b.classList.toggle("active",on);b.setAttribute("aria-current",on?"page":"false");});curScreen=id;window.scrollTo(0,0);if(id==="progressScreen")renderProgress();document.dispatchEvent(new CustomEvent("noor:screen",{detail:id,bubbles:false}));}
 document.querySelectorAll(".seg-switch [data-panel]").forEach(b=>b.addEventListener("click",()=>setDhikrPanel(b.dataset.panel)));
 document.querySelectorAll("[data-back]").forEach(b=>b.addEventListener("click",()=>switchScreen(b.dataset.back)));
 document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>switchScreen(b.dataset.screen)));
@@ -71,10 +71,26 @@ const labels=[];for(let i=6;i>=0;i--){const date=new Date();date.setDate(date.ge
 
 // ---- Home-screen tasbeeh widget sync (Android app only; no-ops in a browser) ----
 let widgetReady=false;
-function pushWidget(){const w=window.NoorNative?.widgets;if(!w||!widgetReady)return;const dh=getDhikr();w.setTasbeeh({name:dh.name,arabic:dh.arabic,count:state.count||0,target:state.target||100});}
+function pushWidget(){const w=window.NoorNative?.widgets;if(!w||!widgetReady)return;const dh=getDhikr();let studio=null;try{studio=JSON.parse(localStorage.getItem("naseem-v404")||"{}").widget;}catch(_){}const custom=studio&&studio.type==="tasbeeh";w.setTasbeeh({name:custom?String(studio.name||dh.name).slice(0,32):dh.name,arabic:dh.arabic,count:state.count||0,target:custom?Math.max(1,Number(studio.target)||state.target||100):(state.target||100)});}
 async function pullWidgetTaps(){const w=window.NoorNative?.widgets;if(!w){widgetReady=true;return;}let n=0;try{n=await w.takePending();}catch{}widgetReady=true;if(n>0){const d=today();state.count=(state.count||0)+n;state.days[d] ||= {counts:0,sessions:0,goalComplete:false};state.days[d].counts=(state.days[d].counts||0)+n;const name=getDhikr().name;state.counts[name]=(state.counts[name]||0)+n;save();renderAll();toast(`${n} count${n===1?"":"s"} added from your widget`);}else pushWidget();}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){pullWidgetTaps();$("todayLabel").textContent=prettyDate(today()).toUpperCase();renderAll();if(curScreen==="adhkarSessionScreen"&&sessionDate!==today()){sessionDate=today();buildSession();renderSession();}}});
 function renderAll(){updateStreak();renderHome();renderCounter();renderProgress();if($("libraryScreen")&&!$("libraryScreen").hidden)renderLibrary($("librarySearch").value);}
 $("themeBtn").addEventListener("click",()=>{state.theme=state.theme==="light"?"dark":"light";document.body.classList.toggle("light",state.theme==="light");save();});
 if("serviceWorker" in navigator && location.protocol!=="file:"){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
 document.body.classList.toggle("light",state.theme==="light");$("dhikrSelect").value=state.selected;renderLibrary();renderAll();pullWidgetTaps();
+
+// Android system back: return from feature/detail screens to their parent without leaving stale overlays.
+window.addEventListener('noor:android-back', event => {
+  const active = document.querySelector('.screen.active');
+  if (!active) return;
+  const parents = {
+    qiblaScreen:'featuresScreen', hijriScreen:'featuresScreen', duaScreen:'featuresScreen',
+    traditionScreen:'featuresScreen', occasionScreen:'featuresScreen', salahLearnScreen:'featuresScreen',
+    widgetStudioScreen:'featuresScreen', glanceScreen:'featuresScreen', zakatScreen:'featuresScreen',
+    adhkarSessionScreen:'homeScreen', progressScreen:'homeScreen'
+  };
+  if (parents[active.id]) { event.preventDefault(); switchScreen(parents[active.id]); }
+  else if (active.id === 'featuresScreen') { event.preventDefault(); switchScreen('homeScreen'); }
+  else if (active.id !== 'homeScreen') { event.preventDefault(); switchScreen('homeScreen'); }
+  else { event.preventDefault(); window.NoorNative?.exitApp?.(); }
+});

@@ -38,3 +38,19 @@ UI suite is now 57 checks; scheduling 16.
 - `node --check` passed for the new tool scripts and changed app scripts; HTML parsing passed.
 - Existing prayer-engine regression: 9,840 comparisons; worst difference 0.55 minutes; all within the 1-minute test tolerance.
 - Full browser suite and Android APK build were not run in this environment: package installation timed out, and the local browser launch was blocked by the container. Compass/GPS behaviour still needs testing on a physical Android device.
+
+## V4.0.4 source update checks (2026-11-10)
+
+Passed:
+- `node --check` for every `www/*.js` file.
+- `node tests/test_new_tools.js` — 16 assertions.
+- `node tests/test_adhkar_core.js` — all assertions.
+- `node tests/test_signing.mjs` — all mock signing assertions.
+- `python3 tests/verify_salah_engine.py` — 9,840 comparisons, worst difference 0.55 minutes.
+- Static check for unique IDs in `index.html` and presence of all seven new feature screens.
+- Simulated Android platform patch: native Java files copied into `com/noor/adhkar`, two widget receivers inserted, versionCode set to 40004.
+
+Blocked / not run:
+- `npm install` timed out in this environment, so `npm run build` could not be completed.
+- Playwright UI tests could not launch because the Chromium executable is unavailable.
+- No Gradle APK build or physical Samsung test was run here.

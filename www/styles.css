@@ -84,3 +84,23 @@ body.intro-pending{overflow:hidden}body.intro-pending .app-shell{visibility:hidd
 body.light .card-surface,body.light .pd-ring-card,body.light .pd-banner{background:linear-gradient(145deg,#fffdf8,#ece8df);border-color:var(--line)}body.light .pd-sun{background:#eee9df;color:#333}body.light .pd-ring{background:conic-gradient(var(--gold) 0 var(--ring-angle,145deg),#d7d2c7 var(--ring-angle,145deg) 360deg)}body.light .pd-ring:before{background:#f5f1e8}body.light .pd-ring span,body.light .pd-next-ar{color:var(--text)}body.light .pd-editor{background:#fffdf8;border-color:var(--line)}body.light .pd-input-grid input,body.light .pd-sunrise-input input{background:#f0ece3;color:#26231e;color-scheme:light}
 @media(max-width:360px){.pd-next{grid-template-columns:1fr 42px 1fr;padding:14px 11px}.pd-sun{width:40px;height:40px;font-size:23px}.pd-prayer{gap:4px}.pd-ring-card{padding:10px 4px}.pd-ring{width:100%}.pd-ring:before{inset:6px}.pd-ring>div{gap:2px}}
 @media(prefers-reduced-motion:reduce){.pd-ring{transition:none}}
+
+/* Naseem V4.0.4 startup identity: emerald light-ring reveal. */
+.noor-intro{background:radial-gradient(ellipse at 50% 44%,rgba(32,168,117,.16),transparent 38%),#080d0b;color:#e8f4ee}
+.noor-intro:before,.noor-intro:after{border-color:rgba(69,203,151,.16)}
+.intro-crescent{border-color:#49c996;box-shadow:inset 0 0 18px rgba(73,201,150,.16),0 0 28px rgba(73,201,150,.18)}
+.intro-crescent:after{background:#080d0b}
+.intro-star{color:#c9ffe7;text-shadow:0 0 22px rgba(73,201,150,.9)}
+.intro-wordmark{text-shadow:0 0 28px rgba(73,201,150,.22);letter-spacing:.3em}
+.intro-tagline{color:#91b8a6}.intro-tagline i{color:#49c996}
+.intro-rule{background:rgba(73,201,150,.18)}.intro-rule span{background:#49c996;box-shadow:0 0 12px #49c996}
+
+/* V4.0.4 opening mark: Arabic Naseem initial inside an emerald breathing orbit. */
+.intro-emblem{width:116px;height:116px;display:grid;place-items:center;filter:drop-shadow(0 0 28px rgba(73,201,150,.22))}
+.intro-orbit{position:absolute;inset:3px;border:1px solid rgba(73,201,150,.42);border-radius:34px;transform:rotate(45deg);animation:introOrbit 9s linear infinite}
+.intro-orbit:before,.intro-orbit:after{content:"";position:absolute;inset:12px;border:1px solid rgba(73,201,150,.25);border-radius:28px}
+.intro-orbit:after{inset:25px;border-color:rgba(73,201,150,.18)}
+.intro-calligraphy{position:relative;font-family:serif;font-size:68px;line-height:1;color:#c9ffe7;text-shadow:0 0 28px rgba(73,201,150,.45);animation:calligraphyBreathe 2.4s ease-in-out infinite}
+.intro-crescent{display:none}.intro-star{right:0;top:4px}
+@keyframes calligraphyBreathe{0%,100%{transform:translateY(1px) scale(.96);opacity:.88}50%{transform:translateY(-2px) scale(1.04);opacity:1}}
+@media(prefers-reduced-motion:reduce){.intro-orbit,.intro-calligraphy{animation:none!important}}

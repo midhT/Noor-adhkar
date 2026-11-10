@@ -2,8 +2,8 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const VERSION = '4.0.3';
-  const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1', 'noorSalahV1', 'noorProfileV1', 'noorAccentV1'];
+  const VERSION = '4.0.4';
+  const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1', 'noorSalahV1', 'noorProfileV1', 'noorAccentV1', 'naseem-v404'];
   const SAFETY = 'noorSafetyBackupV1';
   const MAX_BYTES = 5 * 1024 * 1024;
   const SCHEDULE_FIELDS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'sunrise'];
@@ -120,6 +120,15 @@
       for (const v of Object.values(sal.adj || {})) if (!Number.isInteger(v) || Math.abs(v) > 60) return fail('Saved prayer adjustments are damaged.');
       for (const j of Object.values(sal.jamaat || {})) if (!isObj(j) || !(j.offset >= 0 && j.offset <= 120) || (j.fixed && !NoorTime.valid(j.fixed))) return fail('Saved Jamaat settings are damaged.');
     }
+    const v4 = parsed['naseem-v404'];
+    if (v4) {
+      if ('tradition' in v4 && !['hanafi','shafii','maliki','hanbali','jafari'].includes(v4.tradition)) return fail('Traditional profile is not recognised.');
+      if ('hijriCorrection' in v4 && ![-2,-1,0,1,2].includes(v4.hijriCorrection)) return fail('Hijri date correction is not valid.');
+      if ('duaFavourites' in v4 && (!Array.isArray(v4.duaFavourites) || v4.duaFavourites.length > 200 || v4.duaFavourites.some(x => typeof x !== 'string' || x.length > 40))) return fail('Dua favourites are damaged.');
+      if ('widget' in v4 && (!isObj(v4.widget) || !['tasbeeh','prayer'].includes(v4.widget.type))) return fail('Widget settings are damaged.');
+      if ('glanceCache' in v4 && (!isObj(v4.glanceCache) || typeof v4.glanceCache.title !== 'string' || typeof v4.glanceCache.body !== 'string')) return fail('Glance cache is damaged.');
+      if ('occasionReminders' in v4 && typeof v4.occasionReminders !== 'boolean') return fail('Occasion reminder settings are damaged.');
+    }
     const prof = parsed['noorProfileV1'];
     if (prof) {
       if (typeof prof.name !== 'string' || prof.name.length > 60) return fail('Saved profile name is damaged.');
@@ -195,11 +204,13 @@
     Object.assign(state, { counts: {}, sessions: [], days: {}, completed: {}, adhkar: {}, streak: 0, best: 0, count: 0, date: null });
     save(); renderAll(); renderUndo(); note('Progress reset. You can undo this from Data & Backup.'); say('Progress reset');
   });
-  $('stEraseAll').addEventListener('click', () => {
+  $('stEraseAll').addEventListener('click', async () => {
     if (!confirm('Erase everything?\n\nThis removes all Naseem data from this device: progress, presets, prayer times, reminders and settings.\n\nA safety copy is kept so you can undo. Export a backup first if you want a copy you can keep.')) return;
     if (!confirm('Are you sure? This cannot be undone once Naseem is uninstalled.')) return;
     if (!keepSafetyCopy()) { note('Erase stopped: not enough space to keep a safety copy.', true); return; }
+    try { await window.NoorNative?.notifications?.cancelRange?.(95000, 95100); } catch (_) {}
     APP_KEYS.forEach(k => localStorage.removeItem(k));
+    localStorage.removeItem('naseem-setup-complete-v1');
     afterReload('All data erased');
   });
   renderUndo();

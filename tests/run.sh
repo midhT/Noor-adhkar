@@ -3,6 +3,7 @@
 # Needs: node + `npm install` already done, and `pip install playwright && playwright install chromium`.
 set -euo pipefail
 cd "$(dirname "$0")"
+python3 test_v404_static.py
 node test_new_tools.js
 node test_adhkar_core.js
 node test_signing.mjs
