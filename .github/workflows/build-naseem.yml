@@ -9,16 +9,17 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out project
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Set up Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -32,6 +33,12 @@ jobs:
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Generate Naseem icons and splash
+        run: npx --yes @capacitor/assets generate --android
+
+      - name: Apply themed icon layer
+        run: node scripts/patch-icons.mjs
 
       - name: Sync Android
         run: npx cap sync android
