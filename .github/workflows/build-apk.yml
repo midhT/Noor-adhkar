@@ -36,6 +36,9 @@ jobs:
       - name: Set up Android
         run: npx cap add android
 
+      - name: Generate Naseem icon and splash
+        run: npx --yes --package=@capacitor/assets capacitor-assets generate --android
+
       - name: Use stable signing key
         run: node scripts/apply-signing.mjs
 
