@@ -21,12 +21,13 @@
 
   // Hijri calendar uses the device's ICU Islamic calendar data; no network dependency.
   const hijriFmt = (() => { try { return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {day:'numeric',month:'long',year:'numeric'}); } catch { return new Intl.DateTimeFormat('en-u-ca-islamic', {day:'numeric',month:'long',year:'numeric'}); } })();
+  const withAH = label => String(label).replace(/\s*AH$/i,'')+' AH';
   const hijriParts = date => { const p=Object.fromEntries(hijriFmt.formatToParts(date).map(x=>[x.type,x.value])); return {day:Number(p.day),month:p.month,year:Number(p.year),label:hijriFmt.format(date)}; };
   const hijriNumericFmt = (()=>{try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'});}catch{return new Intl.DateTimeFormat('en-u-ca-islamic',{day:'numeric',month:'numeric',year:'numeric'});}})();
   const hijriNumeric = date => {const p=Object.fromEntries(hijriNumericFmt.formatToParts(date).map(x=>[x.type,x.value]));return {day:Number(p.day),month:Number(p.month),year:Number(p.year)};};
   const dayStart = d => new Date(d.getFullYear(),d.getMonth(),d.getDate());
   function updateHomeCalendar(){
-    const homeDate=$('homeHijriDate');if(homeDate)homeDate.textContent=hijriParts(new Date()).label+' AH';
+    const homeDate=$('homeHijriDate');if(homeDate)homeDate.textContent=withAH(hijriParts(new Date()).label);
     const hp=hijriNumeric(new Date()),ramadan=$('homeRamadanCard'),activeHijriMonth=window.naseemHijriApiMonth||hp.month;
     if(ramadan&&activeHijriMonth===9&&window.NoorSalah){const times=window.NoorSalah.timesFor(new Date());const fmt=v=>window.NoorTime?.to12?window.NoorTime.to12(v):v;ramadan.hidden=false;$('homeSehriTime').textContent=fmt(times.fajr);$('homeIftarTime').textContent=fmt(times.maghrib);}
     else if(ramadan)ramadan.hidden=true;
@@ -45,12 +46,12 @@
     $('hijriGregorianTitle').textContent=`${dates[0].date.toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${dates.at(-1).date.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
     const labels=['Su','Mo','Tu','We','Th','Fr','Sa'];
     $('hijriGrid').innerHTML=labels.map(x=>`<span class="v404-weekday">${x}</span>`).join('')+Array(first).fill('<span></span>').join('')+dates.map(x=>`<span class="v404-day ${dayStart(x.date).getTime()===dayStart(new Date()).getTime()?'today':''}" title="${esc(x.date.toDateString())}">${x.day}</span>`).join('');
-    $('hijriToday').textContent=`Today: ${hijriParts(new Date()).label} AH`;
+    $('hijriToday').textContent=`Today: ${withAH(hijriParts(new Date()).label)}`;
   }
   $('hijriPrev').addEventListener('click',()=>{hijriAnchor.setDate(hijriAnchor.getDate()-30);renderHijri();});
   $('hijriNext').addEventListener('click',()=>{hijriAnchor.setDate(hijriAnchor.getDate()+30);renderHijri();});
   $('hijriDateInput').value=new Date().toLocaleDateString('en-CA');
-  $('hijriDateInput').addEventListener('change',e=>{if(!e.target.value)return;const d=new Date(e.target.value+'T12:00:00');$('hijriConversion').textContent=hijriParts(d).label+' AH';});
+  $('hijriDateInput').addEventListener('change',e=>{if(!e.target.value)return;const d=new Date(e.target.value+'T12:00:00');$('hijriConversion').textContent=withAH(hijriParts(d).label);});
   $('hijriDateInput').dispatchEvent(new Event('change'));const initialHijri=hijriNumeric(new Date());$('hijriDayInput').value=initialHijri.day;$('hijriMonthInput').value=initialHijri.month;$('hijriYearInput').value=initialHijri.year;$('hijriReverseBtn').addEventListener('click',()=>{const day=Number($('hijriDayInput').value),month=Number($('hijriMonthInput').value),year=Number($('hijriYearInput').value);if(day<1||day>30||month<1||month>12||year<1300||year>1600){$('hijriReverseResult').textContent='Enter a valid Hijri date.';return;}const now=hijriNumeric(new Date());const approx=new Date();approx.setDate(approx.getDate()+(year-now.year)*354+(month-now.month)*29.5);let found=null;for(let i=-40;i<=40;i++){const d=new Date(approx);d.setDate(d.getDate()+i);const h=hijriNumeric(d);if(h.year===year&&h.month===month&&h.day===day){found=d;break;}}$('hijriReverseResult').textContent=found?found.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'Date not found in the device calendar range.';}); renderHijri();
 
   // Quranic supplications. Translation is a concise rendering; references are supplied for review.

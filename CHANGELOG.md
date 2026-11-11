@@ -1,3 +1,12 @@
+# V4.0.6 — UI fine-tuning (css + one label fix)
+
+- Additive polish block at the end of `www/features-v404.css`: 44px touch targets, consistent focus rings, press feedback, softer card depth, readable bottom-nav labels (10px) with an active indicator, square Hijri calendar cells, select chevrons, calmer Arabic line-height.
+- Fixed onboarding in light theme (light inputs on dark panel, unreadable Skip button).
+- Fixed duplicated era label on Home/Calendar ("1448 AH AH" → "1448 AH").
+- No logic, storage, version or app-ID changes. Verified by rendering in headless Chromium (dark + light, 390×844); not yet verified on a device or in the full CI build.
+
+---
+
 # V4.0.5 — User-focused release candidate
 
 - Reworked first-run setup to include an optional display name and an explicit learning-profile choice.
