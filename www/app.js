@@ -76,5 +76,9 @@ async function pullWidgetTaps(){const w=window.NoorNative?.widgets;if(!w){widget
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){pullWidgetTaps();$("todayLabel").textContent=prettyDate(today()).toUpperCase();renderAll();if(curScreen==="adhkarSessionScreen"&&sessionDate!==today()){sessionDate=today();buildSession();renderSession();}}});
 function renderAll(){updateStreak();renderHome();renderCounter();renderProgress();if($("libraryScreen")&&!$("libraryScreen").hidden)renderLibrary($("librarySearch").value);}
 $("themeBtn").addEventListener("click",()=>{state.theme=state.theme==="light"?"dark":"light";document.body.classList.toggle("light",state.theme==="light");save();});
-if("serviceWorker" in navigator && location.protocol!=="file:"){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
+// The native build uses packaged assets; PWA caching is only for the browser build.
+const nativeWebView = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
+if ("serviceWorker" in navigator && !nativeWebView && location.protocol !== "file:") {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
 document.body.classList.toggle("light",state.theme==="light");$("dhikrSelect").value=state.selected;renderLibrary();renderAll();pullWidgetTaps();

@@ -11,6 +11,8 @@
 
   const avatarHtml = () => profile.photo ? `<img alt="" src="${profile.photo}">` : (profile.name ? profile.name.trim().charAt(0).toUpperCase() : 'ن');
   function paint() {
+    const nameInput = $('acName');
+    if (nameInput && nameInput.value !== profile.name) nameInput.value = profile.name;
     const first = profile.name.trim().split(/\s+/)[0] || '';
     $('acAvatar').innerHTML = avatarHtml();
     $('stAccountSub').textContent = profile.name.trim() || 'Your name and picture';

@@ -1,13 +1,44 @@
-const CACHE = "noor-adhkar-cache-v4";
-const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./v3.js", "./theme.css", "./reminders.js", "./prayer-dashboard.js", "./native.bundle.js", "./intro.js", "./manifest.json", "./icon.svg"];
-self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())));
-self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
+const CACHE = "noor-adhkar-cache-v406";
+const CACHE_PREFIX = "noor-adhkar-cache-";
+const ASSETS = [
+  "./", "./index.html", "./styles.css", "./theme.css", "./features.css", "./features-v404.css",
+  "./accent.js", "./intro.js", "./native.bundle.js", "./sheet.js", "./adhkar-core.js", "./adhkar-data.js",
+  "./app.js", "./v3.js", "./time12.js", "./salah.js", "./prayer-dashboard.js", "./salah-settings.js",
+  "./reminders.js", "./profile.js", "./settings.js", "./motion.js", "./qibla-core.js", "./zakat-core.js",
+  "./features.js", "./v404.js", "./public-updates.js", "./manifest.json", "./icon.svg"
+];
+self.addEventListener("install", event => event.waitUntil(
+  caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+));
+self.addEventListener("activate", event => event.waitUntil(
+  caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE).map(key => caches.delete(key))))
+    .then(() => self.clients.claim())
+));
 self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
-  event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-    if (response && response.ok && new URL(event.request.url).origin === self.location.origin) {
-      const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(event.request, copy));
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  const dynamicUi = request.mode === "navigate" || /\.(?:html?|js|css)$/i.test(url.pathname);
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    if (dynamicUi) {
+      try {
+        const fresh = await fetch(request, { cache: "no-store" });
+        if (fresh && fresh.ok) await cache.put(request, fresh.clone());
+        return fresh;
+      } catch (_) {
+        return (await cache.match(request)) || (request.mode === "navigate" ? await cache.match("./index.html") : Response.error());
+      }
     }
-    return response;
-  }).catch(() => caches.match("./index.html"))));
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    try {
+      const fresh = await fetch(request);
+      if (fresh && fresh.ok) await cache.put(request, fresh.clone());
+      return fresh;
+    } catch (_) {
+      return (await cache.match(request)) || Response.error();
+    }
+  })());
 });

@@ -127,7 +127,7 @@
   function defaults() {
     var j = {}; PRAYERS.forEach(function (p) { j[p] = { mode: 'offset', offset: DEFAULT_JAMAAT[p], fixed: '' }; });
     var adj = {}; PRAYERS.forEach(function (p) { adj[p] = 0; }); adj.sunrise = 0;
-    return { loc: { id: 'srinagar', name: 'Srinagar, Kashmir', lat: 34.0837, lng: 74.7973, tz: 'Asia/Kolkata', source: 'default' }, method: 'karachi', asr: 'standard', adj: adj, mode: 'calculated', jamaat: j };
+    return { loc: { id: 'srinagar', name: 'Srinagar, Kashmir', lat: 34.0837, lng: 74.7973, tz: 'Asia/Kolkata', source: 'default' }, method: 'karachi', asr: 'hanafi', adj: adj, mode: 'calculated', jamaat: j };
   }
   var manual = function () { try { return JSON.parse(localStorage.getItem(MANUAL_KEY) || '{}'); } catch (e) { return {}; } };
   var settings;
@@ -139,7 +139,7 @@
       settings.adj = Object.assign(defaults().adj, raw.adj || {});
       settings.jamaat = Object.assign(defaults().jamaat, raw.jamaat || {});
       settings.loc = Object.assign(defaults().loc, raw.loc || {});
-      if (raw.asr === 'hanafi' && raw.asrPreferenceChosen !== true) { settings.asr = 'standard'; settings.asrPreferenceChosen = true; try { localStorage.setItem(KEY, JSON.stringify(settings)); } catch (_) {} }
+      if (settings.asr !== 'hanafi' && settings.asr !== 'standard') settings.asr = 'hanafi';
     } else {
       settings = d;
       // A person who already typed their own prayer times keeps them: start in "my own times" mode.

@@ -24,8 +24,13 @@ try {
   assert.match(manifest,/POST_NOTIFICATIONS/);
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/MainActivity.java')));
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/NoorWidgetsPlugin.java')));
+  const activity=readFileSync(join(main,'java/com/noor/adhkar/MainActivity.java'),'utf8');
+  assert.match(activity,/getRegistrations\(\)/);
+  assert.match(activity,/noor-adhkar-cache-/);
+  assert.match(activity,/window\.location\.reload\(\)/);
+  assert.doesNotMatch(activity,/localStorage\.clear/);
   assert.ok(existsSync(join(main,'res/layout/widget_prayer.xml')));
   assert.ok(existsSync(join(main,'res/xml/tasbeeh_widget_info.xml')));
-  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40005/);
+  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40006/);
   console.log('Android native integration patch: all assertions passed.');
 } finally { rmSync(root,{recursive:true,force:true}); }

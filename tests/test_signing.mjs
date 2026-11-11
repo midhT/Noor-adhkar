@@ -9,8 +9,8 @@ android {
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.noor.adhkar"
-        versionCode 40005
-        versionName "4.0.5"
+        versionCode 40006
+        versionName "4.0.6"
     }
     buildTypes {
         release {
@@ -34,7 +34,7 @@ assert.ok(out.indexOf('signingConfigs {') < out.indexOf('buildTypes {'), 'signin
 assert.ok(out.indexOf('signingConfigs {') > out.indexOf('android {'), 'inside android block');
 assert.equal(applySigning(out, cfg), out, 'idempotent');
 // existing content untouched
-for (const keep of ['versionCode 40005', 'namespace = "com.noor.adhkar"', "proguard-rules.pro", 'flatDir']) assert.ok(out.includes(keep), keep);
+for (const keep of ['versionCode 40006', 'namespace = "com.noor.adhkar"', "proguard-rules.pro", 'flatDir']) assert.ok(out.includes(keep), keep);
 // braces balance
 const bal = s => [...s].reduce((n, c) => n + (c === '{') - (c === '}'), 0);
 assert.equal(bal(out), 0);

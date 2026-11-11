@@ -1,6 +1,6 @@
 {
   "name": "noor-adhkar",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "private": true,
   "description": "Naseem (نسيم), the public-facing Islamic daily companion app for Noor Project V4.",
   "scripts": {

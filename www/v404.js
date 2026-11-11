@@ -1,4 +1,4 @@
-/* Naseem V4.0.5 release-candidate feature centre. Offline-first tools; online access is optional and explicit. */
+/* Naseem V4.0.6 feature centre. Offline-first tools; online access is optional and explicit. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -8,12 +8,13 @@
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(data)); } catch { notify('Device storage is full.'); } };
   const notify = message => { if (typeof window.toast === 'function') window.toast(message); else { const el=$('toast'); if(el){el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200);} } };
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const screen = (id, title, eyebrow, body) => {
+  const screen = (id, title, eyebrow, body, backTarget='featuresScreen') => {
     if ($(id)) return $(id);
     const el=document.createElement('section'); el.className='screen v404-screen'; el.id=id;
-    el.innerHTML=`<button class="back-link" type="button" data-v404-back>‹ More</button><div class="screen-heading"><span class="eyebrow">${eyebrow}</span><h1>${title}</h1></div>${body}`;
+    const backLabel=backTarget==='salahScreen'?'Salah':backTarget==='homeScreen'?'Home':'More';
+    el.innerHTML=`<button class="back-link" type="button" data-v404-back>‹ ${backLabel}</button><div class="screen-heading"><span class="eyebrow">${eyebrow}</span><h1>${title}</h1></div>${body}`;
     document.querySelector('main').appendChild(el);
-    el.querySelector('[data-v404-back]').addEventListener('click',()=>window.switchScreen('featuresScreen'));
+    el.querySelector('[data-v404-back]').addEventListener('click',()=>window.switchScreen(backTarget));
     return el;
   };
   const open = id => { window.switchScreen(id); };
@@ -62,7 +63,9 @@
   ];
   const favs=new Set(Array.isArray(data.duaFavourites)?data.duaFavourites:[]);
   const duaBody=`<div class="v404-card"><input class="v404-input" id="duaSearch" placeholder="Search duas or meanings…" aria-label="Search duas"><div class="v404-chips" id="duaCategories"></div></div><div id="duaList" class="v404-list"></div><p class="v404-note" id="duaFeedStatus">Built-in Quranic supplications are available offline. Online additions are checked when connected.</p>`;
-  screen('duaScreen','Dua library','QURANIC SUPPLICATIONS',duaBody);
+  screen('duaScreen','Dua library','QURANIC SUPPLICATIONS',duaBody,'salahScreen');
+  const salahList=$('salahList');
+  if(salahList&&!$('salahDuaEntry')){const entry=document.createElement('section');entry.id='salahDuaEntry';entry.className='v404-salah-entry v404-card';entry.innerHTML='<span class="eyebrow">SUPPLICATIONS</span><h2>Dua library</h2><p class="v404-note">Quranic supplications with Arabic, transliteration, meanings and saved favourites.</p><button type="button" class="v404-primary" id="openSalahDuas">Explore duas ↗</button>';salahList.insertAdjacentElement('afterend',entry);entry.querySelector('#openSalahDuas').addEventListener('click',()=>open('duaScreen'));}
   let duaCategory='All';
   function renderDuas(){const q=$('duaSearch').value.trim().toLowerCase();$('duaCategories').innerHTML=['All',...new Set(duas.map(x=>x.category))].map(c=>`<button class="v404-chip ${c===duaCategory?'selected':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');$('duaList').innerHTML=duas.filter(x=>(duaCategory==='All'||x.category===duaCategory)&&`${x.ar} ${x.latin} ${x.meaning} ${x.ref}`.toLowerCase().includes(q)).map(x=>`<article class="v404-card dua-card"><div class="v404-row"><span class="eyebrow">${esc(x.category)}</span><button class="v404-icon-btn" data-fav="${x.id}" aria-label="${favs.has(x.id)?'Remove favourite':'Add favourite'}">${favs.has(x.id)?'♥':'♡'}</button></div><div class="v404-arabic" lang="ar" dir="rtl">${x.ar}</div><p class="v404-latin">${esc(x.latin)}</p><p>${esc(x.meaning)}</p><small class="v404-reference">${esc(x.ref)}</small></article>`).join('')||'<div class="v404-card">No matching duas.</div>';}
   $('duaSearch').addEventListener('input',renderDuas);$('duaCategories').addEventListener('click',e=>{const b=e.target.closest('[data-cat]');if(b){duaCategory=b.dataset.cat;renderDuas();}});$('duaList').addEventListener('click',e=>{const b=e.target.closest('[data-fav]');if(!b)return;const id=b.dataset.fav;favs.has(id)?favs.delete(id):favs.add(id);data.duaFavourites=[...favs];save();renderDuas();});renderDuas();
@@ -85,12 +88,27 @@
 
   // Traditional learning profiles are preferences only; they do not calculate rulings.
   const traditions=[['hanafi','Sunni · Hanafi','A recognised Sunni school of jurisprudence.'],['shafii','Sunni · Shafi‘i','A recognised Sunni school of jurisprudence.'],['maliki','Sunni · Maliki','A recognised Sunni school of jurisprudence.'],['hanbali','Sunni · Hanbali','A recognised Sunni school of jurisprudence.'],['jafari','Shia · Ja‘fari (Twelver)','A recognised Ja‘fari school of jurisprudence.']];
-  const profileBody=`<div class="v404-card"><p>Choose the learning path you want Naseem to prioritise. This setting does not determine prayer calculations or issue personal religious rulings.</p><div id="traditionOptions" class="v404-list"></div><p class="v404-note" id="traditionSaved"></p></div>`;
+  const profileBody=`<div class="v404-card"><p>Choose the school you follow. For the four Sunni schools, Naseem aligns the Asr shadow-length setting with that school. The calculation method (Karachi, MWL and others) remains a separate setting. Ja‘fari-specific prayer-time calculations are not currently supported.</p><div id="traditionOptions" class="v404-list"></div><p class="v404-note" id="traditionSaved"></p></div>`;
   screen('traditionScreen','Traditional profiles','YOUR LEARNING PATH',profileBody);
-  const selectedTradition=data.tradition||'';
   function renderTraditions(){ $('traditionOptions').innerHTML=traditions.map(t=>`<button class="v404-option ${data.tradition===t[0]?'selected':''}" data-tradition="${t[0]}"><strong>${esc(t[1])}</strong><small>${esc(t[2])}</small><span>${data.tradition===t[0]?'Selected':'Select'}</span></button>`).join('');$('traditionSaved').textContent=`Current preference: ${(traditions.find(t=>t[0]===data.tradition)||null)?.[1]||'Not selected'}. You can change this any time.`; }
-  const syncTraditionNote=()=>{$('salahLearningScreen').querySelector('.v404-note').textContent=`Your selected profile is ${(traditions.find(t=>t[0]===data.tradition)||null)?.[1]||'Not selected'}. These are general starter lessons, not yet school-specific rulings; confirm details with a qualified teacher.`;};
-  if(selectedTradition){data.tradition=selectedTradition;save();}renderTraditions();syncTraditionNote();$('traditionOptions').addEventListener('click',e=>{const b=e.target.closest('[data-tradition]');if(!b)return;data.tradition=b.dataset.tradition;save();if(window.NoorSalah&&['hanafi','shafii','maliki','hanbali'].includes(data.tradition)){window.NoorSalah.set({asr:data.tradition==='hanafi'?'hanafi':'standard'});}renderTraditions();syncTraditionNote();notify('Learning profile saved. Salah Asr preference updated.');});
+  const syncTraditionNote=()=>{
+    const chosen=traditions.find(t=>t[0]===data.tradition), label=chosen?.[1]||'Not selected';
+    const lessonNote=$('salahLearningScreen').querySelector('.v404-note');
+    if(lessonNote)lessonNote.textContent=`Learning profile: ${label}. This is a general starter guide; some explanatory notes are Hanafi-specific and school-specific differences are not fully covered. Confirm details with a qualified teacher.`;
+    const hero=$('salahScreen')?.querySelector('.v3-hero');
+    if(hero){hero.querySelector('.v3-kicker').textContent='SELECTED LEARNING PROFILE';hero.querySelector('h2').textContent=chosen?chosen[1]:'Choose a learning profile';hero.querySelector('p').textContent='The recitation guide is a general starter resource and includes some Hanafi-specific notes. School-specific differences are not fully covered yet; follow a qualified teacher for your school.';hero.querySelector('.v3-badge').textContent=chosen?chosen[1].toUpperCase()+' · LEARNING GUIDE':'LEARNING PROFILE NOT SELECTED';}
+  };
+  if(data.setupComplete!==true&&!data.tradition){data.tradition='hanafi';save();}
+  renderTraditions();syncTraditionNote();
+  $('traditionOptions').addEventListener('click',e=>{
+    const b=e.target.closest('[data-tradition]');if(!b)return;
+    data.tradition=b.dataset.tradition;save();
+    if(window.NoorSalah&&['hanafi','shafii','maliki','hanbali'].includes(data.tradition)){
+      window.NoorSalah.set({asr:data.tradition==='hanafi'?'hanafi':'standard'});
+      notify(`Learning profile saved. Asr now uses the ${data.tradition==='hanafi'?'Hanafi':'Standard'} shadow rule; the calculation method is unchanged.`);
+    } else notify('Ja‘fari learning profile saved. The existing Asr setting is retained because a Ja‘fari-specific calculation is not yet supported.');
+    renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
+  });
 
   // Islamic occasions use the local Hijri calendar and are explicitly approximate.
   const occasions=[['1 Muharram','Islamic New Year',1,1,'A new Hijri year begins. Practices and observances vary.'],['10 Muharram','Ashura',1,10,'A significant day of fasting and remembrance; consult trusted scholarship for its merits.'],['12 Rabi‘ al-Awwal','Mawlid (observance varies)',3,12,'Commemorations vary across communities and scholars.'],['27 Rajab','Isra and Mi‘raj (date not definitive)',7,27,'The exact historical date is not established with certainty.'],['15 Sha‘ban','Mid-Sha‘ban (observance varies)',8,15,'Practices differ; avoid treating disputed reports as universally established.'],['1 Ramadan','Ramadan begins',9,1,'The start depends on local moon sighting or the calendar authority followed.'],['1 Shawwal','Eid al-Fitr',10,1,'The date depends on the end of Ramadan and local moon sighting.'],['9 Dhul-Hijjah','Day of ‘Arafah',12,9,'The date follows the local or adopted Hijri calendar.'],['10 Dhul-Hijjah','Eid al-Adha',12,10,'The date depends on the local or adopted Hijri calendar.']];
@@ -123,21 +141,82 @@
   refreshOnlineOccasions();
   $('occasionReminders').addEventListener('click',async()=>{const n=window.NoorNative?.notifications;if(!n){$('occasionReminderStatus').textContent='Native notifications are unavailable in this browser.';return;}let permission=await n.permission();if(permission!=='granted')permission=await n.request();if(permission!=='granted'){$('occasionReminderStatus').textContent='Notification permission was not granted. You can enable it later in Android settings.';return;}await n.ensureChannels();const reminders=nextOccasions.filter(x=>x.date).map((x,i)=>({id:95000+i,at:new Date(x.date.getFullYear(),x.date.getMonth(),x.date.getDate(),9,0,0),channel:'silent',title:x.item[1],body:x.item[4]})).filter(x=>x.at>Date.now());await n.cancelRange(95000,95009);if(reminders.length)await n.schedule(reminders);data.occasionReminders=true;save();$('occasionReminderStatus').textContent=`${reminders.length} upcoming occasion reminders scheduled for 9:00 AM. Dates may shift with local moon sighting.`;});
 
-  // Widget Studio is intentionally limited to the Tasbeeh widget. Prayer reminders stay in Salah settings.
-  const widgetBody=`<div class="v404-card"><span class="eyebrow">TASBEEH WIDGET</span><div class="v404-widget-preview tasbeeh"><strong>NASEEM · TASBEEH</strong><b id="studioTasbeehCount">0 / 100</b><small id="studioTasbeehName">Astaghfirullah</small></div><p class="v404-note">Choose the dhikr and target in the Counter, then sync it here. Add the Naseem Tasbeeh widget from your Android home-screen widget picker.</p><button class="v404-primary" id="studioSyncTasbeeh">Sync Tasbeeh widget</button><p id="studioWidgetStatus" class="v404-note"></p></div>`;
+  // Widget Studio supports only the two implemented Android widgets: Prayer Times and Tasbeeh.
+  const widgetBody=`
+    <div class="v404-card v404-widget-card"><div class="v404-row"><span class="eyebrow">PRAYER TIMES WIDGET</span><span class="v404-live-dot">AUTO SYNC</span></div>
+      <div class="v404-widget-preview prayer"><strong>NASEEM · SALAH</strong><div id="studioPrayerTimes" class="studio-prayer-times"><span>Fajr —</span><span>Dhuhr —</span><span>Asr —</span><span>Maghrib —</span><span>Isha —</span></div><small id="studioPrayerNext">Your local prayer schedule</small></div>
+      <p class="v404-note">Uses your current location, calculation method, Asr rule and any manual time adjustments. Updated automatically when your Salah schedule changes.</p>
+    </div>
+    <div class="v404-card v404-widget-card"><div class="v404-row"><span class="eyebrow">TASBEEH WIDGET</span><span class="v404-live-dot">AUTO SYNC</span></div>
+      <div class="v404-widget-preview tasbeeh"><strong>NASEEM · TASBEEH</strong><b id="studioTasbeehCount">0 / 100</b><small id="studioTasbeehName">Astaghfirullah</small></div>
+      <p class="v404-note">Follows your selected dhikr, count and target. Changes in the Counter sync automatically; taps made on the Android widget are merged when Naseem is next opened.</p>
+    </div>
+    <div class="v404-card"><p id="studioWidgetStatus" class="v404-note">Widget data syncs automatically in the installed Android app. Add Prayer Times or Tasbeeh from your Android home-screen widget picker.</p></div>`;
   screen('widgetStudioScreen','Widget Studio','YOUR HOME SCREEN',widgetBody);
-  function updateStudio(){const count=$('countValue')?.textContent||'0';const name=$('counterLatin')?.textContent||'Astaghfirullah';const target=$('targetInput')?.value||'100';$('studioTasbeehCount').textContent=`${count} / ${target}`;$('studioTasbeehName').textContent=name;}
-  $('studioSyncTasbeeh').addEventListener('click',async()=>{const w=window.NoorNative?.widgets;if(!w){$('studioWidgetStatus').textContent='Native widget bridge is unavailable in this build. Use a build with Android widget integration.';return;}const info={name:$('counterLatin')?.textContent||'Astaghfirullah',arabic:$('counterArabic')?.textContent||'ذِكْر',count:Number($('countValue')?.textContent||0),target:Number($('targetInput')?.value||100)};const ok=await w.setTasbeeh(info);$('studioWidgetStatus').textContent=ok?'Tasbeeh widget data synced. Add or refresh the widget from your Android home-screen widget picker.':'Naseem could not reach the Android widget provider. Rebuild with native widget integration and try again.';});
-  document.addEventListener('noor:screen',e=>{if(e.detail==='widgetStudioScreen')updateStudio();});
+  let widgetSyncRunning=false,widgetSyncPending=false;
+  const dateKeyLocal=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  function updateStudioPreview(){
+    const count=$('countValue')?.textContent||'0',name=$('counterLatin')?.textContent||'Astaghfirullah',target=$('targetInput')?.value||'100';
+    $('studioTasbeehCount').textContent=`${count} / ${target}`;$('studioTasbeehName').textContent=name;
+    const S=window.NoorSalah,T=window.NoorTime;
+    if(S){const times=S.timesFor(new Date()),labels=[['Fajr','fajr'],['Dhuhr','dhuhr'],['Asr','asr'],['Maghrib','maghrib'],['Isha','isha']];$('studioPrayerTimes').innerHTML=labels.map(([label,key])=>`<span><small>${label}</small><b>${T?.to12?T.to12(times[key]):times[key]}</b></span>`).join('');}
+  }
+  async function syncStudioWidgets(){
+    const w=window.NoorNative?.widgets,S=window.NoorSalah;
+    updateStudioPreview();
+    if(!w){$('studioWidgetStatus').textContent='Widget previews are available here. Install Naseem on Android to use the two home-screen widgets.';return;}
+    if(widgetSyncRunning){widgetSyncPending=true;return;}widgetSyncRunning=true;
+    try{
+      const times={};
+      if(S){for(let offset=0;offset<21;offset++){const day=new Date();day.setHours(12,0,0,0);day.setDate(day.getDate()+offset);times[dateKeyLocal(day)]=S.timesFor(day);}}
+      const dhikr={name:$('counterLatin')?.textContent||'Astaghfirullah',arabic:$('counterArabic')?.textContent||'ذِكْر',count:Number($('countValue')?.textContent||0),target:Number($('targetInput')?.value||100)};
+      const prayerOk=Object.keys(times).length?await w.setPrayerTimes(times):false;
+      const tasbeehOk=await w.setTasbeeh(dhikr);
+      $('studioWidgetStatus').textContent=prayerOk&&tasbeehOk?'Both widget data feeds are up to date. Add the widgets from your Android home-screen widget picker.':`Widget sync status — Prayer Times: ${prayerOk?'updated':'unavailable'} · Tasbeeh: ${tasbeehOk?'updated':'unavailable'}.`;
+    }catch(_){$('studioWidgetStatus').textContent='Naseem could not sync one or more widgets. Open the app again to retry.';}
+    finally{widgetSyncRunning=false;if(widgetSyncPending){widgetSyncPending=false;syncStudioWidgets();}}
+  }
+  document.addEventListener('noor:screen',e=>{if(e.detail==='widgetStudioScreen')syncStudioWidgets();});
+  window.addEventListener('noor:schedule',()=>{updateStudioPreview();syncStudioWidgets();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncStudioWidgets();});
+  // Populate both native widgets when the app opens, even if Studio is never visited.
+  syncStudioWidgets();
 
-  // Glance: optional public JSON feed. The built-in fallback is always available offline.
+  // Glance uses the public content endpoint internally; the endpoint is not displayed as a setting.
+  const GLANCE_FEED_URL='https://raw.githubusercontent.com/midhT/Naseem-public/main/content/glance.json';
   const fallback={title:'A moment of reflection',body:'Indeed, with hardship comes ease.',reference:'Qur’an 94:5–6',type:'Quranic reminder'};
-  const glanceBody=`<div class="v404-card"><div class="v404-row"><span class="eyebrow">LATEST FROM NASEEM</span><span class="v404-live-dot">● LOCAL / ONLINE</span></div><article id="glanceCard" class="v404-glance"><small>${fallback.type}</small><h2>${fallback.title}</h2><p>${fallback.body}</p><strong>${fallback.reference}</strong></article><p class="v404-note" id="glanceStatus">Showing built-in reminder. Connect a public GitHub JSON feed when it is ready.</p><details class="v404-feed-settings"><summary>Content feed settings</summary><label class="v404-label" for="glanceFeedUrl">Public JSON URL</label><input class="v404-input" id="glanceFeedUrl" type="url" placeholder="https://raw.githubusercontent.com/OWNER/REPO/main/content/glance.json"><button class="v404-primary" id="glanceSaveFeed">Save feed URL and refresh</button><p class="v404-note">Never put a GitHub token or private repository credential in the app. The feed must be publicly readable.</p></details></div>`;
-  screen('glanceScreen','Glance','A SHARED MOMENT',glanceBody);
-  $('glanceFeedUrl').value=data.glanceFeedUrl||'https://raw.githubusercontent.com/midhT/Naseem-public/main/content/glance.json';if(!data.glanceFeedUrl){data.glanceFeedUrl=$('glanceFeedUrl').value;save();}
-  function showFallback(status){$('glanceCard').innerHTML=`<small>${esc(fallback.type)}</small><h2>${esc(fallback.title)}</h2><p>${esc(fallback.body)}</p><strong>${esc(fallback.reference)}</strong>`;$('glanceStatus').textContent=status;}
-  async function refreshGlance(){const url=data.glanceFeedUrl;if(!url){showFallback('No feed configured yet. Showing the built-in reminder.');return;}try{const parsed=new URL(url);if(parsed.protocol!=='https:')throw new Error('Feed URL must use HTTPS.');const response=await fetch(parsed.href,{cache:'no-store'});if(!response.ok)throw new Error(`Feed returned ${response.status}.`);const json=await response.json();const items=Array.isArray(json.items)?json.items:[];const item=items.filter(x=>x&&x.published===true).at(-1);if(!item||!item.title||!item.body)throw new Error('No published item in the feed.');const content={title:String(item.title).slice(0,120),body:String(item.body).slice(0,1200),reference:String(item.reference||item.source||'').slice(0,160),type:String(item.type||'Naseem update').slice(0,60),fetchedAt:Date.now()};data.glanceCache=content;save();$('glanceCard').innerHTML=`<small>${esc(content.type)}</small><h2>${esc(content.title)}</h2><p>${esc(content.body)}</p><strong>${esc(content.reference)}</strong>`;$('glanceStatus').textContent='Latest published content loaded from the Glance feed.';}catch(error){const cached=data.glanceCache;if(cached&&Date.now()-Number(cached.fetchedAt||0)<30*86400000){$('glanceCard').innerHTML=`<small>${esc(cached.type)}</small><h2>${esc(cached.title)}</h2><p>${esc(cached.body)}</p><strong>${esc(cached.reference)}</strong>`;$('glanceStatus').textContent='Offline or feed unavailable. Showing the last cached update.';}else showFallback(`Feed unavailable (${error.message}). Showing the built-in reminder.`);}}
-  $('glanceSaveFeed').addEventListener('click',()=>{data.glanceFeedUrl=$('glanceFeedUrl').value.trim();save();refreshGlance();});
+  const glanceBody=`<div class="v404-card"><div class="v404-row"><span class="eyebrow">LATEST FROM NASEEM</span><span class="v404-live-dot">DAILY REFLECTION</span></div><article id="glanceCard" class="v404-glance"><small>${fallback.type}</small><h2>${fallback.title}</h2><p>${fallback.body}</p><strong>${fallback.reference}</strong></article><p class="v404-note" id="glanceStatus">Showing the built-in reminder. Online content refreshes when available.</p></div>`;
+  screen('glanceScreen','Glance','A SHARED MOMENT',glanceBody,'homeScreen');
+  const home=$('homeScreen');
+  if(home&&!$('homeGlancePreview')){
+    const card=document.createElement('button');card.type='button';card.id='homeGlancePreview';card.className='home-glance-card';
+    card.innerHTML='<span class="home-glance-copy"><small>GLANCE · DAILY REFLECTION</small><strong id="homeGlanceTitle"></strong><span id="homeGlanceBody"></span><em id="homeGlanceReference"></em></span><b aria-hidden="true">↗</b>';
+    const hijri=$('homeHijriDate')?.closest('.home-hijri-card');if(hijri)hijri.insertAdjacentElement('afterend',card);else home.prepend(card);
+    card.addEventListener('click',()=>open('glanceScreen'));
+  }
+  function renderHomeGlance(content){
+    const title=$('homeGlanceTitle'),body=$('homeGlanceBody'),reference=$('homeGlanceReference');
+    if(title)title.textContent=content.title;if(body)body.textContent=content.body;if(reference)reference.textContent=content.reference||content.type||'Open Glance';
+  }
+  function renderGlanceItem(content){
+    $('glanceCard').innerHTML=`<small>${esc(content.type||'Naseem reflection')}</small><h2>${esc(content.title)}</h2><p>${esc(content.body)}</p><strong>${esc(content.reference||'')}</strong>`;
+    renderHomeGlance(content);
+  }
+  function showFallback(status){renderGlanceItem(fallback);$('glanceStatus').textContent=status;}
+  async function refreshGlance(){
+    try{
+      const response=await fetch(GLANCE_FEED_URL,{cache:'no-store'});if(!response.ok)throw new Error(`Feed returned ${response.status}.`);
+      const json=await response.json(),items=Array.isArray(json.items)?json.items:[],item=items.filter(x=>x&&x.published===true).at(-1);
+      if(!item||!item.title||!item.body)throw new Error('No published item in the feed.');
+      const content={title:String(item.title).slice(0,120),body:String(item.body).slice(0,1200),reference:String(item.reference||item.source||'').slice(0,160),type:String(item.type||'Naseem update').slice(0,60),fetchedAt:Date.now()};
+      data.glanceCache=content;save();renderGlanceItem(content);$('glanceStatus').textContent='Latest published reflection loaded.';
+    }catch(error){
+      const cached=data.glanceCache;
+      if(cached&&Date.now()-Number(cached.fetchedAt||0)<30*86400000){renderGlanceItem(cached);$('glanceStatus').textContent='Offline or feed unavailable. Showing the last saved reflection.';}
+      else showFallback('Online content is unavailable. Showing the built-in reminder.');
+    }
+  }
+  refreshGlance();
   document.addEventListener('noor:screen',e=>{if(e.detail==='glanceScreen')refreshGlance();});
 
   // Replace placeholder feature cards with real screens.
@@ -156,16 +235,15 @@
     overlay.querySelector('#setupTheme').value=document.body.classList.contains('light')?'light':'dark';
     const citySelect=overlay.querySelector('#setupCity'),salah=window.NoorSalah;
     citySelect.innerHTML='<option value="">Keep current location</option>'+(salah?.CITIES||[]).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
-    const requestNotifications=async()=>{const n=window.NoorNative?.notifications;if(!n)return 'unavailable';try{let result=await n.permission();if(result!=='granted'&&result!=='denied')result=await n.request();else if(result==='prompt')result=await n.request();data.notificationPermissionAsked=true;save();return result;}catch(_){return 'unavailable';}};
     const finish=async(skipped=false)=>{
       const name=overlay.querySelector('#setupName').value.trim().slice(0,40);
       profile.name=name;try{localStorage.setItem('noorProfileV1',JSON.stringify(profile));}catch(_){}
-      const tradition=overlay.querySelector('#setupTradition').value;if(tradition){data.tradition=tradition;if(salah&&['hanafi','shafii','maliki','hanbali'].includes(tradition))salah.set({asr:tradition==='hanafi'?'hanafi':'standard'});}
+      const tradition=overlay.querySelector('#setupTradition').value;if(tradition){data.tradition=tradition;if(salah&&['hanafi','shafii','maliki','hanbali'].includes(tradition))salah.set({asr:tradition==='hanafi'?'hanafi':'standard'});}else delete data.tradition;
       const theme=overlay.querySelector('#setupTheme').value;if((theme==='light')!==document.body.classList.contains('light'))$('themeBtn')?.click();
       const chosen=(salah?.CITIES||[]).find(c=>c.id===citySelect.value);if(chosen)salah.setLocation({id:chosen.id,name:chosen.name,lat:chosen.lat,lng:chosen.lng,tz:chosen.tz,source:chosen.id==='srinagar'?'default':'manual'});
       data.setupComplete=true;data.setupCompletedAt=Date.now();save();overlay.remove();
-      const permission=await requestNotifications();
-      if(permission==='granted')notify('Setup saved. Notifications are enabled.');else if(permission==='denied')notify('Setup saved. Notifications are off; you can enable them in Settings.');else notify(skipped?'Setup skipped. You can personalise Naseem in Settings.':'Your preferences are saved on this device.');
+      renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
+      notify(skipped?'Setup skipped. You can personalise Naseem in Settings.':'Your preferences are saved on this device. Enable notifications later when you turn on a reminder.');
       document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{name}}));
     };
     overlay.querySelector('#setupGps').addEventListener('click',()=>{if(!navigator.geolocation){notify('Location is unavailable. Choose a city instead.');return;}navigator.geolocation.getCurrentPosition(pos=>{salah?.setLocation({id:'gps',name:`My location (${pos.coords.latitude.toFixed(3)}°, ${pos.coords.longitude.toFixed(3)}°)`,lat:pos.coords.latitude,lng:pos.coords.longitude,tz:Intl.DateTimeFormat().resolvedOptions().timeZone,source:'gps'});notify('Prayer location saved.');},()=>notify('Location was not available. You can choose a city instead.'),{enableHighAccuracy:false,timeout:12000,maximumAge:600000});});
@@ -176,6 +254,6 @@
   const settings=$('settingsScreen');if(settings){const b=document.createElement('button');b.className='v404-secondary v404-reopen-setup';b.textContent='Edit setup preferences';b.addEventListener('click',()=>startSetup(true));settings.appendChild(b);}
   window.setTimeout(()=>startSetup(false),2200);
   // Android back-button navigation: return to More from feature detail screens.
-  document.addEventListener('naseem:back',e=>{const active=document.querySelector('.screen.active');if(!active||active.id==='homeScreen')return;e.preventDefault();if(Object.values(routes).includes(active.id)||['qiblaScreen','zakatScreen'].includes(active.id))open('featuresScreen');else open('homeScreen');});
+  document.addEventListener('naseem:back',e=>{const active=document.querySelector('.screen.active');if(!active||active.id==='homeScreen')return;e.preventDefault();if(active.id==='duaScreen'){open('salahScreen');return;}if(active.id==='glanceScreen'){open('homeScreen');return;}if(Object.values(routes).includes(active.id)||['qiblaScreen','zakatScreen'].includes(active.id))open('featuresScreen');else open('homeScreen');});
   window.NaseemV404={hijriParts,duas,traditions,refreshGlance};
 })();

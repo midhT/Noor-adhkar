@@ -125,3 +125,13 @@ Baseline: V3.2 + the scroll fix. This milestone changes structure and data safet
 - Qibla and Zakat are first-pass functional tools; their sensor, permission and fiqh edge cases remain to be debugged and reviewed.
 - Home's English countdown ring now shows the Qibla direction; the Arabic prayer-countdown ring is retained.
 - Version metadata is 4.0.2, and the APK workflow now listens to `naseem-*` and `noor-*` branches as well as `main`.
+
+## 4.0.6 — Public polish and reliability
+- Added automatic sync for the Prayer Times (21-day schedule) and Tasbeeh Android widgets.
+- Moved Dua Library into the Salah & Duas section and added a Home Glance card with offline fallback.
+- Removed the editable Glance endpoint from the UI; the app uses its configured public feed internally.
+- Separated learning-school preference from the prayer calculation method; Sunni school selection aligns the Asr shadow rule.
+- Set Hanafi Asr as the new-install default while preserving valid saved Asr choices.
+- Deferred notification permission prompts until a reminder is enabled.
+- Fixed account-name field refresh and removed overlapping screen-entry animation.
+- Disabled service workers in native Capacitor builds and improved the PWA cache strategy without touching local app data.

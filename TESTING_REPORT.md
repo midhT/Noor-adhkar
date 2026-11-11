@@ -1,20 +1,26 @@
-# Naseem V4.0.5 — source validation report
+# Naseem V4.0.6 — source validation report
 
-## Passed in this environment
-- JavaScript syntax checks for changed app modules.
-- `tests/test_new_tools.js`: 16 assertions.
-- `tests/test_v404_source.js`: V4.0.5 onboarding, feature routes, More navigation and public update client assertions.
-- `tests/test_android_patch.mjs`: simulated native Android integration and versionCode 40005.
-- `tests/test_adhkar_core.js`: Adhkar session logic.
-- `tests/test_signing.mjs`: Gradle signing patch logic.
-- `tests/verify_salah_engine.py`: 9,840 prayer-engine comparisons; worst difference 0.55 minutes, within the 1-minute tolerance.
+## Scope implemented in this patch
+- Dua Library is accessible from Salah & Duas; its back navigation returns to Salah.
+- Glance is surfaced on Home and keeps an offline fallback. The feed endpoint is not displayed in the UI.
+- Widget Studio covers the two implemented native widgets (Prayer Times and Tasbeeh) and syncs data automatically.
+- The selected Sunni learning profile aligns the Asr shadow rule; the calculation method remains independently selectable. Ja'fari-specific prayer-time calculations are explicitly not claimed.
+- New installs default to Hanafi Asr; valid saved Asr settings are preserved.
+- Notification permission is requested from the reminder flow, not during onboarding.
+- Profile-name updates populate the account input.
+- One screen-transition animation remains; the opening animation is retained.
+- Native builds unregister the old PWA worker/cache without clearing localStorage; browser PWA caching is versioned and network-first for app code.
 
-## Not verified here
-- `npm install` timed out, so `npm run build` and the Android APK build were not completed in this environment.
-- No real Samsung device validation was performed.
-- The public repository `midhT/Naseem-public` must be created and populated before remote Dua/Glance feeds and release checks can return live content. Until then, built-in/cached content remains available.
-- Online Hijri date and upcoming occasion refreshes are best-effort and fall back to the device calendar/cache; local moon-sighting announcements remain authoritative.
-- Ramadan card uses Fajr as the Sehri cutoff and Maghrib as Iftar based on the configured local prayer schedule; users should follow their local mosque timetable.
-- Zawal-specific timing, a dedicated Ramadan timetable API, complete Islamic occasion API integration, final release signing continuity, and Play Store readiness remain to be verified/completed.
+## Validation to run
+- JavaScript syntax checks for all modified modules.
+- `tests/test_new_tools.js`, `tests/test_v404_source.js`, `tests/test_android_patch.mjs`, `tests/test_adhkar_core.js`, `tests/test_signing.mjs`.
+- `tests/verify_salah_engine.py`.
+- Full Playwright UI tests and a GitHub Actions Android build.
 
-**Status: release candidate source package only. Do not describe as public-release ready until GitHub Actions succeeds and device tests pass.**
+## Not claimed as verified here
+- Samsung-device behaviour for widgets, notification scheduling, exact alarms, Qibla sensor permissions and APK update handling.
+- Live Glance/Dua feed availability and update-notification end-to-end behaviour.
+- Qualified scholarly review of Arabic, transliteration, translations and school-specific Salah content.
+- Signing-key continuity in the actual GitHub Actions environment. Keep the existing keystore and credentials unchanged.
+
+This is a release-candidate build, not a verified Play Store/public release.

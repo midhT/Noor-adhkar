@@ -1,7 +1,7 @@
-# Glance feed contract
+# Glance content feed
 
-Host `glance.json` at a public HTTPS URL (for example, GitHub Pages or the raw URL of a public repository). In Naseem, open Explore → Glance → Content feed settings and paste that URL.
+The public content repository maintains the `glance.json` feed. Naseem reads the configured HTTPS feed automatically; the endpoint is intentionally not exposed as an editable setting in the app. To change the endpoint, update the `GLANCE_FEED_URL` constant in `www/v404.js` as part of a source release.
 
-The app accepts the last item where `published` is `true`. Keep the feed public and never embed a GitHub token or private credential in the APK. The app caches the last valid item locally and otherwise displays a bundled fallback reminder. The separate admin app can be built later to publish this same JSON format.
+The app displays the most recently published item (`published: true`), keeps a local copy of the last valid item, and falls back to a bundled reminder when the feed is unavailable. Never embed a GitHub token or private repository credential in the APK. Review religious content and references before publishing.
 
 The sample item is unpublished and intentionally generic; replace it with reviewed content before enabling it.
