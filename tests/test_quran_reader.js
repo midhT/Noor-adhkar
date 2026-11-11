@@ -1,0 +1,13 @@
+const fs=require('fs'),assert=require('assert');
+const q=fs.readFileSync('www/quran-reader.js','utf8');
+assert(q.includes('https://api.alquran.cloud/v1'));
+assert(q.includes("'/surah'" ) || q.includes("request('/surah')"));
+assert(q.includes('quran-uthmani,en.pickthall'));
+assert(q.includes('duaRefs'));
+assert(q.includes('Qur’an ${key}'));
+assert(q.includes('AbortController'));
+assert(q.includes('window.NaseemQuran'));
+const html=fs.readFileSync('www/index.html','utf8');
+assert(html.includes('quran-reader.js'));
+assert(q.includes("section.id='quranReaderScreen'"));
+console.log('Quran reader integration checks passed.');

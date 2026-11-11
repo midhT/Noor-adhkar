@@ -21,6 +21,7 @@ try {
   const manifest=readFileSync(join(main,'AndroidManifest.xml'),'utf8');
   assert.match(manifest,/PrayerWidgetProvider/);
   assert.match(manifest,/TasbeehWidgetProvider/);
+  assert.match(manifest,/HijriWidgetProvider/);
   assert.match(manifest,/POST_NOTIFICATIONS/);
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/MainActivity.java')));
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/NoorWidgetsPlugin.java')));
@@ -31,6 +32,8 @@ try {
   assert.doesNotMatch(activity,/localStorage\.clear/);
   assert.ok(existsSync(join(main,'res/layout/widget_prayer.xml')));
   assert.ok(existsSync(join(main,'res/xml/tasbeeh_widget_info.xml')));
+  assert.ok(existsSync(join(main,'res/layout/widget_hijri.xml')));
+  assert.ok(existsSync(join(main,'res/xml/hijri_widget_info.xml')));
   assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40007/);
   console.log('Android native integration patch: all assertions passed.');
 } finally { rmSync(root,{recursive:true,force:true}); }

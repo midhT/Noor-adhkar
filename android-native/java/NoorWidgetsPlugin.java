@@ -38,6 +38,17 @@ public class NoorWidgetsPlugin extends Plugin {
         call.resolve();
     }
 
+
+    @PluginMethod
+    public void setHijriDate(PluginCall call) {
+        String date = call.getString("date", "");
+        synchronized (NoorWidgetStore.LOCK) {
+            NoorWidgetStore.prefs(getContext()).edit().putString(NoorWidgetStore.HIJRI_DATE, date).apply();
+        }
+        HijriWidgetProvider.refreshAll(getContext());
+        call.resolve();
+    }
+
     /** Returns taps made on the widget since the app last synced, and clears them. */
     @PluginMethod
     public void takePending(PluginCall call) {

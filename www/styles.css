@@ -84,3 +84,11 @@ body.intro-pending{overflow:hidden}body.intro-pending .app-shell{visibility:hidd
 body.light .card-surface,body.light .pd-ring-card,body.light .pd-banner{background:linear-gradient(145deg,#fffdf8,#ece8df);border-color:var(--line)}body.light .pd-sun{background:#eee9df;color:#333}body.light .pd-ring{background:conic-gradient(var(--gold) 0 var(--ring-angle,145deg),#d7d2c7 var(--ring-angle,145deg) 360deg)}body.light .pd-ring:before{background:#f5f1e8}body.light .pd-ring span,body.light .pd-next-ar{color:var(--text)}body.light .pd-editor{background:#fffdf8;border-color:var(--line)}body.light .pd-input-grid input,body.light .pd-sunrise-input input{background:#f0ece3;color:#26231e;color-scheme:light}
 @media(max-width:360px){.pd-next{grid-template-columns:1fr 42px 1fr;padding:14px 11px}.pd-sun{width:40px;height:40px;font-size:23px}.pd-prayer{gap:4px}.pd-ring-card{padding:10px 4px}.pd-ring{width:100%}.pd-ring:before{inset:6px}.pd-ring>div{gap:2px}}
 @media(prefers-reduced-motion:reduce){.pd-ring{transition:none}}
+
+/* Startup animation respects the resolved app theme; animation itself remains enabled. */
+body.light .noor-intro{background:radial-gradient(ellipse at 50% 42%,rgba(32,168,117,.10),transparent 36%),#f5f4ef;color:#183127}
+body.light .intro-crescent{border-color:#267b5b;box-shadow:inset 0 0 14px rgba(38,123,91,.10),0 0 20px rgba(38,123,91,.10)}
+body.light .intro-crescent:after{background:#f5f4ef}
+body.light .intro-star{color:#267b5b;text-shadow:0 0 18px rgba(38,123,91,.25)}
+body.light .intro-tagline{color:#64756b}
+body.light .intro-rule{background:rgba(38,123,91,.16)}body.light .intro-rule span{background:#267b5b;box-shadow:0 0 10px rgba(38,123,91,.35)}

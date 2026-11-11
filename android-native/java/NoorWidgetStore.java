@@ -13,6 +13,7 @@ final class NoorWidgetStore {
     static final String TASBEEH_COUNT = "tasbeeh_count";
     static final String TASBEEH_TARGET = "tasbeeh_target";
     static final String TASBEEH_PENDING = "tasbeeh_pending";
+    static final String HIJRI_DATE = "hijri_date";
 
     private NoorWidgetStore() {}
 

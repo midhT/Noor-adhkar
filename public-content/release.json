@@ -2,6 +2,6 @@
   "version": "4.0.7",
   "releaseUrl": "https://github.com/midhT/Noor-adhkar/releases/latest",
   "downloadUrl": "https://github.com/midhT/Noor-adhkar/releases/latest",
-  "notesSummary": "Offline-first release preparation, secure release signing, and signed APK publishing. Personal data remains on-device with manual backup and restore.",
-  "publishedAt": null
+  "notesSummary": "System-aware theme, reliable one-time onboarding, daily Glance lessons and quizzes, complete Hijri date, school-specific Salah guidance, expanded adhkar routines and a Hijri date widget.",
+  "publishedAt": "2026-11-10T00:00:00Z"
 }

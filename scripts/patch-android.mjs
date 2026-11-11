@@ -57,8 +57,13 @@ const receivers = `
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/tasbeeh_widget_info" />
         </receiver>
+        <receiver android:name=".HijriWidgetProvider" android:exported="true" android:label="@string/noor_hijri_widget_label">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/hijri_widget_info" />
+        </receiver>
 `;
 if (!manifest.includes('.PrayerWidgetProvider')) manifest = manifest.replace('</application>', `${receivers}    </application>`);
+if (!manifest.includes('.HijriWidgetProvider')) manifest = manifest.replace('</application>', `        <receiver android:name=".HijriWidgetProvider" android:exported="true" android:label="@string/noor_hijri_widget_label"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/hijri_widget_info" /></receiver>\n    </application>`);
 
 writeFileSync(manifestPath, manifest);
 console.log('Noor native Android files and manifest entries are in place for', pkg);

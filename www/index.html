@@ -25,7 +25,7 @@
     <header class="topbar">
       <button type="button" class="brand-mark" id="brandMark" aria-label="Open your account">ن</button>
       <div class="brand-copy"><div class="brand-name">NASEEM</div><div class="brand-sub">DAILY ADHKAR</div></div>
-      <button class="icon-button" id="themeBtn" aria-label="Toggle theme" title="Toggle theme"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8v16.4a8.2 8.2 0 0 0 0-16.4z" fill="currentColor" stroke="none"/></svg></button>
+      <button class="icon-button" id="themeBtn" aria-label="Cycle theme: device, light, dark" title="Cycle theme: Device, Light, Dark"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8v16.4a8.2 8.2 0 0 0 0-16.4z" fill="currentColor" stroke="none"/></svg></button>
     </header>
 
     <main>
@@ -54,6 +54,8 @@
             <span class="routine-symbol">☾</span><span class="routine-title">Evening adhkar</span><span class="routine-sub">End with remembrance</span><span class="routine-bottom"><span id="eveningStatus">Not started</span><span>↗</span></span>
           </button>
         </div>
+        <div class="section-heading"><div><span class="eyebrow">MORE ROUTINES</span><h2>Other moments</h2></div></div>
+        <div class="routine-grid" id="extraRoutineGrid"></div>
 
         <div class="section-heading"><div><span class="eyebrow">QUICK ACCESS</span><h2>Continue your dhikr</h2></div></div>
         <button class="featured-dhikr" id="quickCounter">
@@ -200,7 +202,7 @@
         </details>
         <details class="st-group" id="stAppearance"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8v16.4a8.2 8.2 0 0 0 0-16.4z" fill="currentColor" stroke="none"/></svg></span><span class="st-title"><strong>Appearance</strong><small>Dark or light</small></span><span class="st-chev" aria-hidden="true"></span></summary>
           <div class="st-body">
-            <div class="setting-row"><div><strong>Theme</strong><p>Dark is the default</p></div><div class="st-seg" id="stThemeSeg" role="group" aria-label="Theme"><button type="button" data-theme="dark" aria-pressed="false">Dark</button><button type="button" data-theme="light" aria-pressed="false">Light</button></div></div>
+            <div class="setting-row"><div><strong>Theme</strong><p>Follow your device or choose an appearance</p></div><div class="st-seg" id="stThemeSeg" role="group" aria-label="Theme"><button type="button" data-theme="system" aria-pressed="false">System</button><button type="button" data-theme="light" aria-pressed="false">Light</button><button type="button" data-theme="dark" aria-pressed="false">Dark</button></div></div><div class="setting-row"><div><strong>First-time setup</strong><p>Reopen your profile and location setup when you choose</p></div><button type="button" class="st-btn" id="stOpenSetup">Open setup</button></div>
             <div class="accent-setting"><div class="accent-heading"><div><strong>Accent colour</strong><p>Personalise highlights across Naseem</p></div><span class="accent-current" id="accentCurrentLabel">Islamic emerald</span></div>
               <div class="accent-palette" id="accentPalette" role="group" aria-label="Accent colour">
                 <button type="button" class="accent-swatch" data-accent="emerald" aria-label="Islamic emerald" title="Islamic emerald"><span style="--swatch:#20a875"></span><small>Emerald</small></button>
@@ -258,6 +260,8 @@
   <script src="zakat-core.js"></script>
   <script src="features.js"></script>
   <script src="v404.js"></script>
+  <script src="hadith-library.js"></script>
+  <script src="quran-reader.js"></script>
   <script src="public-updates.js"></script>
 </body>
 </html>

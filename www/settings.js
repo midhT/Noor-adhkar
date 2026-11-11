@@ -17,12 +17,15 @@
   $('stVersion').textContent = `Naseem ${VERSION}`;
 
   // ---------- Theme ----------
-  const syncTheme = () => document.querySelectorAll('#stThemeSeg button').forEach(b => b.setAttribute('aria-pressed', String((state.theme === 'light' ? 'light' : 'dark') === b.dataset.theme)));
+  const syncTheme = () => document.querySelectorAll('#stThemeSeg button').forEach(b => b.setAttribute('aria-pressed', String((window.NaseemTheme?.get?.() || state.theme || 'system') === b.dataset.theme)));
   document.querySelectorAll('#stThemeSeg button').forEach(b => b.addEventListener('click', () => {
-    state.theme = b.dataset.theme; document.body.classList.toggle('light', state.theme === 'light'); save(); syncTheme();
+    if (window.NaseemTheme?.set) window.NaseemTheme.set(b.dataset.theme);
+    else { state.theme=b.dataset.theme; document.body.classList.toggle('light', state.theme==='light'); save(); }
+    syncTheme();
   }));
-  $('themeBtn')?.addEventListener('click', () => setTimeout(syncTheme, 0));
+  document.addEventListener('naseem:theme-changed', syncTheme);
   syncTheme();
+  $('stOpenSetup')?.addEventListener('click', () => document.dispatchEvent(new CustomEvent('naseem:open-onboarding')));
 
   // ---------- Accent colour ----------
   const accentPalette = $('accentPalette');
@@ -200,6 +203,7 @@
     if (!confirm('Are you sure? This cannot be undone once Naseem is uninstalled.')) return;
     if (!keepSafetyCopy()) { note('Erase stopped: not enough space to keep a safety copy.', true); return; }
     APP_KEYS.forEach(k => localStorage.removeItem(k));
+    localStorage.removeItem('naseem-onboarding-complete-v1');
     afterReload('All data erased');
   });
   renderUndo();

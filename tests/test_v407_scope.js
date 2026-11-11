@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const read=f=>fs.readFileSync(f,'utf8');
+const app=read('www/app.js'),v=read('www/v404.js'),html=read('www/index.html'),native=read('www/native.js'),plugin=read('android-native/java/NoorWidgetsPlugin.java'),provider=read('android-native/java/HijriWidgetProvider.java'),adhkar=read('www/adhkar-data.js');
+assert.match(app,/theme:\"system\"/);assert.match(app,/prefers-color-scheme/);assert.match(app,/setTheme/);
+assert.match(html,/id=\"stOpenSetup\"/);assert.match(v,/naseem-onboarding-complete-v1/);assert.match(v,/naseem:open-onboarding/);
+assert.match(v,/HIJRI_MONTHS/);assert.match(v,/Dhul-Hijjah/);assert.match(v,/BUILTIN_GLANCE/);assert.match(v,/data-quiz-answer/);
+for(const routine of ['after_salah','before_sleep','waking','travel'])assert.ok(adhkar.includes(routine),`missing ${routine}`);
+assert.match(native,/setHijriDate/);assert.match(plugin,/setHijriDate/);assert.match(provider,/HijriWidgetProvider/);
+console.log('V4.0.7 scoped feature checks passed.');

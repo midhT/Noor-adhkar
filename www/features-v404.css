@@ -127,3 +127,14 @@ button:focus:not(:focus-visible){outline:none}
 .v404-onboard-actions{margin-top:20px}
 
 @media(prefers-reduced-motion:reduce){.v404-card,.routine-card,.v3-tile,.nav-item,.v404-primary,.v404-secondary{transition:none!important}button:active{transform:none!important}}
+
+/* Hadith Library */
+.hadith-result{display:flex;width:100%;flex-direction:column;align-items:flex-start;gap:8px;text-align:start;color:inherit;cursor:pointer}
+.hadith-result strong{font-size:14px;line-height:1.6}
+.hadith-result small{color:var(--muted)}
+.hadith-language-block{padding:14px 0;border-top:1px solid var(--line);line-height:1.8}
+.hadith-language-block p{white-space:pre-wrap;line-height:1.9}
+.hadith-language-block[lang="ar"] p,.hadith-language-block[lang="ur"] p{font-size:17px}
+
+/* V4.0.7 scoped feature completion */
+#extraRoutineGrid{margin-bottom:18px}.extra-routine{min-height:124px}.st-seg#stThemeSeg{flex-wrap:wrap}.st-seg#stThemeSeg button{min-width:58px}.glance-quiz{margin-top:16px}.glance-quiz .v404-option{width:100%;cursor:pointer}.glance-quiz .v404-option:disabled{opacity:.72;cursor:default}.v404-onboard-panel{background:var(--panel,#151a17);color:var(--text)}body.light .v404-onboarding{background:rgba(236,239,235,.88)}body.light .v404-onboard-panel{background:#fff;color:#1d2822;border-color:#dce5de}body.light .v404-onboard-panel p,body.light .v404-onboard-panel small{color:#65736b}body.light .v404-check{color:#394b41}

@@ -1,4 +1,4 @@
-/* Naseem V4.0.7 feature centre. Offline-first tools; online access is optional and explicit. */
+/* Naseem V4.0.6 feature centre. Offline-first tools; online access is optional and explicit. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -25,15 +25,17 @@
   const hijriParts = date => { const p=Object.fromEntries(hijriFmt.formatToParts(date).map(x=>[x.type,x.value])); return {day:Number(p.day),month:p.month,year:Number(p.year),label:hijriFmt.format(date)}; };
   const hijriNumericFmt = (()=>{try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'});}catch{return new Intl.DateTimeFormat('en-u-ca-islamic',{day:'numeric',month:'numeric',year:'numeric'});}})();
   const hijriNumeric = date => {const p=Object.fromEntries(hijriNumericFmt.formatToParts(date).map(x=>[x.type,x.value]));return {day:Number(p.day),month:Number(p.month),year:Number(p.year)};};
+  const HIJRI_MONTHS=['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Ula','Jumada al-Akhirah','Rajab','Sha‘ban','Ramadan','Shawwal','Dhul-Qadah','Dhul-Hijjah'];
+  const hijriMonthName=n=>HIJRI_MONTHS[n-1]||'Islamic month';
   const dayStart = d => new Date(d.getFullYear(),d.getMonth(),d.getDate());
   function updateHomeCalendar(){
-    const homeDate=$('homeHijriDate');if(homeDate)homeDate.textContent=withAH(hijriParts(new Date()).label);
-    const hp=hijriNumeric(new Date()),ramadan=$('homeRamadanCard'),activeHijriMonth=hp.month;
+    const homeDate=$('homeHijriDate');const hp=hijriNumeric(new Date());if(homeDate)homeDate.textContent=`${hp.day} ${hijriMonthName(hp.month)} ${hp.year} AH`;
+    const ramadan=$('homeRamadanCard'),activeHijriMonth=hp.month;
     if(ramadan&&activeHijriMonth===9&&window.NoorSalah){const times=window.NoorSalah.timesFor(new Date());const fmt=v=>window.NoorTime?.to12?window.NoorTime.to12(v):v;ramadan.hidden=false;$('homeSehriTime').textContent=fmt(times.fajr);$('homeIftarTime').textContent=fmt(times.maghrib);}
     else if(ramadan)ramadan.hidden=true;
   }
   updateHomeCalendar();window.addEventListener('noor:schedule',updateHomeCalendar);window.setInterval(updateHomeCalendar,60000);
-  const hijriBody = `<div class="v404-card"><div class="v404-row"><button class="v404-btn" id="hijriPrev" aria-label="Previous Hijri month">‹</button><div class="v404-centre"><strong id="hijriMonthTitle">Loading…</strong><small id="hijriGregorianTitle"></small></div><button class="v404-btn" id="hijriNext" aria-label="Next Hijri month">›</button></div><div class="v404-calendar" id="hijriGrid"></div><p class="v404-note" id="hijriToday"></p></div><div class="v404-card"><span class="eyebrow">DATE CONVERSION</span><label class="v404-label" for="hijriDateInput">Gregorian date → Hijri</label><input class="v404-input" type="date" id="hijriDateInput"><strong id="hijriConversion"></strong><label class="v404-label" for="hijriYearInput">Hijri date → Gregorian</label><div class="v404-hijri-convert"><input class="v404-input" id="hijriDayInput" type="number" min="1" max="30" value="1" aria-label="Hijri day"><select class="v404-input" id="hijriMonthInput" aria-label="Hijri month">${Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select><input class="v404-input" id="hijriYearInput" type="number" min="1300" max="1600" aria-label="Hijri year"></div><button class="v404-secondary" id="hijriReverseBtn">Convert to Gregorian</button><strong id="hijriReverseResult"></strong></div><div class="v404-card"><span class="eyebrow">IMPORTANT DATES</span><div id="hijriEvents" class="v404-list"></div><p class="v404-note">Dates are calculated using the device's Islamic calendar data. Local moon sighting and regional conventions can shift observances by a day or more.</p></div>`;
+  const hijriBody = `<div class="v404-card"><div class="v404-row"><button class="v404-btn" id="hijriPrev" aria-label="Previous Hijri month">‹</button><div class="v404-centre"><strong id="hijriMonthTitle">Loading…</strong><small id="hijriGregorianTitle"></small></div><button class="v404-btn" id="hijriNext" aria-label="Next Hijri month">›</button></div><div class="v404-calendar" id="hijriGrid"></div><p class="v404-note" id="hijriToday"></p></div><div class="v404-card"><span class="eyebrow">DATE CONVERSION</span><label class="v404-label" for="hijriDateInput">Gregorian date → Hijri</label><input class="v404-input" type="date" id="hijriDateInput"><strong id="hijriConversion"></strong><label class="v404-label" for="hijriYearInput">Hijri date → Gregorian</label><div class="v404-hijri-convert"><input class="v404-input" id="hijriDayInput" type="number" min="1" max="30" value="1" aria-label="Hijri day"><select class="v404-input" id="hijriMonthInput" aria-label="Hijri month">${HIJRI_MONTHS.map((name,i)=>`<option value="${i+1}">${name}</option>`).join('')}</select><input class="v404-input" id="hijriYearInput" type="number" min="1300" max="1600" aria-label="Hijri year"></div><button class="v404-secondary" id="hijriReverseBtn">Convert to Gregorian</button><strong id="hijriReverseResult"></strong></div><div class="v404-card"><span class="eyebrow">IMPORTANT DATES</span><div id="hijriEvents" class="v404-list"></div><p class="v404-note">Dates are calculated using the device's Islamic calendar data. Local moon sighting and regional conventions can shift observances by a day or more.</p></div>`;
   screen('hijriScreen','Hijri calendar','DATES & CONVERSION',hijriBody);
   // Month-based navigation: the view is a (year, month) pair, never a ±30-day offset, so months can't be skipped or repeated.
   const HIJRI_MIN_YEAR=1300,HIJRI_MAX_YEAR=1600,MEAN_MONTH=29.530589;
@@ -60,7 +62,7 @@
     if(!first){$('hijriGrid').textContent='Islamic calendar data is unavailable on this device.';return;}
     const length=hijriMonthLength(viewYear,viewMonth),last=new Date(first);last.setDate(last.getDate()+length-1);
     const names=hijriParts(first);
-    $('hijriMonthTitle').textContent=`${names.month} ${viewYear} AH`;
+    $('hijriMonthTitle').textContent=`${hijriMonthName(viewMonth)} ${viewYear} AH`; $('hijriMonthInput').value=String(viewMonth);
     $('hijriGregorianTitle').textContent=`${first.toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${last.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
     const labels=['Su','Mo','Tu','We','Th','Fr','Sa'],todayKey=dayStart(new Date()).getTime();
     let cells='';for(let day=1;day<=length;day++){const d=new Date(first);d.setDate(d.getDate()+day-1);const isToday=dayStart(d).getTime()===todayKey;cells+=`<span class="v404-day ${isToday?'today':''}" ${isToday?'aria-current="date"':''} title="${esc(d.toDateString())}">${day}</span>`;}
@@ -110,15 +112,24 @@
 
   // Traditional learning profiles are preferences only; they do not calculate rulings.
   const traditions=[['hanafi','Sunni · Hanafi','A recognised Sunni school of jurisprudence.'],['shafii','Sunni · Shafi‘i','A recognised Sunni school of jurisprudence.'],['maliki','Sunni · Maliki','A recognised Sunni school of jurisprudence.'],['hanbali','Sunni · Hanbali','A recognised Sunni school of jurisprudence.'],['jafari','Shia · Ja‘fari (Twelver)','A recognised Ja‘fari school of jurisprudence.']];
-  const profileBody=`<div class="v404-card"><p>Choose the school you follow. This sets the Asr shadow rule used for prayer times (Hanafi: double shadow; Shafi‘i, Maliki, Hanbali: single shadow) and is saved with your Salah settings. The calculation method (Karachi, MWL and others) remains a separate setting. Ja‘fari selects the Ja‘fari calculation method (Fajr 16°, Isha 14°, Maghrib 4° after sunset); its angles and rules for combining prayers should be confirmed with a qualified Ja‘fari authority, and combining prayers is not modelled.</p><div id="traditionOptions" class="v404-list"></div><p class="v404-note" id="traditionSaved"></p></div>`;
+  const SCHOOL_GUIDANCE={
+    hanafi:[['Asr timing','Asr begins when an object’s shadow reaches twice its height, in addition to its noon shadow.'],['Prayer structure','Hanafi teaching distinguishes Fard, Wajib, Sunnah and Nafl; Witr is treated as Wajib.'],['Common practice','The opening takbir is followed by folded hands and the opening supplication; details such as recitation behind the imam follow Hanafi rulings.'],['Learn next','Rak‘at structure, Witr and Qunut, Sajdah Sahw, and the rules of following an imam.']],
+    shafii:[['Asr timing','Asr begins when an object’s shadow reaches its height, in addition to its noon shadow.'],['Prayer structure','Shafi‘i teaching classifies the pillars (arkan), conditions and recommended Sunnahs distinctly; Witr is Sunnah.'],['Common practice','The school has specific guidance on basmalah, recitation behind the imam, raising the hands and the sitting posture.'],['Learn next','Pillars and conditions, recitation in each rak‘ah, Qunut in Fajr, and Witr.']],
+    maliki:[['Asr timing','Asr follows the single-shadow rule in the standard calculation.'],['Prayer structure','Maliki teaching has its own classifications and details for obligatory acts and Sunnahs; Witr is recommended.'],['Common practice','The school recognises practices such as sadl (arms at the sides) in prayer; details are taught according to the relied-upon Maliki position.'],['Learn next','Prayer prerequisites, recitation, sadl, Qunut practice and Witr.']],
+    hanbali:[['Asr timing','Asr follows the single-shadow rule in the standard calculation.'],['Prayer structure','Hanbali teaching distinguishes pillars, obligations and Sunnahs; Witr is a strongly emphasised Sunnah.'],['Common practice','The school has specific narrational preferences for raising the hands, recitation and supplications in prayer.'],['Learn next','Pillars and obligations, raising the hands, Qunut in Witr and prostration of forgetfulness.']],
+    jafari:[['Prayer timing','Ja‘fari timing conventions include distinct definitions for Fajr and Maghrib; the selected method uses a Ja‘fari calculation profile.'],['Prayer structure','Ja‘fari jurisprudence has distinct rules for combining prayers, Qunut, hand placement and recitation.'],['Common practice','Follow a qualified Ja‘fari authority (marja‘) for the exact method and rulings; do not apply Sunni school summaries to Ja‘fari practice.'],['Learn next','Wudu, prayer times, recitation, Qunut, sajdah and the rules of combining prayers.']]
+  };
+
+  const profileBody=`<div class="v404-card"><p>Choose your school. Naseem uses this preference for the Asr shadow rule and displays school-specific learning notes. Calculation method and jurisprudential school are separate settings. Local mosque timetables remain the practical authority for congregational prayer.</p><div id="traditionOptions" class="v404-list"></div><p class="v404-note" id="traditionSaved"></p></div><div class="v404-card"><span class="eyebrow">YOUR SCHOOL'S PRAYER GUIDE</span><div id="schoolGuidance" class="v404-list"></div><p class="v404-note">This is an introductory comparison, not a fatwa. Details can vary within a school and by circumstance. Follow a qualified teacher of your tradition.</p><div class="v404-list"><a href="https://daruliftabirmingham.co.uk/method-of-hanafi-salah/" target="_blank" rel="noopener noreferrer">Hanafi Salah guide · Darul Ifta Birmingham</a><a href="https://seekersguidance.org/answers/prayer-shafii-fiqh/" target="_blank" rel="noopener noreferrer">Shafi‘i prayer answers · SeekersGuidance</a><a href="https://www.fiqhpedia.org/articles/article:kwfe:v27:a016?lang=en" target="_blank" rel="noopener noreferrer">Comparative Sunni fiqh · Kuwait Fiqh Encyclopedia</a><a href="https://www.sistani.org/english/book/48/" target="_blank" rel="noopener noreferrer">Ja‘fari prayer rulings · Office of Sayyid al-Sistani</a></div></div>`;
   screen('traditionScreen','Traditional profiles','YOUR LEARNING PATH',profileBody);
   function renderTraditions(){ $('traditionOptions').innerHTML=traditions.map(t=>`<button class="v404-option ${data.tradition===t[0]?'selected':''}" data-tradition="${t[0]}"><strong>${esc(t[1])}</strong><small>${esc(t[2])}</small><span>${data.tradition===t[0]?'Selected':'Select'}</span></button>`).join('');$('traditionSaved').textContent=`Current preference: ${(traditions.find(t=>t[0]===data.tradition)||null)?.[1]||'Not selected'}. You can change this any time.`; }
   const syncTraditionNote=()=>{
     const chosen=traditions.find(t=>t[0]===data.tradition), label=chosen?.[1]||'Not selected';
     const lessonNote=$('salahLearningScreen').querySelector('.v404-note');
-    if(lessonNote)lessonNote.textContent=`Learning profile: ${label}. This is a general starter guide; some explanatory notes are Hanafi-specific and school-specific differences are not fully covered. Confirm details with a qualified teacher.`;
+    if(lessonNote)lessonNote.textContent=`Learning profile: ${label}. The learning cards now follow this selected school at an introductory level. Confirm detailed rulings with a qualified teacher.`;
+    const guide=$('schoolGuidance');if(guide){const rows=SCHOOL_GUIDANCE[data.tradition]||[];guide.innerHTML=rows.map(([h,t])=>`<article class="v404-lesson"><strong>${esc(h)}</strong><p>${esc(t)}</p></article>`).join('');}
     const hero=$('salahScreen')?.querySelector('.v3-hero');
-    if(hero){hero.querySelector('.v3-kicker').textContent='SELECTED LEARNING PROFILE';hero.querySelector('h2').textContent=chosen?chosen[1]:'Choose a learning profile';hero.querySelector('p').textContent='The recitation guide is a general starter resource and includes some Hanafi-specific notes. School-specific differences are not fully covered yet; follow a qualified teacher for your school.';hero.querySelector('.v3-badge').textContent=chosen?chosen[1].toUpperCase()+' · LEARNING GUIDE':'LEARNING PROFILE NOT SELECTED';}
+    if(hero){hero.querySelector('.v3-kicker').textContent='SELECTED LEARNING PROFILE';hero.querySelector('h2').textContent=chosen?chosen[1]:'Choose a learning profile';hero.querySelector('p').textContent=`Salah learning follows your ${chosen?chosen[1]:'selected'} profile at an introductory level. Follow a qualified teacher for detailed rulings.`;hero.querySelector('.v3-badge').textContent=chosen?chosen[1].toUpperCase()+' · LEARNING GUIDE':'LEARNING PROFILE NOT SELECTED';}
   };
   if(data.setupComplete!==true&&!data.tradition){data.tradition='hanafi';save();}
   // Migration: adopt a previously saved profile as the school WITHOUT touching the saved Asr rule or method.
@@ -161,12 +172,14 @@
       <div class="v404-widget-preview tasbeeh"><strong>NASEEM · TASBEEH</strong><b id="studioTasbeehCount">0 / 100</b><small id="studioTasbeehName">Astaghfirullah</small></div>
       <p class="v404-note">Follows your selected dhikr, count and target. Changes in the Counter sync automatically; taps made on the Android widget are merged when Naseem is next opened.</p>
     </div>
-    <div class="v404-card"><p id="studioWidgetStatus" class="v404-note">Widget data syncs automatically in the installed Android app. Add Prayer Times or Tasbeeh from your Android home-screen widget picker.</p></div>`;
+    <div class="v404-card v404-widget-card"><div class="v404-row"><span class="eyebrow">HIJRI DATE WIDGET</span><span class="v404-live-dot">DAILY SYNC</span></div><div class="v404-widget-preview hijri"><strong>NASEEM · ISLAMIC CALENDAR</strong><b id="studioHijriDate">Loading Islamic date…</b><small>Complete Hijri date · updated when Naseem opens</small></div><p class="v404-note">Shows the Islamic day, month and year on your Android home screen. Calendar dates can differ with local moon sighting.</p></div>
+    <div class="v404-card"><p id="studioWidgetStatus" class="v404-note">Widget data syncs automatically in the installed Android app. Add Prayer Times, Tasbeeh or Hijri Date from your Android home-screen widget picker.</p></div>`;
   screen('widgetStudioScreen','Widget Studio','YOUR HOME SCREEN',widgetBody);
   let widgetSyncRunning=false,widgetSyncPending=false;
   const dateKeyLocal=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   function updateStudioPreview(){
     const count=$('countValue')?.textContent||'0',name=$('counterLatin')?.textContent||'Astaghfirullah',target=$('targetInput')?.value||'100';
+    const hp=hijriNumeric(new Date());$('studioHijriDate').textContent=`${hp.day} ${hijriMonthName(hp.month)} ${hp.year} AH`;
     $('studioTasbeehCount').textContent=`${count} / ${target}`;$('studioTasbeehName').textContent=name;
     const S=window.NoorSalah,T=window.NoorTime;
     if(S){const times=S.timesFor(new Date()),labels=[['Fajr','fajr'],['Dhuhr','dhuhr'],['Asr','asr'],['Maghrib','maghrib'],['Isha','isha']];$('studioPrayerTimes').innerHTML=labels.map(([label,key])=>`<span><small>${label}</small><b>${T?.to12?T.to12(times[key]):times[key]}</b></span>`).join('');}
@@ -182,7 +195,9 @@
       const dhikr={name:$('counterLatin')?.textContent||'Astaghfirullah',arabic:$('counterArabic')?.textContent||'ذِكْر',count:Number($('countValue')?.textContent||0),target:Number($('targetInput')?.value||100)};
       const prayerOk=Object.keys(times).length?await w.setPrayerTimes(times):false;
       const tasbeehOk=await w.setTasbeeh(dhikr);
-      $('studioWidgetStatus').textContent=prayerOk&&tasbeehOk?'Both widget data feeds are up to date. Add the widgets from your Android home-screen widget picker.':`Widget sync status — Prayer Times: ${prayerOk?'updated':'unavailable'} · Tasbeeh: ${tasbeehOk?'updated':'unavailable'}.`;
+      const hp=hijriNumeric(new Date()),hijriText=`${hp.day} ${hijriMonthName(hp.month)} ${hp.year} AH`;
+      const hijriOk=await (w.setHijriDate?w.setHijriDate(hijriText):false);
+      $('studioWidgetStatus').textContent=prayerOk&&tasbeehOk&&hijriOk?'Prayer Times, Tasbeeh and Hijri Date widgets are synced. Add them from your Android home-screen widget picker.':`Widget sync — Prayer Times: ${prayerOk?'updated':'unavailable'} · Tasbeeh: ${tasbeehOk?'updated':'unavailable'} · Hijri Date: ${hijriOk?'updated':'unavailable'}.`;
     }catch(_){$('studioWidgetStatus').textContent='Naseem could not sync one or more widgets. Open the app again to retry.';}
     finally{widgetSyncRunning=false;if(widgetSyncPending){widgetSyncPending=false;syncStudioWidgets();}}
   }
@@ -199,8 +214,15 @@
 
   // Glance uses the public content endpoint internally; the endpoint is not displayed as a setting.
   const GLANCE_FEED_URL='https://raw.githubusercontent.com/midhT/Naseem-public/main/content/glance.json';
-  const fallback={title:'A moment of reflection',body:'Indeed, with hardship comes ease.',reference:'Qur’an 94:5–6',type:'Quranic reminder'};
-  const glanceBody=`<div class="v404-card"><div class="v404-row"><span class="eyebrow">LATEST FROM NASEEM</span><span class="v404-live-dot">DAILY REFLECTION</span></div><article id="glanceCard" class="v404-glance"><small>${fallback.type}</small><h2>${fallback.title}</h2><p>${fallback.body}</p><strong>${fallback.reference}</strong></article><p class="v404-note" id="glanceStatus">Showing the built-in reminder. Online content refreshes when available.</p></div>`;
+  const BUILTIN_GLANCE=[
+    {type:'Quranic reminder',title:'A moment of reflection',body:'Indeed, with hardship comes ease.',reference:'Qur’an 94:5–6'},
+    {type:'Daily lesson',title:'Learn the meaning of Tasbeeh',body:'SubhanAllah means that Allah is free from every imperfection. Alhamdulillah is praise and gratitude to Allah.',reference:'Daily learning · Dhikr'},
+    {type:'Salah lesson',title:'Pause in Ruku and Sujood',body:'Perform each movement with calmness and composure. Learn the exact recitations and rulings according to your selected school.',reference:'Sahih al-Bukhari 757 · introductory reminder'},
+    {type:'Daily quiz',title:'Quick knowledge check',body:'Which Surah is known as Umm al-Kitab (the Mother of the Book)?',reference:'Qur’an · Surah Al-Fatihah',quiz:{options:['Al-Baqarah','Al-Fatihah','Al-Ikhlas'],answer:1,explanation:'Al-Fatihah is also known as Umm al-Kitab.'}},
+    {type:'Daily quiz',title:'Test your knowledge',body:'How many obligatory daily prayers are there?',reference:'Basic Islamic knowledge',quiz:{options:['Three','Four','Five'],answer:2,explanation:'Muslims are obligated to perform five daily prayers.'}}
+  ];
+  const fallback=BUILTIN_GLANCE[Math.floor(Date.now()/86400000)%BUILTIN_GLANCE.length];
+  const glanceBody=`<div class="v404-card"><div class="v404-row"><span class="eyebrow">LATEST FROM NASEEM</span><span class="v404-live-dot">DAILY REFLECTION</span></div><article id="glanceCard" class="v404-glance"><small>${fallback.type}</small><h2>${fallback.title}</h2><p>${fallback.body}</p><strong>${fallback.reference}</strong></article><p class="v404-note" id="glanceStatus">Showing the built-in reminder. Online content refreshes when available.</p><button type="button" class="v404-secondary" id="glanceRefresh">Refresh Glance</button></div>`;
   screen('glanceScreen','Glance','A SHARED MOMENT',glanceBody,'homeScreen');
   const home=$('homeScreen');
   if(home&&!$('homeGlancePreview')){
@@ -214,23 +236,26 @@
     if(title)title.textContent=content.title;if(body)body.textContent=content.body;if(reference)reference.textContent=content.reference||content.type||'Open Glance';
   }
   function renderGlanceItem(content){
-    $('glanceCard').innerHTML=`<small>${esc(content.type||'Naseem reflection')}</small><h2>${esc(content.title)}</h2><p>${esc(content.body)}</p><strong>${esc(content.reference||'')}</strong>`;
+    const quiz=content.quiz&&Array.isArray(content.quiz.options)?`<div class="glance-quiz"><div class="v404-list">${content.quiz.options.map((o,i)=>`<button type="button" class="v404-option" data-quiz-answer="${i}">${esc(o)}</button>`).join('')}</div><p id="glanceQuizResult" class="v404-note" aria-live="polite"></p></div>`:'';
+    $('glanceCard').innerHTML=`<small>${esc(content.type||'Naseem reflection')}</small><h2>${esc(content.title)}</h2><p>${esc(content.body)}</p><strong>${esc(content.reference||'')}</strong>${quiz}`;
+    if(quiz){$('glanceCard').querySelectorAll('[data-quiz-answer]').forEach(b=>b.addEventListener('click',()=>{const correct=Number(b.dataset.quizAnswer)===Number(content.quiz.answer);$('glanceQuizResult').textContent=(correct?'Correct. ':'Not quite. ')+String(content.quiz.explanation||'Review the reference above.');$('glanceCard').querySelectorAll('[data-quiz-answer]').forEach(x=>x.disabled=true);}));}
     renderHomeGlance(content);
   }
-  function showFallback(status){renderGlanceItem(fallback);$('glanceStatus').textContent=status;}
+  function showFallback(status){renderGlanceItem(fallback);$('glanceStatus').textContent=status+' Daily lessons and quizzes are available offline.';}
   async function refreshGlance(){
     try{
       const response=await fetch(GLANCE_FEED_URL,{cache:'no-store'});if(!response.ok)throw new Error(`Feed returned ${response.status}.`);
-      const json=await response.json(),items=Array.isArray(json.items)?json.items:[],item=items.filter(x=>x&&x.published===true).at(-1);
+      const json=await response.json(),items=Array.isArray(json.items)?json.items:[],published=items.filter(x=>x&&x.published===true),pool=[...published,...BUILTIN_GLANCE],item=pool[Math.floor(Date.now()/86400000)%pool.length]||fallback;
       if(!item||!item.title||!item.body)throw new Error('No published item in the feed.');
-      const content={title:String(item.title).slice(0,120),body:String(item.body).slice(0,1200),reference:String(item.reference||item.source||'').slice(0,160),type:String(item.type||'Naseem update').slice(0,60),fetchedAt:Date.now()};
-      data.glanceCache=content;save();renderGlanceItem(content);$('glanceStatus').textContent='Latest published reflection loaded.';
+      const content={title:String(item.title).slice(0,120),body:String(item.body).slice(0,1200),reference:String(item.reference||item.source||'').slice(0,160),type:String(item.type||'Naseem update').slice(0,60),quiz:item.quiz&&Array.isArray(item.quiz.options)?item.quiz:null,fetchedAt:Date.now()};
+      data.glanceCache=content;save();renderGlanceItem(content);$('glanceStatus').textContent='Today’s Glance is ready. Published content and built-in lessons rotate daily.';
     }catch(error){
       const cached=data.glanceCache;
       if(cached&&Date.now()-Number(cached.fetchedAt||0)<30*86400000){renderGlanceItem(cached);$('glanceStatus').textContent='Offline or feed unavailable. Showing the last saved reflection.';}
       else showFallback('Online content is unavailable. Showing the built-in reminder.');
     }
   }
+  $('glanceRefresh').addEventListener('click',refreshGlance);
   refreshGlance();
   document.addEventListener('noor:screen',e=>{if(e.detail==='glanceScreen')refreshGlance();});
 
@@ -240,23 +265,24 @@
   document.querySelectorAll('[data-open-existing=\"adhkar\"]').forEach(button=>button.addEventListener('click',()=>{const routine=document.querySelector('[data-routine=\"morning\"]');if(routine)routine.click();else open('dhikrScreen');}));
   // First-launch setup: local-only and shown once. All of these choices stay editable in Settings.
   function startSetup(force=false){
-    if(!force&&data.setupComplete===true)return;
+    const setupDone=localStorage.getItem('naseem-onboarding-complete-v1')==='1'||data.setupComplete===true;
+    if(!force&&setupDone){try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}return;}
     const overlay=document.createElement('div');overlay.className='v404-onboarding';
-    overlay.innerHTML=`<div class="v404-onboard-panel"><span class="eyebrow">WELCOME TO NASEEM</span><div class="v404-onboard-mark">ن</div><h1>Make space for remembrance.</h1><p>A few details help personalise your daily experience. You can change them later.</p><label class="v404-label" for="setupName">Your name (optional)</label><input id="setupName" class="v404-input" type="text" maxlength="40" autocomplete="name" placeholder="What should Naseem call you?"><label class="v404-label" for="setupTradition">Learning tradition</label><select id="setupTradition" class="v404-input"><option value="">Choose later</option>${traditions.map(t=>`<option value="${t[0]}">${esc(t[1])}</option>`).join('')}</select><label class="v404-label" for="setupCity">Prayer city</label><select id="setupCity" class="v404-input"></select><button type="button" id="setupGps" class="v404-secondary">Use device location</button><label class="v404-label" for="setupTheme">Appearance</label><select id="setupTheme" class="v404-input"><option value="dark">Dark</option><option value="light">Light</option></select><div class="v404-onboard-actions"><button id="setupSkip" class="v404-secondary">Skip for now</button><button id="setupFinish" class="v404-primary">Finish setup</button></div><small>Your preferences stay on this device. Location is used for local prayer timings. Naseem does not require an account.</small></div>`;
+    overlay.innerHTML=`<div class="v404-onboard-panel"><span class="eyebrow">WELCOME TO NASEEM</span><div class="v404-onboard-mark">ن</div><h1>Make space for remembrance.</h1><p>A few details help personalise your daily experience. You can change them later.</p><label class="v404-label" for="setupName">Your name (optional)</label><input id="setupName" class="v404-input" type="text" maxlength="40" autocomplete="name" placeholder="What should Naseem call you?"><label class="v404-label" for="setupTradition">Learning tradition</label><select id="setupTradition" class="v404-input"><option value="">Choose later</option>${traditions.map(t=>`<option value="${t[0]}">${esc(t[1])}</option>`).join('')}</select><label class="v404-label" for="setupCity">Prayer city</label><select id="setupCity" class="v404-input"></select><button type="button" id="setupGps" class="v404-secondary">Use device location</button><label class="v404-label" for="setupTheme">Appearance</label><select id="setupTheme" class="v404-input"><option value="system">Use device theme</option><option value="light">Light</option><option value="dark">Dark</option></select><div class="v404-onboard-actions"><button id="setupSkip" class="v404-secondary">Skip for now</button><button id="setupFinish" class="v404-primary">Finish setup</button></div><small>Your preferences stay on this device. Location is used for local prayer timings. Naseem does not require an account.</small></div>`;
     document.body.appendChild(overlay);
     let profile={name:'',photo:''};try{profile=Object.assign(profile,JSON.parse(localStorage.getItem('noorProfileV1')||'{}'));}catch(_){}
     overlay.querySelector('#setupName').value=String(profile.name||'').slice(0,40);
     overlay.querySelector('#setupTradition').value=data.tradition||'';
-    overlay.querySelector('#setupTheme').value=document.body.classList.contains('light')?'light':'dark';
+    overlay.querySelector('#setupTheme').value=window.NaseemTheme?.get?.()||'system';
     const citySelect=overlay.querySelector('#setupCity'),salah=window.NoorSalah;
     citySelect.innerHTML='<option value="">Keep current location</option>'+(salah?.CITIES||[]).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
     const finish=async(skipped=false)=>{
       const name=overlay.querySelector('#setupName').value.trim().slice(0,40);
       profile.name=name;try{localStorage.setItem('noorProfileV1',JSON.stringify(profile));}catch(_){}
       const tradition=overlay.querySelector('#setupTradition').value;if(tradition)applySchool(tradition);
-      const theme=overlay.querySelector('#setupTheme').value;if((theme==='light')!==document.body.classList.contains('light'))$('themeBtn')?.click();
+      const theme=overlay.querySelector('#setupTheme').value;window.NaseemTheme?.set?.(theme);
       const chosen=(salah?.CITIES||[]).find(c=>c.id===citySelect.value);if(chosen)salah.setLocation({id:chosen.id,name:chosen.name,lat:chosen.lat,lng:chosen.lng,tz:chosen.tz,source:chosen.id==='srinagar'?'default':'manual'});
-      data.setupComplete=true;data.setupCompletedAt=Date.now();save();overlay.remove();
+      data.setupComplete=true;data.setupCompletedAt=Date.now();save();try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}overlay.remove();
       renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
       notify(skipped?'Setup skipped. You can personalise Naseem in Settings.':'Your preferences are saved on this device. Enable notifications later when you turn on a reminder.');
       document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{name}}));
@@ -266,6 +292,7 @@
     overlay.querySelector('#setupSkip').addEventListener('click',()=>finish(true));
   }
   window.setTimeout(()=>startSetup(false),2200);
+  document.addEventListener('naseem:open-onboarding',()=>startSetup(true));
   // Android back-button navigation: return to More from feature detail screens.
   document.addEventListener('naseem:back',e=>{const active=document.querySelector('.screen.active');if(!active||active.id==='homeScreen')return;e.preventDefault();if(active.id==='duaScreen'){open('salahScreen');return;}if(active.id==='glanceScreen'){open('homeScreen');return;}if(Object.values(routes).includes(active.id)||['qiblaScreen','zakatScreen'].includes(active.id))open('featuresScreen');else open('homeScreen');});
   window.NaseemV404={hijriParts,hijriNumeric,hijriToGregorian,hijriMonthLength,duas,traditions,refreshGlance};

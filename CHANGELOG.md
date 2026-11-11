@@ -1,3 +1,17 @@
+# V4.0.7 — focused feature completion
+
+- **Onboarding:** persistent one-time completion marker; setup only reopens from the Settings action. Erase-all resets the marker.
+- **Theme:** System/Light/Dark modes; System follows the device appearance. Startup animation, app surfaces, theme colour and Android status bar follow the selected mode. The startup animation remains enabled.
+- **Glance:** daily rotating built-in reflections, lessons and quizzes; remote published items are merged with offline content; quiz answers provide explanations; manual refresh and last-known cache.
+- **Hijri calendar:** full day, month and year display; all twelve month names in the calendar converter; existing month navigation retained.
+- **Salah guidance:** selected-school introductory guidance for Hanafi, Shafi‘i, Maliki, Hanbali and Ja‘fari profiles, with external reference links and explicit scholarly-review caveats. Existing Asr-school calculation behaviour is retained.
+- **Adhkar routines:** added after-Salah, before-sleep, waking and travel routines. Existing morning/evening streak rules are unchanged; new routines do not inflate streak credit.
+- **Widgets:** added a native Android Hijri date widget alongside Prayer Times and Tasbeeh. It syncs when Naseem opens; local moon-sighting differences are noted.
+- **Deferred:** Quran reader/Hadith expansion and unrelated roadmap features remain outside this focused update.
+- **Validation:** JavaScript syntax, source/static integration, Android widget patch, signing helper, Adhkar core and prayer-engine comparison checks passed. Browser UI tests and full APK/device build still require the project build environment.
+
+---
+
 # V4.0.6 — audit fixes (calendar, school, setup)
 
 - **Hijri calendar:** month navigation is now by (year, month) instead of ±30 days (the old logic skipped or repeated months from some start dates). Month grid uses the real 29/30-day length; Hijri→Gregorian conversion converges exactly (the old ±40-day search failed for far years). Home, calendar, converter and occasions all use the same on-device Umm al-Qura data; the online AlAdhan override and its stale 7-day cached Home date were removed. Moon-sighting caveat shown on the calendar.
@@ -155,10 +169,3 @@ Baseline: V3.2 + the scroll fix. This milestone changes structure and data safet
 - Deferred notification permission prompts until a reminder is enabled.
 - Fixed account-name field refresh and removed overlapping screen-entry animation.
 - Disabled service workers in native Capacitor builds and improved the PWA cache strategy without touching local app data.
-
-## 4.0.7 — Release preparation
-- Keep personal data local; cloud accounts and cloud synchronisation are not included.
-- Retain user-controlled JSON backup and restore for manual device transfer.
-- Separate debug APK builds from signed release APK publishing.
-- Move release signing to protected GitHub Actions secrets; remove the embedded legacy keystore and hardcoded fallback credentials.
-- Keep the Android application ID `com.noor.adhkar` and advance Android versionCode to `40007`.

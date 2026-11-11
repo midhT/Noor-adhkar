@@ -34,8 +34,9 @@ window.NoorNative = {
     try {
       await StatusBar.setOverlaysWebView({ overlay: false });
       await StatusBar.show();
-      await StatusBar.setBackgroundColor({ color: '#0b0b0d' });
-      await StatusBar.setStyle({ style: Style.Light });
+      const syncStatusBar=async()=>{const dark=window.NaseemTheme?.apply?document.body.classList.contains('light')===false:(window.matchMedia?.('(prefers-color-scheme: dark)').matches!==false);await StatusBar.setBackgroundColor({color:dark?'#0b0b0d':'#f4f2ec'});await StatusBar.setStyle({style:dark?Style.Light:Style.Dark});};
+      await syncStatusBar();
+      document.addEventListener('naseem:theme-changed',syncStatusBar);
     } catch (e) { console.warn('Noor native system-bar setup failed', e); }
   },
 
@@ -100,6 +101,7 @@ window.NoorNative = {
   widgets: isNative ? {
     async setPrayerTimes(times) { try { await NoorWidgets.setPrayerTimes({ json: JSON.stringify(times || {}) }); return true; } catch (_) { return false; } },
     async setTasbeeh(info) { try { await NoorWidgets.setTasbeeh(info); return true; } catch (_) { return false; } },
+    async setHijriDate(date) { try { await NoorWidgets.setHijriDate({ date: String(date || '') }); return true; } catch (_) { return false; } },
     async takePending() { try { return (await NoorWidgets.takePending()).count || 0; } catch (_) { return 0; } }
   } : null
 };

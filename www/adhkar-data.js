@@ -29,6 +29,20 @@
       arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
       meaning: 'Glory and praise be to Allah.', source: 'Muslim 2692' }
   ];
-  const sessions = { morning: SHARED, evening: SHARED };
+  const AFTER_SALAH = [
+    { id:'after-istighfar', title:'Seek forgiveness', count:3, verified:false, arabic:'أَسْتَغْفِرُ اللّٰهَ', meaning:'I seek forgiveness from Allah.', source:'Sahih Muslim 591' },
+    { id:'allahumma-antas-salam', title:'Allahumma anta as-salam', count:1, verified:false, arabic:'اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ', meaning:'O Allah, You are Peace and from You is peace.', source:'Sahih Muslim 591' }
+  ];
+  const BEFORE_SLEEP = [
+    { id:'sleep-bismika', title:'Before sleeping', count:1, verified:false, arabic:'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا', meaning:'In Your name, O Allah, I die and I live.', source:'Sahih al-Bukhari 6324' },
+    { id:'sleep-three-quls', title:'Recite the three Quls', count:3, verified:false, arabic:'قُلْ هُوَ اللَّهُ أَحَدٌ', meaning:'Recite Surah al-Ikhlas, al-Falaq and an-Nas, as reported in the Sunnah.', source:'Sahih al-Bukhari 5017' }
+  ];
+  const WAKING = [
+    { id:'wake-hamd', title:'Upon waking', count:1, verified:false, arabic:'الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ', meaning:'Praise belongs to Allah who gave us life after causing us to die, and to Him is the resurrection.', source:'Sahih al-Bukhari 6312' }
+  ];
+  const TRAVEL = [
+    { id:'travel-takbir', title:'Supplication when mounting a ride', count:1, verified:false, arabic:'سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَىٰ رَبِّنَا لَمُنقَلِبُونَ', meaning:'Glory be to the One who has subjected this to us; we could not have done so ourselves, and surely to our Lord we will return.', source:'Qur’an 43:13–14' }
+  ];
+  const sessions = { morning: SHARED, evening: SHARED, after_salah: AFTER_SALAH, before_sleep: BEFORE_SLEEP, waking: WAKING, travel: TRAVEL };
   return { sessions, items: which => sessions[which] || [], starterSet: true };
 });

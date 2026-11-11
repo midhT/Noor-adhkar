@@ -20,6 +20,16 @@ assert.match(js, /setTasbeeh\(dhikr\)/);
 assert.match(js, /salahDuaEntry/);
 assert.doesNotMatch(js, /requestNotifications|notifications\.request\(\)/); // setup does not prompt automatically
 assert.match(js, /setupComplete/);
+assert.match(js, /naseem-onboarding-complete-v1/);
+assert.match(read('www/app.js'), /theme:"system"/);
+assert.match(read('www/app.js'), /prefers-color-scheme/);
+assert.match(html, /data-theme="system"/);
+assert.match(js, /SCHOOL_GUIDANCE/);
+assert.match(js, /BUILTIN_GLANCE/);
+assert.match(js, /glanceRefresh/);
+assert.match(read('www/adhkar-data.js'), /before_sleep/);
+assert.match(read('www/native.js'), /setHijriDate/);
+assert.match(read('scripts/patch-android.mjs'), /HijriWidgetProvider/);
 assert.match(read('www/settings.js'), /naseem-v404-settings/);
 assert.match(js, /hijriReverseBtn/);
 assert.match(js, /occasionReminders/);

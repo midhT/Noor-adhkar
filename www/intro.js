@@ -1,4 +1,6 @@
 (() => {
+  // Resolve the device theme before the first animation frame to avoid a dark flash on light devices.
+  try { const saved=JSON.parse(localStorage.getItem('noor-adhkar-v1')||'{}'); const mode=saved.theme||'system'; const dark=mode==='system'?(window.matchMedia?.('(prefers-color-scheme: dark)').matches!==false):mode==='dark'; document.body.classList.toggle('light',!dark); } catch (_) {}
   const intro = document.getElementById('noorIntro');
   if (!intro) return;
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
