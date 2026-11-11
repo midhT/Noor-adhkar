@@ -1,4 +1,4 @@
-# Naseem V4.0.6 — source validation report
+# Naseem V4.0.7 — source validation report
 
 ## Scope implemented in this patch
 - Dua Library is accessible from Salah & Duas; its back navigation returns to Salah.
@@ -24,3 +24,21 @@
 - Signing-key continuity in the actual GitHub Actions environment. Keep the existing keystore and credentials unchanged.
 
 This is a release-candidate build, not a verified Play Store/public release.
+
+## V4.0.7 build-preparation checks (2026-11-11)
+
+Passed in the preparation environment:
+- `tests/test_new_tools.js` (16 assertions)
+- `tests/test_v404_source.js`
+- `tests/test_android_patch.mjs`
+- `tests/test_adhkar_core.js`
+- `tests/test_signing.mjs`
+- `tests/test_release_config.mjs`
+- `tests/test_v404_static.py`
+- `tests/verify_salah_engine.py` (9,840 comparisons; worst difference 0.55 min)
+
+Not completed here:
+- `npm install` timed out, so `npm run build` could not be run in this environment.
+- No Android SDK/Gradle APK build was run here.
+- No signed release build, GitHub Release, or physical-device test is claimed.
+- The GitHub release workflow still requires the four repository signing secrets described in `RELEASE-SETUP.md`.

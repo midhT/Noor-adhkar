@@ -17,14 +17,13 @@ Naseem is the public-facing name of the Noor project. This delivery starts the V
 - `docs/IMPLEMENTATION_STATUS.md`: implemented vs planned scope and compatibility notes.
 - `docs/design/naseem-product-vision-mockup.png`: concept reference only, not a screenshot of a running app.
 
-## Build a test APK with GitHub Actions
+## Build and release with GitHub Actions
 
-1. Extract the ZIP and upload the **contents** of the `noor-adhkar` folder to the root of the existing Noor GitHub repository, including hidden files such as `.github`.
-2. Open Actions and run **Build Naseem APK**, or push to the branch configured by the workflow.
-3. Download the `Naseem-debug-APK` artifact from a successful run.
-4. Install `app-debug.apk` for device testing.
+- **Debug test build:** run **Build Naseem debug APK** manually, or push to a `naseem-*` branch. Download the APK from the Actions artifact.
+- **Signed release build:** configure the four protected signing secrets described in `RELEASE-SETUP.md`, then push a matching version tag such as `v4.0.7`. The release workflow builds `assembleRelease` and publishes the APK to GitHub Releases.
+- Release signing material is not stored in this repository. Never commit a keystore, password, or Base64-encoded key.
 
-The debug APK is for testing only. Public Google Play distribution requires a signed release build (usually an Android App Bundle, `.aab`), secure release-key handling, policy review and a privacy policy. Never commit signing keys or passwords.
+V4.0.7 uses a new signing certificate. Back up app data before the one-time uninstall/reinstall transition. See `RELEASE-SETUP.md` for the exact procedure and required secrets. The Android application ID remains `com.noor.adhkar`.
 
 ## Compatibility rule
 
@@ -36,7 +35,7 @@ This ZIP is the first V4 development foundation, not the finished implementation
 
 ## Testing
 
-Run `npm install`, `npm run build`, and `bash tests/run.sh` with the dependencies listed in the test instructions. Native Android alarms/widgets and upgrade behaviour must be tested on a physical device. Review all religious text and calculations with qualified sources/editors before public release.
+Run `npm install`, `npm run build`, `node tests/test_release_config.mjs`, and `bash tests/run.sh` with the dependencies listed in the test instructions. Native Android alarms/widgets and upgrade behaviour must be tested on a physical device. Review all religious text and calculations with qualified sources/editors before public release.
 
 ## V4.0.1 accent update
 
@@ -44,10 +43,10 @@ This incremental update adds a persistent accent-colour selector under **Setting
 - Islamic emerald (default), deep forest, royal blue, midnight purple, muted gold, silver/grey, and a custom colour picker.
 - Applies across the existing dark and light theme tokens.
 - Saved locally and included in JSON backup/restore.
-- Android build metadata is set from `package.json` by `scripts/patch-android.mjs` (`versionName 4.0.1`, `versionCode 40001`). The application ID remains `com.noor.adhkar`.
+- Android build metadata is set from `package.json` by `scripts/patch-android.mjs` (derived from the current `package.json` version). The application ID remains `com.noor.adhkar`.
 
 ### Installing as an update
-Android only installs an APK over an existing app when the application ID **and signing certificate** match and the incoming version code is higher. This source preserves the application ID and raises the version code. The current GitHub workflow still produces a debug APK; a debug key generated on a fresh GitHub runner is not guaranteed to match a previously installed APK. For reliable in-place updates, configure one persistent signing keystore in GitHub Actions secrets and use it for every subsequent build. Otherwise Android may require uninstalling the old app first, which can erase local data; export a Naseem backup before doing that.
+Android only installs an APK over an existing app when the application ID **and signing certificate** match and the incoming version code is higher. This source preserves the application ID and raises the version code. The release workflow now uses one persistent signing key from protected GitHub Actions secrets. The V4.0.7 key is intentionally new, so this release requires one backup/uninstall/reinstall/restore transition; future updates must reuse this same new key.
 
 ### Validation performed for 4.0.1
 - JavaScript syntax checks passed for the new accent module and settings integration.

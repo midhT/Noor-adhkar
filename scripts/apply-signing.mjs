@@ -1,24 +1,29 @@
-// Makes every build (debug and release) use the SAME signing key, so a new APK installs over the old one
-// (Android refuses an update whose signing key differs). Run after `npx cap add android`, before the Gradle build.
-// Idempotent and safe to run more than once. Key: signing/naseem.keystore (alias "naseem").
-// NOTE: this is a personal-app, sideload key whose password is in the repo, so it is NOT secret. Before publishing to
-// a store, create a private key, keep it out of the repo (CI secrets) and set NASEEM_KEYSTORE / NASEEM_STORE_PASSWORD /
-// NASEEM_KEY_ALIAS / NASEEM_KEY_PASSWORD instead. Never lose the key you ship with: updates require the same key.
+// Configure the release signing key from CI environment variables only.
+// Never commit the keystore or passwords. The workflow writes the keystore to RUNNER_TEMP.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export function applySigning(gradle, { storeFile, storePassword, keyAlias, keyPassword }) {
-  if (gradle.includes('signingConfigs.naseem')) return gradle; // already applied
-  const q = v => `'${String(v).replace(/\\/g, '/').replace(/'/g, "\\'")}'`;
-  const block = `\n    signingConfigs {\n        naseem {\n            storeFile file(${q(storeFile)})\n            storePassword ${q(storePassword)}\n            keyAlias ${q(keyAlias)}\n            keyPassword ${q(keyPassword)}\n        }\n    }\n`;
+  for (const [name, value] of Object.entries({ storeFile, storePassword, keyAlias, keyPassword })) {
+    if (!value || !String(value).trim()) throw new Error(`Missing release signing value: ${name}`);
+  }
   if (!/^android\s*\{/m.test(gradle)) throw new Error('android { } block not found in app/build.gradle');
-  let out = gradle.replace(/^android\s*\{/m, m => m + block);
+  if (gradle.includes('signingConfigs.naseemRelease')) return gradle;
+  const q = value => `'${String(value).replace(/\\/g, '/').replace(/'/g, "\\'")}'`;
+  const signing = `\n    signingConfigs {\n        naseemRelease {\n            storeFile file(${q(storeFile)})\n            storePassword ${q(storePassword)}\n            keyAlias ${q(keyAlias)}\n            keyPassword ${q(keyPassword)}\n        }\n    }\n`;
+  let out = gradle;
+  if (!out.includes('signingConfigs.naseemRelease')) {
+    out = out.replace(/^android\s*\{/m, match => match + signing);
+  }
   if (/buildTypes\s*\{/.test(out)) {
-    out = out.replace(/buildTypes\s*\{/, m => `${m}\n        debug {\n            signingConfig signingConfigs.naseem\n        }`);
-    out = out.replace(/(\n\s*)release\s*\{/, (m, ws) => `${m}${ws}    signingConfig signingConfigs.naseem`);
+    if (/release\s*\{/.test(out)) {
+      out = out.replace(/(release\s*\{)/, '$1\n            signingConfig signingConfigs.naseemRelease');
+    } else {
+      out = out.replace(/buildTypes\s*\{/, match => `${match}\n        release { signingConfig signingConfigs.naseemRelease }`);
+    }
   } else {
-    out = out.replace(/^android\s*\{/m, m => `${m}\n    buildTypes {\n        debug { signingConfig signingConfigs.naseem }\n        release { signingConfig signingConfigs.naseem }\n    }`);
+    out = out.replace(/^android\s*\{/m, match => `${match}\n    buildTypes { release { signingConfig signingConfigs.naseemRelease } }`);
   }
   return out;
 }
@@ -26,17 +31,17 @@ export function applySigning(gradle, { storeFile, storePassword, keyAlias, keyPa
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = process.cwd();
   const gradlePath = join(root, 'android', 'app', 'build.gradle');
-  const storeFile = resolve(process.env.NASEEM_KEYSTORE || join(root, 'signing', 'naseem.keystore'));
-  if (!existsSync(gradlePath)) { console.error('android/app/build.gradle not found. Run `npx cap add android` first.'); process.exit(1); }
-  if (!existsSync(storeFile)) { console.error(`Keystore not found: ${storeFile}`); process.exit(1); }
+  const storeFile = process.env.NASEEM_KEYSTORE;
   const cfg = {
     storeFile,
-    storePassword: process.env.NASEEM_STORE_PASSWORD || 'naseem-update',
-    keyAlias: process.env.NASEEM_KEY_ALIAS || 'naseem',
-    keyPassword: process.env.NASEEM_KEY_PASSWORD || 'naseem-update'
+    storePassword: process.env.NASEEM_STORE_PASSWORD,
+    keyAlias: process.env.NASEEM_KEY_ALIAS,
+    keyPassword: process.env.NASEEM_KEY_PASSWORD
   };
+  if (!existsSync(gradlePath)) throw new Error('android/app/build.gradle not found. Run `npx cap add android` first.');
+  if (!storeFile || !existsSync(storeFile)) throw new Error('Release keystore missing. Configure NASEEM_KEYSTORE in the CI environment.');
   const before = readFileSync(gradlePath, 'utf8');
   const after = applySigning(before, cfg);
   writeFileSync(gradlePath, after);
-  console.log(before === after ? 'Signing already configured.' : `Signing configured: ${cfg.storeFile} (alias ${cfg.keyAlias}).`);
+  console.log('Release signing configured from protected CI secrets.');
 }

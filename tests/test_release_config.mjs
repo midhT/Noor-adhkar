@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
+const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+assert.equal(pkg.version, '4.0.7');
+assert.equal(JSON.parse(readFileSync('capacitor.config.json', 'utf8')).appId, 'com.noor.adhkar');
+const release = readFileSync('.github/workflows/release.yml', 'utf8');
+for (const key of ['NASEEM_KEYSTORE_BASE64', 'NASEEM_STORE_PASSWORD', 'NASEEM_KEY_ALIAS', 'NASEEM_KEY_PASSWORD']) assert.ok(release.includes(key), key);
+assert.match(release, /assembleRelease/);
+assert.match(release, /softprops\/action-gh-release/);
+assert.match(release, /contents: write/);
+assert.ok(!existsSync('signing/naseem.keystore'), 'legacy embedded keystore removed');
+assert.match(readFileSync('.gitignore', 'utf8'), /\*\.keystore/);
+assert.match(readFileSync('www/sw.js', 'utf8'), /noor-adhkar-cache-v407/);
+console.log('V4.0.7 release configuration checks passed.');

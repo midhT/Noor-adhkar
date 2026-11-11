@@ -31,6 +31,6 @@ try {
   assert.doesNotMatch(activity,/localStorage\.clear/);
   assert.ok(existsSync(join(main,'res/layout/widget_prayer.xml')));
   assert.ok(existsSync(join(main,'res/xml/tasbeeh_widget_info.xml')));
-  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40006/);
+  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40007/);
   console.log('Android native integration patch: all assertions passed.');
 } finally { rmSync(root,{recursive:true,force:true}); }

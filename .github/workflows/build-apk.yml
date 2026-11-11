@@ -1,4 +1,4 @@
-name: Build Naseem APK
+name: Build Naseem debug APK
 
 on:
   workflow_dispatch:
@@ -10,50 +10,38 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-debug:
     runs-on: ubuntu-latest
     steps:
       - name: Check out project
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
-
       - name: Install dependencies
-        run: npm install
-
+        run: npm install --no-audit --no-fund
       - name: Build web app
         run: npm run build
-
-      - name: Set up Android
+      - name: Add Android platform
         run: npx cap add android
-
-      - name: Generate Naseem icon and splash
+      - name: Generate app icons and splash
         run: npx --yes --package=@capacitor/assets capacitor-assets generate --android
-
-      - name: Apply Android themed icon layer
+      - name: Apply themed icon layer
         run: node scripts/patch-icons.mjs
-
       - name: Integrate native Android widgets and back handling
         run: node scripts/patch-android.mjs
-
-      - name: Use stable signing key
-        run: node scripts/apply-signing.mjs
-
-      - name: Build APK
+      - name: Build debug APK
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug
-
-      - name: Upload APK
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: Naseem-debug-APK
+          name: Naseem-${{ github.sha }}-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

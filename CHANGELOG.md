@@ -155,3 +155,10 @@ Baseline: V3.2 + the scroll fix. This milestone changes structure and data safet
 - Deferred notification permission prompts until a reminder is enabled.
 - Fixed account-name field refresh and removed overlapping screen-entry animation.
 - Disabled service workers in native Capacitor builds and improved the PWA cache strategy without touching local app data.
+
+## 4.0.7 — Release preparation
+- Keep personal data local; cloud accounts and cloud synchronisation are not included.
+- Retain user-controlled JSON backup and restore for manual device transfer.
+- Separate debug APK builds from signed release APK publishing.
+- Move release signing to protected GitHub Actions secrets; remove the embedded legacy keystore and hardcoded fallback credentials.
+- Keep the Android application ID `com.noor.adhkar` and advance Android versionCode to `40007`.

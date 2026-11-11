@@ -6,3 +6,7 @@ android/build/
 node_modules/
 tests/.build/
 www/native.bundle.js
+# Android release signing material must never enter source control
+*.keystore
+*.jks
+signing/

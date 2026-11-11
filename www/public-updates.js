@@ -1,7 +1,7 @@
 /* Public Naseem release checker. Public JSON only; no GitHub token or sign-in. */
 (() => {
   'use strict';
-  const CURRENT = document.querySelector('meta[name="naseem-version"]')?.content || '4.0.6';
+  const CURRENT = document.querySelector('meta[name="naseem-version"]')?.content || '4.0.7';
   const RELEASE_JSON = 'https://raw.githubusercontent.com/midhT/Naseem-public/main/release.json';
   const RELEASES_PAGE = 'https://github.com/midhT/Noor-adhkar/releases/latest';
   const KEY = 'naseem-public-update-state-v1';
