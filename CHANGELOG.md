@@ -1,3 +1,14 @@
+# V4.0.6 — audit fixes (calendar, school, setup)
+
+- **Hijri calendar:** month navigation is now by (year, month) instead of ±30 days (the old logic skipped or repeated months from some start dates). Month grid uses the real 29/30-day length; Hijri→Gregorian conversion converges exactly (the old ±40-day search failed for far years). Home, calendar, converter and occasions all use the same on-device Umm al-Qura data; the online AlAdhan override and its stale 7-day cached Home date were removed. Moon-sighting caveat shown on the calendar.
+- **School vs method:** new `NoorSalah.setSchool()`. Schools set the Asr rule (Hanafi double shadow; Shafi'i/Maliki/Hanbali single). Ja'fari selects its own method (Fajr 16°, Isha 14°, Maghrib 4°) instead of being ignored. Sunni schools never change the calculation method; leaving Ja'fari restores the previous method. Settings › Salah has a School selector. Existing saved profiles are adopted as the school without changing the saved Asr rule or method.
+- **Setup:** removed the separate "Edit setup preferences" button; everything is edited in Settings. Onboarding applies the school through the same path.
+- **Widgets:** Tasbeeh widget data now syncs automatically when the count, dhikr or target changes.
+- **More:** removed repeated "Available now" labels and the redundant pill; corrected the Salah-learning and profile card descriptions to match what exists.
+- Tests: `tests/test_ui_logic.cjs` (33 browser checks).
+
+---
+
 # V4.0.6 — UI fine-tuning (css + one label fix)
 
 - Additive polish block at the end of `www/features-v404.css`: 44px touch targets, consistent focus rings, press feedback, softer card depth, readable bottom-nav labels (10px) with an active indicator, square Hijri calendar cells, select chevrons, calmer Arabic line-height.

@@ -28,31 +28,52 @@
   const dayStart = d => new Date(d.getFullYear(),d.getMonth(),d.getDate());
   function updateHomeCalendar(){
     const homeDate=$('homeHijriDate');if(homeDate)homeDate.textContent=withAH(hijriParts(new Date()).label);
-    const hp=hijriNumeric(new Date()),ramadan=$('homeRamadanCard'),activeHijriMonth=window.naseemHijriApiMonth||hp.month;
+    const hp=hijriNumeric(new Date()),ramadan=$('homeRamadanCard'),activeHijriMonth=hp.month;
     if(ramadan&&activeHijriMonth===9&&window.NoorSalah){const times=window.NoorSalah.timesFor(new Date());const fmt=v=>window.NoorTime?.to12?window.NoorTime.to12(v):v;ramadan.hidden=false;$('homeSehriTime').textContent=fmt(times.fajr);$('homeIftarTime').textContent=fmt(times.maghrib);}
     else if(ramadan)ramadan.hidden=true;
   }
   updateHomeCalendar();window.addEventListener('noor:schedule',updateHomeCalendar);window.setInterval(updateHomeCalendar,60000);
-  async function refreshOnlineHijri(){try{const d=new Date(),date=[String(d.getDate()).padStart(2,'0'),String(d.getMonth()+1).padStart(2,'0'),d.getFullYear()].join('-');const r=await fetch(`https://api.aladhan.com/v1/gToH?date=${date}`,{cache:'no-store'});if(!r.ok)throw new Error('calendar API unavailable');const j=await r.json(),h=j?.data?.hijri;if(!h?.date)throw new Error('invalid Hijri response');const label=`${h.day} ${h.month.en} ${h.year}`;window.naseemHijriApiMonth=Number(h.month.number);$('homeHijriDate')&&($('homeHijriDate').textContent=label+' AH');updateHomeCalendar();const todayNote=$('hijriToday');if(todayNote)todayNote.textContent=`Today: ${label} AH · AlAdhan calendar`;localStorage.setItem('naseem-hijri-api-cache',JSON.stringify({label,at:Date.now()}));}catch(_){try{const c=JSON.parse(localStorage.getItem('naseem-hijri-api-cache')||'null');if(c?.label&&Date.now()-c.at<7*86400000&&$('homeHijriDate'))$('homeHijriDate').textContent=c.label+' AH';}catch(__){}}}
-  refreshOnlineHijri();
   const hijriBody = `<div class="v404-card"><div class="v404-row"><button class="v404-btn" id="hijriPrev" aria-label="Previous Hijri month">‹</button><div class="v404-centre"><strong id="hijriMonthTitle">Loading…</strong><small id="hijriGregorianTitle"></small></div><button class="v404-btn" id="hijriNext" aria-label="Next Hijri month">›</button></div><div class="v404-calendar" id="hijriGrid"></div><p class="v404-note" id="hijriToday"></p></div><div class="v404-card"><span class="eyebrow">DATE CONVERSION</span><label class="v404-label" for="hijriDateInput">Gregorian date → Hijri</label><input class="v404-input" type="date" id="hijriDateInput"><strong id="hijriConversion"></strong><label class="v404-label" for="hijriYearInput">Hijri date → Gregorian</label><div class="v404-hijri-convert"><input class="v404-input" id="hijriDayInput" type="number" min="1" max="30" value="1" aria-label="Hijri day"><select class="v404-input" id="hijriMonthInput" aria-label="Hijri month">${Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select><input class="v404-input" id="hijriYearInput" type="number" min="1300" max="1600" aria-label="Hijri year"></div><button class="v404-secondary" id="hijriReverseBtn">Convert to Gregorian</button><strong id="hijriReverseResult"></strong></div><div class="v404-card"><span class="eyebrow">IMPORTANT DATES</span><div id="hijriEvents" class="v404-list"></div><p class="v404-note">Dates are calculated using the device's Islamic calendar data. Local moon sighting and regional conventions can shift observances by a day or more.</p></div>`;
   screen('hijriScreen','Hijri calendar','DATES & CONVERSION',hijriBody);
-  let hijriAnchor=dayStart(new Date());
-  function renderHijri(){
-    const current=hijriParts(hijriAnchor); const dates=[];
-    for(let offset=-35;offset<=35;offset++){const d=new Date(hijriAnchor);d.setDate(d.getDate()+offset);const hp=hijriParts(d);if(hp.month===current.month&&hp.year===current.year)dates.push({date:d,...hp});}
-    if(!dates.length){$('hijriGrid').textContent='Islamic calendar data is unavailable on this device.';return;}
-    const first=dates[0].date.getDay(); $('hijriMonthTitle').textContent=`${current.month} ${current.year} AH`;
-    $('hijriGregorianTitle').textContent=`${dates[0].date.toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${dates.at(-1).date.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
-    const labels=['Su','Mo','Tu','We','Th','Fr','Sa'];
-    $('hijriGrid').innerHTML=labels.map(x=>`<span class="v404-weekday">${x}</span>`).join('')+Array(first).fill('<span></span>').join('')+dates.map(x=>`<span class="v404-day ${dayStart(x.date).getTime()===dayStart(new Date()).getTime()?'today':''}" title="${esc(x.date.toDateString())}">${x.day}</span>`).join('');
-    $('hijriToday').textContent=`Today: ${withAH(hijriParts(new Date()).label)}`;
+  // Month-based navigation: the view is a (year, month) pair, never a ±30-day offset, so months can't be skipped or repeated.
+  const HIJRI_MIN_YEAR=1300,HIJRI_MAX_YEAR=1600,MEAN_MONTH=29.530589;
+  const noon=d=>{const x=new Date(d);x.setHours(12,0,0,0);return x;};
+  // Hijri -> Gregorian: converge on the date whose device-calendar parts match, instead of a fixed search window.
+  function hijriToGregorian(year,month,day){
+    if(!(year>=HIJRI_MIN_YEAR&&year<=HIJRI_MAX_YEAR&&month>=1&&month<=12&&day>=1&&day<=30))return null;
+    const ord=(y,m)=>y*12+(m-1),target=ord(year,month),now=hijriNumeric(new Date());
+    let guess=noon(new Date());guess.setDate(guess.getDate()+Math.round((target-ord(now.year,now.month))*MEAN_MONTH+(day-now.day)));
+    for(let i=0;i<24;i++){
+      const h=hijriNumeric(guess),delta=(ord(h.year,h.month)-target)*MEAN_MONTH+(h.day-day);
+      if(h.year===year&&h.month===month&&h.day===day)return guess;
+      let step=Math.round(delta);if(step===0)step=delta>0?1:-1;
+      guess=new Date(guess);guess.setDate(guess.getDate()-step);
+    }
+    return null;
   }
-  $('hijriPrev').addEventListener('click',()=>{hijriAnchor.setDate(hijriAnchor.getDate()-30);renderHijri();});
-  $('hijriNext').addEventListener('click',()=>{hijriAnchor.setDate(hijriAnchor.getDate()+30);renderHijri();});
+  // Days in a Hijri month (29 or 30) as reported by the device calendar.
+  function hijriMonthLength(year,month){return hijriToGregorian(year,month,30)?30:29;}
+  const todayH=hijriNumeric(new Date());let viewYear=todayH.year,viewMonth=todayH.month;
+  function shiftHijriMonth(delta){let m=viewMonth+delta,y=viewYear;if(m<1){m=12;y--;}if(m>12){m=1;y++;}if(y<HIJRI_MIN_YEAR||y>HIJRI_MAX_YEAR){notify('That is outside the supported calendar range.');return;}viewYear=y;viewMonth=m;renderHijri();}
+  function renderHijri(){
+    const first=hijriToGregorian(viewYear,viewMonth,1);
+    if(!first){$('hijriGrid').textContent='Islamic calendar data is unavailable on this device.';return;}
+    const length=hijriMonthLength(viewYear,viewMonth),last=new Date(first);last.setDate(last.getDate()+length-1);
+    const names=hijriParts(first);
+    $('hijriMonthTitle').textContent=`${names.month} ${viewYear} AH`;
+    $('hijriGregorianTitle').textContent=`${first.toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${last.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
+    const labels=['Su','Mo','Tu','We','Th','Fr','Sa'],todayKey=dayStart(new Date()).getTime();
+    let cells='';for(let day=1;day<=length;day++){const d=new Date(first);d.setDate(d.getDate()+day-1);const isToday=dayStart(d).getTime()===todayKey;cells+=`<span class="v404-day ${isToday?'today':''}" ${isToday?'aria-current="date"':''} title="${esc(d.toDateString())}">${day}</span>`;}
+    $('hijriGrid').innerHTML=labels.map(x=>`<span class="v404-weekday">${x}</span>`).join('')+Array(first.getDay()).fill('<span></span>').join('')+cells;
+    const t=hijriNumeric(new Date());
+    $('hijriToday').innerHTML=`Today: ${esc(withAH(hijriParts(new Date()).label))}. Based on the Umm al-Qura calendar; local moon sighting can differ by a day. ${length} days this month. ${(viewYear!==t.year||viewMonth!==t.month)?'<button type="button" class="v404-chip" id="hijriGoToday">Back to this month</button>':''}`;
+    const back=$('hijriGoToday');if(back)back.addEventListener('click',()=>{viewYear=t.year;viewMonth=t.month;renderHijri();});
+  }
+  $('hijriPrev').addEventListener('click',()=>shiftHijriMonth(-1));
+  $('hijriNext').addEventListener('click',()=>shiftHijriMonth(1));
   $('hijriDateInput').value=new Date().toLocaleDateString('en-CA');
   $('hijriDateInput').addEventListener('change',e=>{if(!e.target.value)return;const d=new Date(e.target.value+'T12:00:00');$('hijriConversion').textContent=withAH(hijriParts(d).label);});
-  $('hijriDateInput').dispatchEvent(new Event('change'));const initialHijri=hijriNumeric(new Date());$('hijriDayInput').value=initialHijri.day;$('hijriMonthInput').value=initialHijri.month;$('hijriYearInput').value=initialHijri.year;$('hijriReverseBtn').addEventListener('click',()=>{const day=Number($('hijriDayInput').value),month=Number($('hijriMonthInput').value),year=Number($('hijriYearInput').value);if(day<1||day>30||month<1||month>12||year<1300||year>1600){$('hijriReverseResult').textContent='Enter a valid Hijri date.';return;}const now=hijriNumeric(new Date());const approx=new Date();approx.setDate(approx.getDate()+(year-now.year)*354+(month-now.month)*29.5);let found=null;for(let i=-40;i<=40;i++){const d=new Date(approx);d.setDate(d.getDate()+i);const h=hijriNumeric(d);if(h.year===year&&h.month===month&&h.day===day){found=d;break;}}$('hijriReverseResult').textContent=found?found.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'Date not found in the device calendar range.';}); renderHijri();
+  $('hijriDateInput').dispatchEvent(new Event('change'));const initialHijri=hijriNumeric(new Date());$('hijriDayInput').value=initialHijri.day;$('hijriMonthInput').value=initialHijri.month;$('hijriYearInput').value=initialHijri.year;$('hijriReverseBtn').addEventListener('click',()=>{const day=Number($('hijriDayInput').value),month=Number($('hijriMonthInput').value),year=Number($('hijriYearInput').value);if(day<1||day>30||month<1||month>12||year<1300||year>1600){$('hijriReverseResult').textContent='Enter a valid Hijri date.';return;}const found=hijriToGregorian(year,month,day);if(!found&&day===30&&hijriToGregorian(year,month,29)){$('hijriReverseResult').textContent='This Hijri month has only 29 days.';return;}$('hijriReverseResult').textContent=found?found.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'Enter a valid Hijri date (years 1300–1600).';}); renderHijri();
 
   // Quranic supplications. Translation is a concise rendering; references are supplied for review.
   const duas=[
@@ -89,7 +110,7 @@
 
   // Traditional learning profiles are preferences only; they do not calculate rulings.
   const traditions=[['hanafi','Sunni · Hanafi','A recognised Sunni school of jurisprudence.'],['shafii','Sunni · Shafi‘i','A recognised Sunni school of jurisprudence.'],['maliki','Sunni · Maliki','A recognised Sunni school of jurisprudence.'],['hanbali','Sunni · Hanbali','A recognised Sunni school of jurisprudence.'],['jafari','Shia · Ja‘fari (Twelver)','A recognised Ja‘fari school of jurisprudence.']];
-  const profileBody=`<div class="v404-card"><p>Choose the school you follow. For the four Sunni schools, Naseem aligns the Asr shadow-length setting with that school. The calculation method (Karachi, MWL and others) remains a separate setting. Ja‘fari-specific prayer-time calculations are not currently supported.</p><div id="traditionOptions" class="v404-list"></div><p class="v404-note" id="traditionSaved"></p></div>`;
+  const profileBody=`<div class="v404-card"><p>Choose the school you follow. This sets the Asr shadow rule used for prayer times (Hanafi: double shadow; Shafi‘i, Maliki, Hanbali: single shadow) and is saved with your Salah settings. The calculation method (Karachi, MWL and others) remains a separate setting. Ja‘fari selects the Ja‘fari calculation method (Fajr 16°, Isha 14°, Maghrib 4° after sunset); its angles and rules for combining prayers should be confirmed with a qualified Ja‘fari authority, and combining prayers is not modelled.</p><div id="traditionOptions" class="v404-list"></div><p class="v404-note" id="traditionSaved"></p></div>`;
   screen('traditionScreen','Traditional profiles','YOUR LEARNING PATH',profileBody);
   function renderTraditions(){ $('traditionOptions').innerHTML=traditions.map(t=>`<button class="v404-option ${data.tradition===t[0]?'selected':''}" data-tradition="${t[0]}"><strong>${esc(t[1])}</strong><small>${esc(t[2])}</small><span>${data.tradition===t[0]?'Selected':'Select'}</span></button>`).join('');$('traditionSaved').textContent=`Current preference: ${(traditions.find(t=>t[0]===data.tradition)||null)?.[1]||'Not selected'}. You can change this any time.`; }
   const syncTraditionNote=()=>{
@@ -100,15 +121,20 @@
     if(hero){hero.querySelector('.v3-kicker').textContent='SELECTED LEARNING PROFILE';hero.querySelector('h2').textContent=chosen?chosen[1]:'Choose a learning profile';hero.querySelector('p').textContent='The recitation guide is a general starter resource and includes some Hanafi-specific notes. School-specific differences are not fully covered yet; follow a qualified teacher for your school.';hero.querySelector('.v3-badge').textContent=chosen?chosen[1].toUpperCase()+' · LEARNING GUIDE':'LEARNING PROFILE NOT SELECTED';}
   };
   if(data.setupComplete!==true&&!data.tradition){data.tradition='hanafi';save();}
+  // Migration: adopt a previously saved profile as the school WITHOUT touching the saved Asr rule or method.
+  {const S=window.NoorSalah;if(S&&S.get&&S.SCHOOLS){const st=S.get();if(!st.school&&S.SCHOOLS[data.tradition])S.setSchool(data.tradition,false);else if(st.school&&S.SCHOOLS[st.school]&&st.school!==data.tradition){data.tradition=st.school;save();}}}
   renderTraditions();syncTraditionNote();
+  // Single source of truth for the school is NoorSalah.get().school; the local copy only mirrors it for the learning screens.
+  function applySchool(id){
+    const S=window.NoorSalah;if(!S||!S.setSchool(id)){notify('That school is not supported.');return false;}
+    data.tradition=id;save();return true;
+  }
+  document.addEventListener('naseem:tradition-changed',()=>{const S=window.NoorSalah,school=S?.get?.().school;if(school&&school!==data.tradition){data.tradition=school;save();}renderTraditions();syncTraditionNote();});
   $('traditionOptions').addEventListener('click',e=>{
     const b=e.target.closest('[data-tradition]');if(!b)return;
-    data.tradition=b.dataset.tradition;save();
-    if(window.NoorSalah&&['hanafi','shafii','maliki','hanbali'].includes(data.tradition)){
-      window.NoorSalah.set({asr:data.tradition==='hanafi'?'hanafi':'standard'});
-      notify(`Learning profile saved. Asr now uses the ${data.tradition==='hanafi'?'Hanafi':'Standard'} shadow rule; the calculation method is unchanged.`);
-    } else notify('Ja‘fari learning profile saved. The existing Asr setting is retained because a Ja‘fari-specific calculation is not yet supported.');
-    renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
+    if(!applySchool(b.dataset.tradition))return;
+    notify(data.tradition==='jafari'?'Ja‘fari school saved. Calculation method set to Ja‘fari; you can still change it in Salah settings.':`School saved. Asr now uses the ${data.tradition==='hanafi'?'Hanafi (double shadow)':'standard (single shadow)'} rule; the calculation method is unchanged.`);
+    document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
   });
 
   // Islamic occasions use the local Hijri calendar and are explicitly approximate.
@@ -122,24 +148,7 @@
     $('hijriEvents').innerHTML=nextOccasions.slice(0,4).map(({item:o,date:d})=>`<div class="v404-occasion"><div><strong>${esc(o[1])}</strong><small>${esc(o[0])}</small></div><time>${d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'Varies'}</time></div>`).join('');
   }
   renderOccasions();
-  async function refreshOnlineOccasions(){
-    const current=hijriNumeric(new Date()),rows=[];
-    try{
-      for(let offset=0;offset<3;offset++){
-        const index=current.month-1+offset,month=index%12+1,year=current.year+Math.floor(index/12);
-        const response=await fetch(`https://api.aladhan.com/v1/hToGCalendar/${month}/${year}?calendarMethod=UAQ`,{cache:'no-store'});
-        if(!response.ok)throw new Error('calendar feed unavailable');
-        const json=await response.json();if(!Array.isArray(json.data))throw new Error('invalid calendar response');
-        for(const row of json.data){const h=row?.hijri,g=row?.gregorian;if(!h||!g)continue;const parts=String(g.date||'').split('-').map(Number);if(parts.length!==3)continue;const date=new Date(parts[2],parts[1]-1,parts[0],12);if(Number.isFinite(date.getTime()))rows.push({month:Number(h.month?.number),day:Number(h.day),year:Number(h.year),date});}
-      }
-      for(const entry of nextOccasions){const match=rows.filter(x=>x.month===entry.item[2]&&x.day===entry.item[3]&&x.date>=dayStart(new Date())).sort((a,b)=>a.date-b.date)[0];if(match)entry.date=match.date;}
-      localStorage.setItem('naseem-occasion-calendar-cache',JSON.stringify({at:Date.now(),rows:rows.map(x=>({month:x.month,day:x.day,year:x.year,date:x.date.toISOString()}))}));
-      $('occasionReminderStatus').textContent='Upcoming dates refreshed from AlAdhan’s Hijri calendar (Umm al-Qura). Local moon-sighting announcements may differ.';renderOccasions();
-    }catch(_){
-      try{const cached=JSON.parse(localStorage.getItem('naseem-occasion-calendar-cache')||'null');if(cached?.rows&&Date.now()-cached.at<30*86400000){for(const entry of nextOccasions){const match=cached.rows.filter(x=>x.month===entry.item[2]&&x.day===entry.item[3]&&new Date(x.date)>=dayStart(new Date())).sort((a,b)=>new Date(a.date)-new Date(b.date))[0];if(match)entry.date=new Date(match.date);}renderOccasions();$('occasionReminderStatus').textContent='Offline: showing the last saved online calendar. Confirm local moon-sighting announcements.';}}catch(__){}
-    }
-  }
-  refreshOnlineOccasions();
+  $('occasionReminderStatus').textContent='Dates follow the Umm al-Qura calendar on this device and match the Hijri calendar and Home. Local moon-sighting announcements may differ by a day.';
   $('occasionReminders').addEventListener('click',async()=>{const n=window.NoorNative?.notifications;if(!n){$('occasionReminderStatus').textContent='Native notifications are unavailable in this browser.';return;}let permission=await n.permission();if(permission!=='granted')permission=await n.request();if(permission!=='granted'){$('occasionReminderStatus').textContent='Notification permission was not granted. You can enable it later in Android settings.';return;}await n.ensureChannels();const reminders=nextOccasions.filter(x=>x.date).map((x,i)=>({id:95000+i,at:new Date(x.date.getFullYear(),x.date.getMonth(),x.date.getDate(),9,0,0),channel:'silent',title:x.item[1],body:x.item[4]})).filter(x=>x.at>Date.now());await n.cancelRange(95000,95009);if(reminders.length)await n.schedule(reminders);data.occasionReminders=true;save();$('occasionReminderStatus').textContent=`${reminders.length} upcoming occasion reminders scheduled for 9:00 AM. Dates may shift with local moon sighting.`;});
 
   // Widget Studio supports only the two implemented Android widgets: Prayer Times and Tasbeeh.
@@ -180,6 +189,11 @@
   document.addEventListener('noor:screen',e=>{if(e.detail==='widgetStudioScreen')syncStudioWidgets();});
   window.addEventListener('noor:schedule',()=>{updateStudioPreview();syncStudioWidgets();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncStudioWidgets();});
+  // Tasbeeh widget follows the counter, the selected dhikr and the target automatically (debounced; no manual sync needed).
+  {let timer=null;const queue=()=>{clearTimeout(timer);timer=setTimeout(syncStudioWidgets,600);};
+   const mo=new MutationObserver(queue);['countValue','counterLatin','counterArabic'].forEach(id=>{const el=$(id);if(el)mo.observe(el,{childList:true,characterData:true,subtree:true});});
+   const target=$('targetInput');if(target){target.addEventListener('input',queue);target.addEventListener('change',queue);}
+   document.addEventListener('click',e=>{if(e.target.closest('#targetMinus,#targetPlus,.target-control button'))queue();});}
   // Populate both native widgets when the app opens, even if Studio is never visited.
   syncStudioWidgets();
 
@@ -220,11 +234,11 @@
   refreshGlance();
   document.addEventListener('noor:screen',e=>{if(e.detail==='glanceScreen')refreshGlance();});
 
-  // Replace placeholder feature cards with real screens.
+  // Routes for the More-screen cards; each opens a working screen.
   const routes={hijri:'hijriScreen',duas:'duaScreen','salah-learning':'salahLearningScreen',widgets:'widgetStudioScreen',occasions:'occasionsScreen',profiles:'traditionScreen',glance:'glanceScreen'};
   document.querySelectorAll('[data-open-v404]').forEach(button=>button.addEventListener('click',()=>open(routes[button.dataset.openV404])));
   document.querySelectorAll('[data-open-existing=\"adhkar\"]').forEach(button=>button.addEventListener('click',()=>{const routine=document.querySelector('[data-routine=\"morning\"]');if(routine)routine.click();else open('dhikrScreen');}));
-  // First-launch setup: local-only, shown once, and manually reopenable from Settings.
+  // First-launch setup: local-only and shown once. All of these choices stay editable in Settings.
   function startSetup(force=false){
     if(!force&&data.setupComplete===true)return;
     const overlay=document.createElement('div');overlay.className='v404-onboarding';
@@ -239,7 +253,7 @@
     const finish=async(skipped=false)=>{
       const name=overlay.querySelector('#setupName').value.trim().slice(0,40);
       profile.name=name;try{localStorage.setItem('noorProfileV1',JSON.stringify(profile));}catch(_){}
-      const tradition=overlay.querySelector('#setupTradition').value;if(tradition){data.tradition=tradition;if(salah&&['hanafi','shafii','maliki','hanbali'].includes(tradition))salah.set({asr:tradition==='hanafi'?'hanafi':'standard'});}else delete data.tradition;
+      const tradition=overlay.querySelector('#setupTradition').value;if(tradition)applySchool(tradition);
       const theme=overlay.querySelector('#setupTheme').value;if((theme==='light')!==document.body.classList.contains('light'))$('themeBtn')?.click();
       const chosen=(salah?.CITIES||[]).find(c=>c.id===citySelect.value);if(chosen)salah.setLocation({id:chosen.id,name:chosen.name,lat:chosen.lat,lng:chosen.lng,tz:chosen.tz,source:chosen.id==='srinagar'?'default':'manual'});
       data.setupComplete=true;data.setupCompletedAt=Date.now();save();overlay.remove();
@@ -251,10 +265,8 @@
     overlay.querySelector('#setupFinish').addEventListener('click',()=>finish(false));
     overlay.querySelector('#setupSkip').addEventListener('click',()=>finish(true));
   }
-  // Add a Settings entry to rerun setup without disturbing the existing settings layout.
-  const settings=$('settingsScreen');if(settings){const b=document.createElement('button');b.className='v404-secondary v404-reopen-setup';b.textContent='Edit setup preferences';b.addEventListener('click',()=>startSetup(true));settings.appendChild(b);}
   window.setTimeout(()=>startSetup(false),2200);
   // Android back-button navigation: return to More from feature detail screens.
   document.addEventListener('naseem:back',e=>{const active=document.querySelector('.screen.active');if(!active||active.id==='homeScreen')return;e.preventDefault();if(active.id==='duaScreen'){open('salahScreen');return;}if(active.id==='glanceScreen'){open('homeScreen');return;}if(Object.values(routes).includes(active.id)||['qiblaScreen','zakatScreen'].includes(active.id))open('featuresScreen');else open('homeScreen');});
-  window.NaseemV404={hijriParts,duas,traditions,refreshGlance};
+  window.NaseemV404={hijriParts,hijriNumeric,hijriToGregorian,hijriMonthLength,duas,traditions,refreshGlance};
 })();

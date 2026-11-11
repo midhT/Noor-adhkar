@@ -4,7 +4,7 @@
 - Home Glance card with public feed refresh and bundled/cached offline fallback; feed URL removed from the user interface.
 - Dua Library placed inside the Salah & Duas learning area.
 - Widget Studio supports the implemented Prayer Times and Tasbeeh Android widgets with automatic data synchronization.
-- School preference is separated from the Fajr/Isha calculation method. Hanafi uses the factor-2 Asr shadow rule; Shafi'i, Maliki and Hanbali use Standard factor 1. Ja'fari-specific calculations are not advertised as supported.
+- School preference is separated from the Fajr/Isha calculation method. Hanafi uses the factor-2 Asr shadow rule; Shafi'i, Maliki and Hanbali use Standard factor 1. Ja'fari selects a separate Ja'fari method (Leva/Qom angles); its angles and the rules for combining prayers still need review by a Ja'fari authority, and combining is not modelled.
 - New installs default to Hanafi Asr; existing valid saved preferences are retained.
 - Onboarding no longer requests notification permission; enabling Salah or occasion reminders requests it in context.
 - Account name input refreshes after onboarding/profile changes.
@@ -14,6 +14,11 @@
 
 ## Existing features retained
 Offline Salah calculation and Jamaat settings, Qibla, Adhkar sessions, Tasbeeh, Zakat estimate, Hijri conversion, Dua starter library, learning pages, Glance fallback, backup/restore, background audio and existing Android widget integration.
+
+## External review still required (not verified by this build)
+- Ja'fari angles (Fajr 16°, Isha 14°, Maghrib 4°) and scope: Ja'fari authority.
+- Wording of school-specific learning notes, Arabic text, translations and references: qualified reviewers.
+- Umm al-Qura dates versus local moon-sighting announcements (shown to users as a caveat).
 
 ## Before public release
 - Run the full test suite and obtain a successful GitHub Actions APK build.

@@ -16,7 +16,19 @@
     mwl: { name: 'Muslim World League', fajr: 18, isha: 17 },
     isna: { name: 'ISNA (North America)', fajr: 15, isha: 15 },
     egypt: { name: 'Egyptian General Authority', fajr: 19.5, isha: 17.5 },
-    makkah: { name: 'Umm al-Qura, Makkah', fajr: 18.5, ishaMinutes: 90 }
+    makkah: { name: 'Umm al-Qura, Makkah', fajr: 18.5, ishaMinutes: 90 },
+    // Ja'fari (Twelver) convention as published by the Leva Institute, Qom: Fajr 16°, Isha 14°, Maghrib when the sun is 4° below the horizon.
+    // The angles are the commonly used published values and still need review by a qualified Ja'fari authority.
+    jafari: { name: 'Ja\u2018fari (Leva Institute, Qom)', fajr: 16, isha: 14, maghrib: 4 }
+  };
+  // Jurisprudential school is separate from the calculation method. A school fixes the Asr shadow rule;
+  // only Ja'fari also implies its own method (its Maghrib and twilight conventions differ).
+  var SCHOOLS = {
+    hanafi: { name: 'Sunni \u00b7 Hanafi', asr: 'hanafi' },
+    shafii: { name: 'Sunni \u00b7 Shafi\u2018i', asr: 'standard' },
+    maliki: { name: 'Sunni \u00b7 Maliki', asr: 'standard' },
+    hanbali: { name: 'Sunni \u00b7 Hanbali', asr: 'standard' },
+    jafari: { name: 'Shia \u00b7 Ja\u2018fari (Twelver)', asr: 'standard', method: 'jafari' }
   };
   var PRAYERS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
   var LABELS = { fajr: 'Fajr', sunrise: 'Sunrise', dhuhr: 'Dhuhr', asr: 'Asr', maghrib: 'Maghrib', isha: 'Isha' };
@@ -75,7 +87,7 @@
       var decl = sunPosition(jd + t).decl;
       return midDay(t) + acos((-sin(-arccot(factor + tan(Math.abs(lat - decl)))) - sin(decl) * sin(lat)) / (cos(decl) * cos(lat))) / 15;
     };
-    var t = { fajr: 5, sunrise: 6, dhuhr: 12, asr: 13, sunset: 18, isha: 18 };
+    var t = { fajr: 5, sunrise: 6, dhuhr: 12, asr: 13, sunset: 18, maghrib: 18, isha: 18 };
     for (var it = 0; it < 2; it++) {              // refine with the sun's position at the first estimate
       var p = {};
       Object.keys(t).forEach(function (k) { p[k] = t[k] / 24; });
@@ -85,17 +97,19 @@
         dhuhr: midDay(p.dhuhr),
         asr: asrTime(p.asr),
         sunset: angleTime(0.833, p.sunset, false),
+        maghrib: M.maghrib ? angleTime(M.maghrib, p.maghrib, false) : angleTime(0.833, p.sunset, false),
         isha: M.ishaMinutes ? 18 : angleTime(M.isha, p.isha, false)
       };
     }
     var shift = tzHours - lng / 15;
     Object.keys(t).forEach(function (k) { t[k] += shift; });
+    if (isNaN(t.maghrib)) t.maghrib = t.sunset;
     if (M.ishaMinutes) t.isha = t.sunset + M.ishaMinutes / 60;
     // High latitudes: if an angle is never reached, or the twilight would be longer than half the night, use the middle of the night.
     var night = fix(t.sunrise - t.sunset, 24), half = night / 2;
     if (isNaN(t.fajr) || fix(t.sunrise - t.fajr, 24) > half) t.fajr = t.sunrise - half;
     if (!M.ishaMinutes && (isNaN(t.isha) || fix(t.isha - t.sunset, 24) > half)) t.isha = t.sunset + half;
-    return { fajr: t.fajr, sunrise: t.sunrise, dhuhr: t.dhuhr, asr: t.asr, maghrib: t.sunset, isha: t.isha };
+    return { fajr: t.fajr, sunrise: t.sunrise, dhuhr: t.dhuhr, asr: t.asr, maghrib: t.maghrib, isha: t.isha };
   }
   var pad = function (n) { return (n < 10 ? '0' : '') + n; };
   function hoursToHHMM(h) {
@@ -118,7 +132,7 @@
   var toMin = function (v) { return /^\d{2}:\d{2}$/.test(v || '') ? Number(v.slice(0, 2)) * 60 + Number(v.slice(3)) : null; };
   var fromMin = function (n) { n = ((n % 1440) + 1440) % 1440; return pad(Math.floor(n / 60)) + ':' + pad(n % 60); };
 
-  var api = { METHODS: METHODS, CITIES: CITIES, PRAYERS: PRAYERS, LABELS: LABELS, calculate: calculate, computeHours: computeHours, tzOffsetHours: tzOffsetHours, toMin: toMin, fromMin: fromMin };
+  var api = { SCHOOLS: SCHOOLS, METHODS: METHODS, CITIES: CITIES, PRAYERS: PRAYERS, LABELS: LABELS, calculate: calculate, computeHours: computeHours, tzOffsetHours: tzOffsetHours, toMin: toMin, fromMin: fromMin };
   if (typeof module !== 'undefined' && module.exports) { module.exports = api; return; }
 
   /* ---------- settings store (browser only) ---------- */
@@ -140,6 +154,7 @@
       settings.jamaat = Object.assign(defaults().jamaat, raw.jamaat || {});
       settings.loc = Object.assign(defaults().loc, raw.loc || {});
       if (settings.asr !== 'hanafi' && settings.asr !== 'standard') settings.asr = 'hanafi';
+      if (settings.school && !SCHOOLS[settings.school]) delete settings.school;   // unknown value: forget it, keep every other saved setting
     } else {
       settings = d;
       // A person who already typed their own prayer times keeps them: start in "my own times" mode.
@@ -172,6 +187,19 @@
   }
   api.get = function () { return settings; };
   api.set = function (patch) { if (Object.prototype.hasOwnProperty.call(patch, 'asr')) settings.asrPreferenceChosen = true; Object.assign(settings, patch); persist(); };
+  /** Select a school. Sunni schools set the Asr rule and leave the calculation method alone. Ja'fari switches to the Ja'fari method
+   *  (remembering the previous one); leaving Ja'fari restores that method. apply=false only records the school (used for migration). */
+  api.setSchool = function (id, apply) {
+    if (!SCHOOLS[id]) return false;
+    var sc = SCHOOLS[id];
+    settings.school = id;
+    if (apply !== false) {
+      settings.asr = sc.asr; settings.asrPreferenceChosen = true;
+      if (sc.method) { if (settings.method !== sc.method) settings.methodBeforeJafari = settings.method; settings.method = sc.method; }
+      else if (settings.method === 'jafari') { settings.method = METHODS[settings.methodBeforeJafari] ? settings.methodBeforeJafari : 'karachi'; }
+    }
+    persist(); return true;
+  };
   api.setAdj = function (k, v) { settings.adj[k] = Math.max(-60, Math.min(60, Math.round(v))); persist(); };
   api.resetAdj = function () { Object.keys(settings.adj).forEach(function (k) { settings.adj[k] = 0; }); persist(); };
   api.setJamaat = function (k, patch) { settings.jamaat[k] = Object.assign({}, settings.jamaat[k], patch); persist(); };
