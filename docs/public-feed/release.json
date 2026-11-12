@@ -1,7 +1,7 @@
 {
-  "version": "4.0.7",
-  "releaseUrl": "https://github.com/midhT/Noor-adhkar/releases/latest",
-  "downloadUrl": "https://github.com/midhT/Noor-adhkar/releases/latest",
+  "version": "4.0.8",
+  "releaseUrl": "https://github.com/midhT/Naseem-public/releases/latest",
+  "downloadUrl": "https://github.com/midhT/Naseem-public/releases/latest",
   "notesSummary": "Offline-first release preparation, secure release signing, and signed APK publishing. Personal data remains on-device with manual backup and restore.",
   "publishedAt": null
 }

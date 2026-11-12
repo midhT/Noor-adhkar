@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0b0d">
   <meta name="description" content="Naseem — an offline-first Islamic daily companion for Dhikr, Salah, Duas, Zakat and reflection.">
-  <meta name="naseem-version" content="4.0.7">
+  <meta name="naseem-version" content="4.0.8">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css">
@@ -56,6 +56,8 @@
         </div>
         <div class="section-heading"><div><span class="eyebrow">MORE ROUTINES</span><h2>Other moments</h2></div></div>
         <div class="routine-grid" id="extraRoutineGrid"></div>
+        <div class="section-heading"><div><span class="eyebrow">YOUR ROUTINES</span><h2>Custom adhkar</h2></div><button type="button" class="st-btn" id="customRoutineAdd">＋ Create</button></div>
+        <div class="routine-grid" id="customRoutineGrid"></div>
 
         <div class="section-heading"><div><span class="eyebrow">QUICK ACCESS</span><h2>Continue your dhikr</h2></div></div>
         <button class="featured-dhikr" id="quickCounter">
@@ -117,7 +119,7 @@
           <button class="feature-card feature-live" type="button" data-open-v404="hijri"><span class="feature-icon">▦</span><span class="feature-name">Hijri calendar</span><span class="feature-desc">Month view, date conversion, Ramadan and Islamic occasions.</span><span class="feature-state live">Open ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-existing="adhkar"><span class="feature-icon">◌</span><span class="feature-name">Guided Adhkar sessions</span><span class="feature-desc">Morning and evening routines with per-item counters and completion tracking.</span><span class="feature-state live">Open · starter content ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-v404="salah-learning"><span class="feature-icon">☾</span><span class="feature-name">Expanded Salah learning</span><span class="feature-desc">Wudu, ghusl and step-by-step Salah lessons. School differences are noted where covered.</span><span class="feature-state live">Open ↗</span></button>
-          <button class="feature-card feature-live" type="button" data-open-v404="widgets"><span class="feature-icon">▣</span><span class="feature-name">Widget Studio</span><span class="feature-desc">Prayer Times and Tasbeeh home-screen widgets with automatic data sync.</span><span class="feature-state live">Open ↗</span></button>
+          <button class="feature-card feature-live" type="button" data-open-v404="widgets"><span class="feature-icon">▣</span><span class="feature-name">Widget Studio</span><span class="feature-desc">Build a custom home-screen widget with prayer times, Tasbeeh, Hijri date and your own reminder.</span><span class="feature-state live">Open ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-v404="occasions"><span class="feature-icon">✧</span><span class="feature-name">Islamic occasions</span><span class="feature-desc">Ramadan planning, important dates and gentle reminders.</span><span class="feature-state live">Open ↗</span></button>
           <button class="feature-card feature-live" type="button" data-open-v404="profiles"><span class="feature-icon">◇</span><span class="feature-name">School &amp; Salah profile</span><span class="feature-desc">Choose your school; it sets your Asr rule and Ja‘fari method.</span><span class="feature-state live">Open ↗</span></button>
         </div>
@@ -175,6 +177,16 @@
         <p class="tiny-note">This is a starter list. Texts, counts and sources are marked “to be verified” until reviewed.</p>
       </section>
 
+      <section class="screen" id="customRoutineEditorScreen">
+        <button class="back-link" type="button" data-back="homeScreen">‹ Home</button>
+        <div class="screen-heading"><span class="eyebrow">PERSONAL ADHKAR</span><h1 id="crEditorTitle">Create a routine</h1><p class="muted">Build a private routine with your own text, meanings, sources and repetition counts.</p></div>
+        <label class="v404-label" for="crName">Routine name</label><input class="v404-input" id="crName" maxlength="48" placeholder="e.g. After Fajr">
+        <div class="section-heading"><div><span class="eyebrow">ROUTINE ITEMS</span><h2>Dhikr and duas</h2></div><button type="button" class="st-btn" id="crAddItem">＋ Add item</button></div>
+        <div id="crItems" class="v404-list"></div>
+        <div class="rm-actions"><button type="button" class="v404-primary" id="crSave">Save routine</button><button type="button" class="v404-secondary" id="crDelete" hidden>Delete routine</button></div>
+        <p class="tiny-note" id="crStatus" role="status" aria-live="polite">Your custom routines are stored only on this device. Verify religious text and references before use.</p>
+      </section>
+
       <section class="screen" id="progressScreen">
         <button class="back-link" type="button" data-back="homeScreen">‹ Home</button>
         <div class="screen-heading"><span class="eyebrow">STEADY, NOT PERFECT</span><h1>Your journey</h1><p class="muted">A private record of your remembrance, stored on this device.</p></div>
@@ -195,27 +207,14 @@
           <div class="st-body"></div>
         </details>
         <details class="st-group" id="stAdhkar"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2.5 2.5 0 0 1 2.5 2.5v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H18"/></svg></span><span class="st-title"><strong>Adhkar</strong><small>Daily goal</small></span><span class="st-chev" aria-hidden="true"></span></summary>
-          <div class="st-body"><div class="setting-row"><div><strong>Daily adhkar goal</strong><p>Complete both routines for streak credit</p></div><span class="setting-value">2 routines</span></div></div>
+          <div class="st-body"><div class="setting-row"><div><strong>Daily adhkar goal</strong><p>Complete both core routines for streak credit</p></div><span class="setting-value">2 routines</span></div><div class="setting-row"><div><strong>Custom routines</strong><p>Create, edit, reorder and save your own dhikr sessions</p></div><button type="button" class="st-btn" id="stManageCustomRoutines">Manage</button></div></div>
         </details>
         <details class="st-group" id="stNotifications"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg></span><span class="st-title"><strong>Notifications</strong><small>Adhan, Jamaat and sounds</small></span><span class="st-chev" aria-hidden="true"></span></summary>
           <div class="st-body"></div>
         </details>
         <details class="st-group" id="stAppearance"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8v16.4a8.2 8.2 0 0 0 0-16.4z" fill="currentColor" stroke="none"/></svg></span><span class="st-title"><strong>Appearance</strong><small>Dark or light</small></span><span class="st-chev" aria-hidden="true"></span></summary>
           <div class="st-body">
-            <div class="setting-row"><div><strong>Theme</strong><p>Follow your device or choose an appearance</p></div><div class="st-seg" id="stThemeSeg" role="group" aria-label="Theme"><button type="button" data-theme="system" aria-pressed="false">System</button><button type="button" data-theme="light" aria-pressed="false">Light</button><button type="button" data-theme="dark" aria-pressed="false">Dark</button></div></div><div class="setting-row"><div><strong>First-time setup</strong><p>Reopen your profile and location setup when you choose</p></div><button type="button" class="st-btn" id="stOpenSetup">Open setup</button></div>
-            <div class="accent-setting"><div class="accent-heading"><div><strong>Accent colour</strong><p>Personalise highlights across Naseem</p></div><span class="accent-current" id="accentCurrentLabel">Islamic emerald</span></div>
-              <div class="accent-palette" id="accentPalette" role="group" aria-label="Accent colour">
-                <button type="button" class="accent-swatch" data-accent="emerald" aria-label="Islamic emerald" title="Islamic emerald"><span style="--swatch:#20a875"></span><small>Emerald</small></button>
-                <button type="button" class="accent-swatch" data-accent="forest" aria-label="Deep forest green" title="Deep forest green"><span style="--swatch:#2f9b63"></span><small>Forest</small></button>
-                <button type="button" class="accent-swatch" data-accent="blue" aria-label="Royal blue" title="Royal blue"><span style="--swatch:#4f8fe8"></span><small>Blue</small></button>
-                <button type="button" class="accent-swatch" data-accent="purple" aria-label="Midnight purple" title="Midnight purple"><span style="--swatch:#9a7bea"></span><small>Purple</small></button>
-                <button type="button" class="accent-swatch" data-accent="gold" aria-label="Muted gold" title="Muted gold"><span style="--swatch:#c4a15b"></span><small>Gold</small></button>
-                <button type="button" class="accent-swatch" data-accent="silver" aria-label="Silver grey" title="Silver grey"><span style="--swatch:#a8b3c2"></span><small>Silver</small></button>
-                <label class="accent-swatch accent-custom" for="accentCustom"><span id="accentCustomPreview"></span><small>Custom</small><input id="accentCustom" type="color" value="#20a875" aria-label="Choose custom accent colour"></label>
-              </div>
-            </div>
-            <div class="setting-row"><div><strong>Motion</strong><p id="stMotionNote">Auto adapts to your phone</p></div><div class="st-seg" id="stMotionSeg" role="group" aria-label="Motion"><button type="button" data-motion="auto" aria-pressed="true">Auto</button><button type="button" data-motion="full" aria-pressed="false">Full</button><button type="button" data-motion="smooth" aria-pressed="false">Smooth</button></div></div>
-          </div>
+            <div class="setting-row"><div><strong>Theme</strong><p>Follow your device or choose an appearance</p></div><div class="st-seg" id="stThemeSeg" role="group" aria-label="Theme"><button type="button" data-theme="system" aria-pressed="false">System</button><button type="button" data-theme="light" aria-pressed="false">Light</button><button type="button" data-theme="dark" aria-pressed="false">Dark</button></div></div></div>
         </details>
         <details class="st-group" id="stAudio"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></span><span class="st-title"><strong>Audio &amp; Haptics</strong><small>Vibration and background audio</small></span><span class="st-chev" aria-hidden="true"></span></summary>
           <div class="st-body"><div class="setting-row"><div><strong>Haptic feedback</strong><p>Vibrate when counting</p></div><button class="toggle" id="settingsVibrate" aria-pressed="false">OFF</button></div><div class="setting-row"><div><strong>Background audio</strong><p id="bgAudioLabel">Choose any audio file you like. It plays until you stop it or close the app.</p></div><button class="toggle" id="bgAudioToggle" aria-pressed="false">OFF</button></div><div class="setting-row"><div><strong>Your audio</strong><p id="bgAudioFileLabel">No file chosen</p></div><label class="st-btn st-file">Choose<input type="file" id="bgAudioFile" accept="audio/*" hidden></label></div><audio id="bgAudio" loop preload="none"></audio></div>

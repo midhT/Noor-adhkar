@@ -19,6 +19,7 @@ public class NoorWidgetsPlugin extends Plugin {
             NoorWidgetStore.prefs(getContext()).edit().putString(NoorWidgetStore.PRAYER_JSON, json).apply();
         }
         PrayerWidgetProvider.refreshAll(getContext());
+        CustomWidgetProvider.refreshAll(getContext());
         call.resolve();
     }
 
@@ -35,6 +36,7 @@ public class NoorWidgetsPlugin extends Plugin {
             e.apply();
         }
         TasbeehWidgetProvider.refreshAll(getContext());
+        CustomWidgetProvider.refreshAll(getContext());
         call.resolve();
     }
 
@@ -46,6 +48,59 @@ public class NoorWidgetsPlugin extends Plugin {
             NoorWidgetStore.prefs(getContext()).edit().putString(NoorWidgetStore.HIJRI_DATE, date).apply();
         }
         HijriWidgetProvider.refreshAll(getContext());
+        CustomWidgetProvider.refreshAll(getContext());
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void setWidgetStyle(PluginCall call) {
+        String theme = call.getString("theme", "dark");
+        String accent = call.getString("accent", "emerald");
+        String density = call.getString("density", "comfortable");
+        if (!theme.equals("light") && !theme.equals("dark")) theme = "dark";
+        if (!accent.equals("emerald") && !accent.equals("silver") && !accent.equals("blue")) accent = "emerald";
+        if (!density.equals("compact") && !density.equals("comfortable")) density = "comfortable";
+        synchronized (NoorWidgetStore.LOCK) {
+            NoorWidgetStore.prefs(getContext()).edit()
+                .putString(NoorWidgetStore.WIDGET_THEME, theme)
+                .putString(NoorWidgetStore.WIDGET_ACCENT, accent)
+                .putString(NoorWidgetStore.WIDGET_DENSITY, density).apply();
+        }
+        PrayerWidgetProvider.refreshAll(getContext());
+        TasbeehWidgetProvider.refreshAll(getContext());
+        HijriWidgetProvider.refreshAll(getContext());
+        CustomWidgetProvider.refreshAll(getContext());
+        call.resolve();
+    }
+
+
+    @PluginMethod
+    public void setCustomWidget(PluginCall call) {
+        String requestedBlocks = call.getString("blocks", "prayer,tasbeeh,hijri");
+        StringBuilder safeBlocks = new StringBuilder();
+        for (String block : requestedBlocks.split(",")) {
+            String key = block.trim();
+            if (key.equals("prayer") || key.equals("tasbeeh") || key.equals("hijri") || key.equals("dua")) {
+                if (safeBlocks.length() > 0) safeBlocks.append(',');
+                safeBlocks.append(key);
+            }
+        }
+        if (safeBlocks.length() == 0) { call.reject("Choose at least one supported widget content block."); return; }
+        String blocks = safeBlocks.toString();
+        String layout = call.getString("layout", "comfortable");
+        String dua = call.getString("dua", "Read a daily dua in Naseem");
+        String action = call.getString("action", "open");
+        if (!action.equals("count") && !action.equals("open")) action = "open";
+        if (!layout.equals("compact") && !layout.equals("comfortable")) layout = "comfortable";
+        if (dua.length() > 180) dua = dua.substring(0, 180);
+        synchronized (NoorWidgetStore.LOCK) {
+            NoorWidgetStore.prefs(getContext()).edit()
+                .putString(NoorWidgetStore.CUSTOM_WIDGET_BLOCKS, blocks)
+                .putString(NoorWidgetStore.CUSTOM_WIDGET_LAYOUT, layout)
+                .putString(NoorWidgetStore.CUSTOM_WIDGET_DUA, dua)
+                .putString(NoorWidgetStore.CUSTOM_WIDGET_ACTION, action).apply();
+        }
+        CustomWidgetProvider.refreshAll(getContext());
         call.resolve();
     }
 

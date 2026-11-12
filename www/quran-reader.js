@@ -1,5 +1,5 @@
 /* Naseem Quran Reader and Quranic Dua additions.
-   Online-only: AlQuran Cloud API. No API text is bundled or persisted. */
+   AlQuran Cloud API; recently opened Surah text is cached locally, while recitation is fetched on demand. */
 (() => {
   'use strict';
   const API='https://api.alquran.cloud/v1';
@@ -12,37 +12,75 @@
   };
   const section=document.createElement('section');section.className='screen v404-screen';section.id='quranReaderScreen';
   section.innerHTML=`<button class="back-link" type="button" id="quranBack">‹ More</button>
-    <div class="screen-heading"><span class="eyebrow">QURAN · READING</span><h1>Quran reader</h1><p class="muted">Browse the Qur’an by surah. An internet connection is required.</p></div>
-    <div class="v404-card"><label class="v404-label" for="quranSurah">Choose a surah</label><select class="v404-input" id="quranSurah"><option value="">Loading surahs…</option></select>
+    <div class="screen-heading"><span class="eyebrow">QURAN · READING</span><h1>Quran reader</h1><p class="muted">Browse by Surah, Juz and Ayah. Recently opened text is cached locally; recitation needs internet on first play.</p></div>
+    <div class="v404-card"><button class="v404-secondary" id="quranResume" type="button">Resume last read</button><button class="v404-secondary" id="quranDownloadOffline" type="button">Save complete Quran text offline</button><p class="v404-note" id="quranOfflineStatus" aria-live="polite">Offline text download is optional and stored only on this device. Audio remains online.</p><label class="v404-label" for="quranSurah">Choose a surah</label><select class="v404-input" id="quranSurah"><option value="">Loading surahs…</option></select><label class="v404-label" for="quranJuz">Jump to Juz</label><div class="v404-row"><select class="v404-input" id="quranJuz">${Array.from({length:30},(_,i)=>`<option value="${i+1}">Juz ${i+1}</option>`).join('')}</select><button class="v404-secondary" id="quranOpenJuz" type="button">Open Juz</button></div><label class="v404-label" for="quranAyahJump">Jump to Ayah in this Surah</label><div class="v404-row"><input class="v404-input" id="quranAyahJump" type="number" min="1" step="1" inputmode="numeric" placeholder="Ayah number"><button class="v404-secondary" id="quranGoAyah" type="button">Go</button></div>
     <div class="v404-row"><button class="v404-secondary" id="quranPrev" type="button" disabled>Previous</button><button class="v404-secondary" id="quranNext" type="button" disabled>Next</button></div>
     <label class="v404-label" for="quranEdition">Display</label><select class="v404-input" id="quranEdition"><option value="arabic">Arabic only</option><option value="translation">Arabic + English meaning</option></select>
     <p class="v404-note" id="quranStatus" aria-live="polite">Connecting to the Quran text service…</p></div>
     <div id="quranVerses" class="v404-list"></div>
-    <div class="v404-card"><p class="v404-note">Arabic text is supplied live by AlQuran Cloud, sourced from GlobalQuran.com, Tanzil.net and Quran Academy. English edition: Marmaduke Pickthall. Translation is an interpretation of meaning, not a replacement for the Arabic Qur’an. Naseem does not modify or cache this API content. AlQuran Cloud permits free non-commercial display; commercial redistribution or paid offline corpus bundles need separate review.</p><a href="https://alquran.cloud" target="_blank" rel="noopener noreferrer">Source: AlQuran Cloud ↗</a> · <a href="https://tanzil.net" target="_blank" rel="noopener noreferrer">Tanzil Project ↗</a></div>`;
+    <div class="v404-card"><p class="v404-note">Arabic text is supplied by AlQuran Cloud, whose contributors include GlobalQuran.com, Tanzil.net and Quran Academy. English edition: Marmaduke Pickthall. Translation is an interpretation of meaning, not a replacement for the Arabic Qur’an. Quran text can be saved to this device for offline reading using the download control. Audio is fetched on first play and is not included in the offline text download. Review provider terms and translation/audio rights before commercial distribution.</p><a href="https://alquran.cloud" target="_blank" rel="noopener noreferrer">Source: AlQuran Cloud ↗</a> · <a href="https://tanzil.net" target="_blank" rel="noopener noreferrer">Tanzil Project ↗</a></div>`;
   document.querySelector('main')?.appendChild(section);
   let surahs=[],current=1,busy=false;
+  const PROGRESS_KEY='naseem-quran-progress-v1', CACHE_KEY='naseem-quran-cache-v1';
+  const readJSON=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key)||'null')||fallback;}catch(_){return fallback;}};
+  let progress=readJSON(PROGRESS_KEY,{surah:1,ayah:1}), cache=readJSON(CACHE_KEY,{}), recitation=new Audio(); recitation.preload='none';
+  const DB_NAME='naseem-quran-offline-v1', DB_STORE='surahs';
+  let dbPromise=null;
+  function openOfflineDB(){if(!('indexedDB' in window))return Promise.reject(new Error('Offline storage is unavailable'));if(dbPromise)return dbPromise;dbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE,{keyPath:'key'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Database open failed'));});return dbPromise;}
+  async function getOfflineSurah(key){const db=await openOfflineDB();return new Promise((resolve,reject)=>{const req=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get(key);req.onsuccess=()=>resolve(req.result?.payload||null);req.onerror=()=>reject(req.error);});}
+  async function putOfflineSurah(key,payload){const db=await openOfflineDB();return new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put({key,payload,savedAt:Date.now()});tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error||new Error('Offline save failed'));});}
+  const saveProgress=(surah,ayah,juz=progress.juz||1)=>{progress={surah:Number(surah)||1,ayah:Number(ayah)||1,juz:Number(juz)||1,updatedAt:Date.now()};try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(progress));}catch(_){}const resume=$('quranResume');if(resume)resume.textContent='Resume last read';};
+  const saveCache=(key,value)=>{try{cache[key]=value;const keys=Object.keys(cache);while(keys.length>10)delete cache[keys.shift()];localStorage.setItem(CACHE_KEY,JSON.stringify(cache));}catch(_){}};
   const status=m=>{if($('quranStatus'))$('quranStatus').textContent=m;};
+  $('quranResume').textContent=progress.updatedAt?'Resume last read':'Start from Al-Fatihah';$('quranJuz').value=String(progress.juz||1);
   const surahSelect=$('quranSurah');
   async function loadSurahList(){
     try{const rows=await request('/surah');if(!Array.isArray(rows)||rows.length!==114)throw new Error('Unexpected surah list');surahs=rows;
-      surahSelect.innerHTML=rows.map(x=>`<option value="${Number(x.number)}">${Number(x.number)}. ${esc(x.englishName||x.name)} · ${esc(x.name)}</option>`).join('');surahSelect.value=String(current);await loadSurah(current);
+      surahSelect.innerHTML=rows.map(x=>`<option value="${Number(x.number)}">${Number(x.number)}. ${esc(x.englishName||x.name)} · ${esc(x.name)}</option>`).join('');current=Math.max(1,Math.min(114,Number(progress.surah)||1));surahSelect.value=String(current);await loadSurah(current,Number(progress.ayah)||1);
     }catch(_){surahSelect.innerHTML='<option value="">Unavailable</option>';status('Could not load the Quran index. Check your connection and retry.');}
   }
-  async function loadSurah(number){if(busy)return;busy=true;current=Math.max(1,Math.min(114,Number(number)||1));$('quranVerses').innerHTML='';status('Loading surah…');$('quranPrev').disabled=current===1;$('quranNext').disabled=current===114;
+  async function loadSurah(number,focusAyah=1){if(busy)return;busy=true;current=Math.max(1,Math.min(114,Number(number)||1));$('quranVerses').innerHTML='';status('Loading surah…');$('quranPrev').disabled=current===1;$('quranNext').disabled=current===114;
+    const edition=$('quranEdition').value==='translation'?'translation':'arabic',cacheKey=`${current}:${edition}`;
     try{
-      const editions=$('quranEdition').value==='translation'?'quran-uthmani,en.pickthall':'quran-uthmani';
-      const result=await request(`/surah/${current}/editions/${editions}`);
-      const items=Array.isArray(result)?result:[result];
+      const editions=edition==='translation'?'quran-uthmani,en.pickthall':'quran-uthmani';
+      let payload=null;
+      try{payload=await getOfflineSurah(cacheKey);if(payload)status('Offline mode · loaded from your saved Quran text.');}catch(_){}
+      if(!payload){try{payload=await request(`/surah/${current}/editions/${editions}`);saveCache(cacheKey,payload);try{await putOfflineSurah(cacheKey,payload);}catch(_){}}
+        catch(error){payload=cache[cacheKey];if(!payload)throw error;status('Offline mode · showing recently cached text for this surah.');}}
+      const items=Array.isArray(payload)?payload:[payload];
       const arabic=items.find(x=>String(x.edition?.identifier||'').includes('uthmani')||x.englishName||x.name)?.ayahs||items[0]?.ayahs||[];
       const english=items.find(x=>String(x.edition?.identifier||'').includes('pickthall'))?.ayahs||[];
       if(!arabic.length)throw new Error('No verses returned');
       const englishByNo=new Map(english.map(x=>[Number(x.numberInSurah),x.text]));
       const title=arabic[0]?.surah?.englishName||surahs[current-1]?.englishName||`Surah ${current}`;
-      $('quranVerses').innerHTML=`<div class="v404-card quran-surah-heading"><span class="eyebrow">SURAH ${current}</span><h2>${esc(title)}</h2><p class="v404-note">${esc(arabic[0]?.surah?.revelationType||'')} · ${arabic.length} verses</p></div>`+arabic.map(a=>`<article class="v404-card quran-ayah"><div class="v404-row"><span class="eyebrow">${current}:${Number(a.numberInSurah)}</span><span class="v404-reference">۞</span></div><p class="v404-arabic" lang="ar" dir="rtl" translate="no">${esc(a.text)}</p>${englishByNo.has(Number(a.numberInSurah))?`<p class="quran-translation">${esc(englishByNo.get(Number(a.numberInSurah)))}</p>`:''}</article>`).join('');
-      status('Loaded from AlQuran Cloud. Content is not stored on this device.');surahSelect.value=String(current);
-    }catch(_){status('This surah could not be loaded. Check your connection and try again.');$('quranVerses').innerHTML='<div class="v404-card">Quran text is temporarily unavailable.</div>';}
+      $('quranVerses').innerHTML=`<div class="v404-card quran-surah-heading"><span class="eyebrow">SURAH ${current}</span><h2>${esc(title)}</h2><p class="v404-note">${esc(arabic[0]?.surah?.revelationType||'')} · ${arabic.length} verses</p></div>`+arabic.map(a=>`<article class="v404-card quran-ayah" id="quran-ayah-${Number(a.numberInSurah)}" data-ayah="${Number(a.numberInSurah)}"><div class="v404-row"><span class="eyebrow">${current}:${Number(a.numberInSurah)}</span><button type="button" class="v404-icon-btn" data-play-ayah="${Number(a.numberInSurah)}" aria-label="Play recitation for ${current}:${Number(a.numberInSurah)}">▶</button></div><p class="v404-arabic" lang="ar" dir="rtl" translate="no">${esc(a.text)}</p>${englishByNo.has(Number(a.numberInSurah))?`<p class="quran-translation">${esc(englishByNo.get(Number(a.numberInSurah)))}</p>`:''}</article>`).join('');
+      status('Loaded from AlQuran Cloud. This surah is saved locally for offline reading.');surahSelect.value=String(current);
+      saveProgress(current,focusAyah);
+      const target=$(`quran-ayah-${focusAyah}`);if(target){target.classList.add('quran-last-read');setTimeout(()=>target.scrollIntoView({block:'start',behavior:'smooth'}),80);}
+    }catch(_){status('This surah is not cached yet. Connect to the internet and try again.');$('quranVerses').innerHTML='<div class="v404-card">Quran text is temporarily unavailable.</div>';}
     finally{busy=false;}
   }
+  $('quranVerses').addEventListener('click',async e=>{
+    const play=e.target.closest('[data-play-ayah]');const verse=e.target.closest('[data-ayah]');
+    if(verse)saveProgress(current,Number(verse.dataset.ayah));
+    if(!play)return;
+    const n=Number(play.dataset.playAyah),audioKey=`audio:${current}`;
+    let aud=cache[audioKey];
+    if(!aud){status('Loading recitation…');try{aud=await request(`/surah/${current}/ar.alafasy`);saveCache(audioKey,aud);}catch(_){status('Recitation audio is unavailable. Text reading remains available.');return;}}
+    const items=Array.isArray(aud)?aud:[aud],ayahs=items.find(x=>Array.isArray(x?.ayahs))?.ayahs||items[0]?.ayahs||[],item=ayahs.find(x=>Number(x.numberInSurah)===n);
+    if(!item?.audio){status('Recitation audio is unavailable. Text reading remains available.');return;}
+    try{recitation.pause();recitation.src=item.audio;await recitation.play();status(`Playing recitation · ${current}:${n}`);saveProgress(current,n);}catch(_){status('Recitation could not start. Check your connection and audio settings.');}
+  });
+  $('quranResume').addEventListener('click',()=>loadSurah(progress.surah||1,progress.ayah||1));
+  $('quranDownloadOffline').addEventListener('click',async()=>{
+    const button=$('quranDownloadOffline'),label=$('quranOfflineStatus');if(button.disabled)return;button.disabled=true;
+    try{await openOfflineDB();let saved=0;for(let n=1;n<=114;n++){label.textContent=`Saving Quran text offline · ${n}/114 surahs`;const key=`${n}:arabic`;let payload=await getOfflineSurah(key);if(!payload){payload=await request(`/surah/${n}/editions/quran-uthmani`);await putOfflineSurah(key,payload);}saved++;}
+      label.textContent=`Complete Arabic Quran text saved on this device (${saved} surahs). English meanings are cached as you open them. Audio is not downloaded.`;
+    }catch(error){label.textContent='Offline download paused. Check your connection or device storage, then try again; already saved surahs are kept.';}
+    finally{button.disabled=false;}
+  });
+  $('quranOpenJuz').addEventListener('click',async()=>{const juz=Number($('quranJuz').value)||1;status(`Finding the beginning of Juz ${juz}…`);try{const result=await request(`/juz/${juz}/quran-uthmani`),ayahs=result?.ayahs||[];if(!ayahs.length)throw new Error('No Juz data');const first=ayahs[0];saveProgress(first.surah?.number||current,first.numberInSurah||1,juz);await loadSurah(first.surah?.number||current,first.numberInSurah||1);status(`Juz ${juz} begins at Surah ${first.surah?.englishName||first.surah?.number}, Ayah ${first.numberInSurah}.`);}catch(_){status('Juz navigation is unavailable. Check your connection and try again.');}});
+  $('quranGoAyah').addEventListener('click',()=>{const n=Number($('quranAyahJump').value);const last=Number(surahs[current-1]?.numberOfAyahs||0);if(!Number.isInteger(n)||n<1||n>last){status(`Enter an Ayah between 1 and ${last||'the Surah limit'}.`);return;}loadSurah(current,n);});
   $('quranBack').addEventListener('click',()=>window.switchScreen('featuresScreen'));
   surahSelect.addEventListener('change',()=>loadSurah(surahSelect.value));
   $('quranEdition').addEventListener('change',()=>loadSurah(current));

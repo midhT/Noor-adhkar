@@ -1,19 +1,15 @@
-name: Build and publish Naseem release APK
-
+name: Build and publish Naseem public release APK
 on:
   push:
-    tags:
-      - 'v*'
+    tags: ['v*']
   workflow_dispatch:
-
 permissions:
-  contents: write
-
+  contents: read
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out project
+      - name: Check out private application source
         uses: actions/checkout@v4
       - name: Read release version
         id: meta
@@ -25,12 +21,10 @@ jobs:
             echo "Tag $GITHUB_REF_NAME does not match package version v$VERSION" >&2
             exit 1
           fi
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
@@ -44,36 +38,69 @@ jobs:
         run: npx --yes --package=@capacitor/assets capacitor-assets generate --android
       - name: Apply themed icon layer
         run: node scripts/patch-icons.mjs
-      - name: Integrate native Android widgets and back handling
+      - name: Integrate Android widgets and permissions
         run: node scripts/patch-android.mjs
-      - name: Prepare protected release signing key
-        shell: bash
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Run full verification suite
+        run: bash tests/run.sh
+      - name: Decode protected release key
         env:
           KEYSTORE_BASE64: ${{ secrets.NASEEM_KEYSTORE_BASE64 }}
         run: |
-          test -n "$KEYSTORE_BASE64" || { echo "Missing GitHub Actions secret: NASEEM_KEYSTORE_BASE64" >&2; exit 1; }
+          test -n "$KEYSTORE_BASE64" || { echo 'Missing NASEEM_KEYSTORE_BASE64 secret' >&2; exit 1; }
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/naseem-release.keystore"
           test -s "$RUNNER_TEMP/naseem-release.keystore"
-      - name: Configure release signing
+      - name: Configure protected release signing
         env:
           NASEEM_KEYSTORE: ${{ runner.temp }}/naseem-release.keystore
           NASEEM_STORE_PASSWORD: ${{ secrets.NASEEM_STORE_PASSWORD }}
           NASEEM_KEY_ALIAS: ${{ secrets.NASEEM_KEY_ALIAS }}
           NASEEM_KEY_PASSWORD: ${{ secrets.NASEEM_KEY_PASSWORD }}
         run: node scripts/apply-signing.mjs
-      - name: Build signed release APK
+      - name: Build signed APK
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleRelease
-      - name: Upload release APK artifact
+      - name: Publish APK to public Naseem repository
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: midhT/Naseem-public
+          token: ${{ secrets.NASEEM_PUBLIC_REPO_TOKEN }}
+          tag_name: v${{ steps.meta.outputs.version }}
+          name: Naseem v${{ steps.meta.outputs.version }}
+          generate_release_notes: true
+          files: android/app/build/outputs/apk/release/app-release.apk
+      - name: Check out public content repository
+        uses: actions/checkout@v4
+        with:
+          repository: midhT/Naseem-public
+          token: ${{ secrets.NASEEM_PUBLIC_REPO_TOKEN }}
+          path: public-feed
+      - name: Publish versioned public feeds and release metadata
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          GH_TOKEN: ${{ secrets.NASEEM_PUBLIC_REPO_TOKEN }}
+        run: |
+          mkdir -p public-feed/content
+          cp public-content/content/glance.json public-feed/content/glance.json
+          cp public-content/content/duas.json public-feed/content/duas.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const version=process.env.VERSION;
+          const release={version,releaseUrl:`https://github.com/midhT/Naseem-public/releases/tag/v${version}`,downloadUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk`,notesSummary:'Naseem public release. See release notes for verified changes and known limitations.',publishedAt:new Date().toISOString()};
+          fs.writeFileSync('public-feed/release.json',JSON.stringify(release,null,2)+'\n');
+          NODE
+          cd public-feed
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add release.json content/glance.json content/duas.json
+          git diff --cached --quiet || { git commit -m "Publish Naseem ${VERSION} public feeds"; git push; }
+      - name: Upload signed APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: Naseem-v${{ steps.meta.outputs.version }}-release
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.meta.outputs.version }}
-          name: Naseem v${{ steps.meta.outputs.version }}
-          generate_release_notes: true
-          files: android/app/build/outputs/apk/release/app-release.apk

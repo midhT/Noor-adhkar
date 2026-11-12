@@ -9,7 +9,7 @@ def swipe(cdp, x0, x1, y=420, steps=8):
         cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': x0 + (x1 - x0) * i / steps, 'y': y + 2}]}); time.sleep(0.012)
     cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []}); time.sleep(0.6)
 with sync_playwright() as p:
-    b = p.chromium.launch()
+    b = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH'), args=['--no-sandbox'])
     ctx = b.new_context(viewport={'width': 393, 'height': 852}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata')
     pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto(srv.url()); pg.wait_for_timeout(2600); ev = pg.evaluate; cdp = ctx.new_cdp_session(pg)

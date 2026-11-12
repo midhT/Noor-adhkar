@@ -29,6 +29,7 @@ public class HijriWidgetProvider extends AppWidgetProvider {
             date = p.getString(NoorWidgetStore.HIJRI_DATE, "Open Naseem to sync the Hijri date");
         }
         RemoteViews v = new RemoteViews(context.getPackageName(), R.layout.widget_hijri);
+        NoorWidgetStore.applyStyle(context, v, R.id.hw_root, R.id.hw_kicker, new int[]{R.id.hw_date});
         v.setTextViewText(R.id.hw_date, date);
         Intent launch = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         if (launch != null) v.setOnClickPendingIntent(R.id.hw_root, PendingIntent.getActivity(context, 21, launch, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));

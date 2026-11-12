@@ -3,7 +3,7 @@
     android:minWidth="110dp"
     android:minHeight="110dp"
     android:updatePeriodMillis="0"
-    android:initialLayout="@layout/widget_tasbeeh"
+    android:previewImage="@drawable/widget_preview_tasbeeh" android:initialLayout="@layout/widget_tasbeeh"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:description="@string/noor_tasbeeh_widget_desc" />

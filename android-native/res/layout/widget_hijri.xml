@@ -3,7 +3,7 @@
     android:id="@+id/hw_root" android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="@drawable/noor_widget_bg" android:gravity="center_vertical"
     android:orientation="vertical" android:padding="16dp">
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+    <TextView android:id="@+id/hw_kicker" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:text="NASEEM · ISLAMIC CALENDAR" android:textColor="#FF8E8E95" android:textSize="10sp" />
     <TextView android:id="@+id/hw_date" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_marginTop="10dp" android:text="Open Naseem to sync the Hijri date"

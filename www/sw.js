@@ -1,4 +1,4 @@
-const CACHE = "noor-adhkar-cache-v407";
+const CACHE = "noor-adhkar-cache-v4081";
 const CACHE_PREFIX = "noor-adhkar-cache-";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./theme.css", "./features.css", "./features-v404.css",

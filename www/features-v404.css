@@ -138,3 +138,10 @@ button:focus:not(:focus-visible){outline:none}
 
 /* V4.0.7 scoped feature completion */
 #extraRoutineGrid{margin-bottom:18px}.extra-routine{min-height:124px}.st-seg#stThemeSeg{flex-wrap:wrap}.st-seg#stThemeSeg button{min-width:58px}.glance-quiz{margin-top:16px}.glance-quiz .v404-option{width:100%;cursor:pointer}.glance-quiz .v404-option:disabled{opacity:.72;cursor:default}.v404-onboard-panel{background:var(--panel,#151a17);color:var(--text)}body.light .v404-onboarding{background:rgba(236,239,235,.88)}body.light .v404-onboard-panel{background:#fff;color:#1d2822;border-color:#dce5de}body.light .v404-onboard-panel p,body.light .v404-onboard-panel small{color:#65736b}body.light .v404-check{color:#394b41}
+
+/* Quran reader: readable ayah cards and persistent resume focus */
+.quran-ayah{scroll-margin-top:18px}.quran-ayah.quran-last-read{border-color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}.quran-ayah .v404-icon-btn{font-size:13px;min-width:38px;min-height:38px}
+
+.hijri-adjust-row{flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:7px}.hijri-adjust-row .v404-note{flex:1 1 100%}
+
+.custom-routine-tile{display:grid;gap:7px;min-width:0}.custom-routine-edit{justify-self:start;min-height:34px;padding:7px 14px}.cr-item{display:grid;gap:4px}.cr-item textarea.v404-input{min-height:74px;resize:vertical}.cr-item .rm-actions{margin-top:4px}.cr-item .rm-actions button{min-width:42px}

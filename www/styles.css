@@ -92,3 +92,23 @@ body.light .intro-crescent:after{background:#f5f4ef}
 body.light .intro-star{color:#267b5b;text-shadow:0 0 18px rgba(38,123,91,.25)}
 body.light .intro-tagline{color:#64756b}
 body.light .intro-rule{background:rgba(38,123,91,.16)}body.light .intro-rule span{background:#267b5b;box-shadow:0 0 10px rgba(38,123,91,.35)}
+
+/* Naseem 4.0.8 opening sequence: restrained silver geometry in dark mode, emerald in light mode. */
+.noor-intro{background:radial-gradient(ellipse at 50% 44%,rgba(177,193,185,.10),transparent 38%),#080b0a;color:#e9efeb}
+.noor-intro:before,.noor-intro:after{border-color:rgba(202,216,208,.14);border-radius:44% 56% 53% 47%;transform:rotate(18deg)}
+.noor-intro:after{border-color:rgba(202,216,208,.07);border-radius:50%;transform:rotate(-22deg)}
+.intro-stars{background-image:radial-gradient(1px 1px at 15% 20%,rgba(225,236,229,.75) 50%,transparent 100%),radial-gradient(1px 1px at 83% 27%,rgba(225,236,229,.7) 50%,transparent 100%),radial-gradient(2px 2px at 76% 72%,rgba(225,236,229,.5) 50%,transparent 100%),radial-gradient(1px 1px at 22% 78%,rgba(225,236,229,.65) 50%,transparent 100%),radial-gradient(1px 1px at 55% 13%,rgba(225,236,229,.5) 50%,transparent 100%)}
+.intro-emblem{filter:drop-shadow(0 0 24px rgba(195,213,202,.17))}
+.intro-crescent{border-color:#dce6df;box-shadow:inset 0 0 14px rgba(220,230,223,.08),0 0 22px rgba(220,230,223,.12)}
+.intro-crescent:after{background:#080b0a}
+.intro-star{color:#f1f5f2;text-shadow:0 0 18px rgba(225,236,229,.65)}
+.intro-wordmark{text-shadow:0 0 28px rgba(195,213,202,.13)}
+.intro-tagline{color:#9baaa1}.intro-tagline i{color:#dce6df}
+.intro-rule{background:rgba(220,230,223,.16)}.intro-rule span{background:#e4ece7;box-shadow:0 0 12px rgba(220,230,223,.6)}
+body.light .noor-intro{background:radial-gradient(ellipse at 50% 44%,rgba(32,117,82,.09),transparent 38%),#f4f6f2;color:#20362a}
+body.light .noor-intro:before,body.light .noor-intro:after{border-color:rgba(37,99,71,.14)}
+body.light .intro-crescent{border-color:#286c4c;box-shadow:inset 0 0 14px rgba(38,123,91,.08),0 0 20px rgba(38,123,91,.12)}
+body.light .intro-crescent:after{background:#f4f6f2}
+body.light .intro-star{color:#286c4c;text-shadow:0 0 18px rgba(38,123,91,.22)}
+body.light .intro-tagline{color:#65766b}body.light .intro-tagline i{color:#286c4c}
+body.light .intro-rule{background:rgba(38,123,91,.16)}body.light .intro-rule span{background:#286c4c;box-shadow:0 0 10px rgba(38,123,91,.25)}

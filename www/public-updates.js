@@ -1,9 +1,9 @@
 /* Public Naseem release checker. Public JSON only; no GitHub token or sign-in. */
 (() => {
   'use strict';
-  const CURRENT = document.querySelector('meta[name="naseem-version"]')?.content || '4.0.7';
+  const CURRENT = document.querySelector('meta[name="naseem-version"]')?.content || '4.0.6';
   const RELEASE_JSON = 'https://raw.githubusercontent.com/midhT/Naseem-public/main/release.json';
-  const RELEASES_PAGE = 'https://github.com/midhT/Noor-adhkar/releases/latest';
+  const RELEASES_PAGE = 'https://github.com/midhT/Naseem-public/releases/latest';
   const KEY = 'naseem-public-update-state-v1';
   const parse = v => String(v || '0').split(/[.+-]/).slice(0,3).map(x => Number.parseInt(x,10)||0);
   const newer = (a,b) => { const x=parse(a),y=parse(b); for(let i=0;i<3;i++){if(x[i]!==y[i])return x[i]>y[i];}return false; };

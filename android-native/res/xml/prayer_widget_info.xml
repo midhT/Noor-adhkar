@@ -3,7 +3,7 @@
     android:minWidth="250dp"
     android:minHeight="110dp"
     android:updatePeriodMillis="1800000"
-    android:initialLayout="@layout/widget_prayer"
+    android:previewImage="@drawable/widget_preview_prayer" android:initialLayout="@layout/widget_prayer"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:description="@string/noor_prayer_widget_desc" />

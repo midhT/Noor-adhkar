@@ -52,6 +52,7 @@ public class TasbeehWidgetProvider extends AppWidgetProvider {
             target = Math.max(1, p.getInt(NoorWidgetStore.TASBEEH_TARGET, 100));
         }
         RemoteViews v = new RemoteViews(context.getPackageName(), R.layout.widget_tasbeeh);
+        NoorWidgetStore.applyStyle(context, v, R.id.tw_root, R.id.tw_name, new int[]{R.id.tw_count,R.id.tw_target});
         v.setTextViewText(R.id.tw_name, name);
         v.setTextViewText(R.id.tw_count, String.valueOf(count));
         v.setTextViewText(R.id.tw_target, count >= target ? "Target reached" : "of " + target + " · tap to count");

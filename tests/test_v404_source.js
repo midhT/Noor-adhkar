@@ -8,7 +8,7 @@ const html = read('www/index.html');
 const js = read('www/v404.js');
 const workflow = read('.github/workflows/build-apk.yml');
 const pkg = JSON.parse(read('package.json'));
-assert.equal(pkg.version, '4.0.7');
+assert.equal(pkg.version, '4.0.8');
 for (const key of ['hijri','salah-learning','widgets','occasions','profiles']) assert.match(html, new RegExp(`data-open-v404="${key}"`), `${key} More card`);
 for (const key of ['hijriScreen','duaScreen','salahLearningScreen','widgetStudioScreen','occasionsScreen','traditionScreen','glanceScreen']) assert.ok(js.includes(`'${key}'`), `${key} screen route`);
 assert.match(js, /GLANCE_FEED_URL/);
@@ -18,7 +18,7 @@ assert.match(js, /studioPrayerTimes/);
 assert.match(js, /setPrayerTimes\(times\)/);
 assert.match(js, /setTasbeeh\(dhikr\)/);
 assert.match(js, /salahDuaEntry/);
-assert.doesNotMatch(js, /requestNotifications|notifications\.request\(\)/); // setup does not prompt automatically
+assert.match(js, /notifications\.request\(\)/); // first-run setup requests permission when Android reports prompt
 assert.match(js, /setupComplete/);
 assert.match(js, /naseem-onboarding-complete-v1/);
 assert.match(read('www/app.js'), /theme:"system"/);
@@ -39,7 +39,7 @@ assert.match(js, /setupName/);
 assert.doesNotMatch(html, /data-planned=/);
 assert.match(html, /<small>More<\/small>/);
 assert.match(read('www/public-updates.js'), /Naseem-public/);
-assert.match(read('www/sw.js'), /noor-adhkar-cache-v407/);
+assert.match(read('www/sw.js'), /noor-adhkar-cache-v408/);
 assert.match(read('www/salah.js'), /asr: 'hanafi'/);
 assert.doesNotMatch(read('www/salah.js'), /raw\.asr === 'hanafi'.*settings\.asr = 'standard'/);
 assert.match(read('www/profile.js'), /nameInput && nameInput\.value !== profile\.name/);
@@ -47,4 +47,4 @@ assert.match(read('android-native/java/MainActivity.java'), /getRegistrations\(\
 assert.match(read('android-native/java/MainActivity.java'), /noor-adhkar-cache-/);
 assert.doesNotMatch(read('android-native/java/MainActivity.java'), /localStorage\.clear/);
 assert.match(read('www/app.js'), /!nativeWebView/);
-console.log('V4.0.7 source integration: all assertions passed.');
+console.log('V4.0.8 source integration: all assertions passed.');

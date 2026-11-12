@@ -102,6 +102,8 @@ window.NoorNative = {
     async setPrayerTimes(times) { try { await NoorWidgets.setPrayerTimes({ json: JSON.stringify(times || {}) }); return true; } catch (_) { return false; } },
     async setTasbeeh(info) { try { await NoorWidgets.setTasbeeh(info); return true; } catch (_) { return false; } },
     async setHijriDate(date) { try { await NoorWidgets.setHijriDate({ date: String(date || '') }); return true; } catch (_) { return false; } },
+    async setStyle(style) { try { await NoorWidgets.setWidgetStyle({ theme: style.theme, accent: style.accent, density: style.density }); return true; } catch (_) { return false; } },
+    async setCustomWidget(config) { try { await NoorWidgets.setCustomWidget(config); return true; } catch (_) { return false; } },
     async takePending() { try { return (await NoorWidgets.takePending()).count || 0; } catch (_) { return 0; } }
   } : null
 };

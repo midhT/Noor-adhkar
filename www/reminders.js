@@ -45,6 +45,7 @@
     const now = new Date(), t = S.timesFor(now), j = S.jamaatFor(now);
     root.innerHTML = `
       <div class="setting-row"><div><strong>Salah reminders</strong><p id="rmStatus">${statusText()}</p></div>${sw('id="rmMaster"', cfg.master, 'Salah reminders')}</div>
+      <p class="rm-note" id="rmPermissionStatus" role="status">${native?'Checking Android notification permission…':'Background notifications require the installed Android app.'}</p>
       <div id="rmBody" ${cfg.master ? '' : 'hidden'}>
         ${PRAYERS.map(p => `
           <div class="rm-prayer ${cfg.on[p] ? '' : 'is-off'}">
@@ -114,7 +115,7 @@
     if (!native) { cfg.master = true; save(); note = ''; render(); return; }
     const nt = N.notifications;
     let perm = await nt.permission();
-    if (perm !== 'granted') perm = await nt.request();
+    if (perm === 'prompt') perm = await nt.request();
     if (perm !== 'granted') {
       cfg.master = false; save();
       note = 'Notifications are blocked for Naseem. Allow them in Android Settings › Apps › Naseem › Notifications.';
@@ -143,7 +144,7 @@
     }
     else if (el.id === 'rmTestAdhan' || el.id === 'rmTestTone') {
       const nt = N.notifications;
-      let perm = await nt.permission(); if (perm !== 'granted') perm = await nt.request();
+      let perm = await nt.permission(); if (perm === 'prompt') perm = await nt.request();
       if (perm !== 'granted') { note = 'Allow notifications first to test.'; render(); return; }
       await nt.ensureChannels();
       const adhan = el.id === 'rmTestAdhan';
@@ -158,6 +159,7 @@
 
   window.addEventListener('noor:schedule', () => { render(); apply(); });
   render();
+  if(native){N.notifications.permission().then(p=>{const el=root.querySelector('#rmPermissionStatus');if(el)el.textContent=p==='granted'?'Android notification permission: allowed.':p==='denied'?'Android notification permission: blocked. Enable it in Android Settings → Apps → Naseem → Notifications.':'Android notification permission: not yet requested.';}).catch(()=>{});}
   // Rebuild once per launch so alarms self-heal after updates, date changes, time-zone changes or edits made elsewhere.
   (async () => {
     try {

@@ -8,9 +8,37 @@
   const MANUAL_KEY = 'noorPrayerScheduleV1';
   const say = m => { try { toast(m); } catch (_) {} };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  let note = '';
+  let note = '', referenceStatus = 'Online reference check has not run yet.';
+  const REF_KEY='naseem-salah-reference-v1', REF_MONTH=30*24*60*60*1000;
+  const readReference=()=>{try{return JSON.parse(localStorage.getItem(REF_KEY)||'null');}catch(_){return null;}};
   const manual = () => { try { return JSON.parse(localStorage.getItem(MANUAL_KEY) || '{}'); } catch (_) { return {}; } };
   const sign = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + ' min';
+
+  async function checkOnline(force=false) {
+    const st=S.get(), now=new Date(), monthKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const key=[monthKey,st.loc.lat,st.loc.lng,st.method,st.asr].join('|');
+    const cached=readReference(),cachedCurrent=cached&&cached.key===key;
+    if(!force&&cachedCurrent&&Date.now()-Number(cached.checkedAt||0)<REF_MONTH){referenceStatus=cached.summary||'Monthly reference check completed.';return;}
+    if(st.mode==='manual'){referenceStatus='Manual mosque times are selected. Online calculation comparison is skipped.';return;}
+    if(!navigator.onLine){referenceStatus=(cachedCurrent&&cached.summary)||'Offline. The local prayer-time engine continues to work; online comparison will retry when connected.';return;}
+    referenceStatus='Checking this month’s prayer-time reference…';render();
+    const methodMap={jafari:0,karachi:1,isna:2,mwl:3,makkah:4,egypt:5};
+    const date=`${String(now.getDate()).padStart(2,'0')}-${String(now.getMonth()+1).padStart(2,'0')}-${now.getFullYear()}`;
+    const params=new URLSearchParams({latitude:String(st.loc.lat),longitude:String(st.loc.lng),method:String(methodMap[st.method]??1),school:st.asr==='hanafi'?'1':'0',timezonestring:st.loc.tz||Intl.DateTimeFormat().resolvedOptions().timeZone,latitudeAdjustmentMethod:'1'});
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+    try{
+      const response=await fetch(`https://api.aladhan.com/v1/timings/${date}?${params}`,{signal:controller.signal,cache:'no-store'});
+      if(!response.ok)throw new Error('reference service unavailable');
+      const payload=await response.json(),remote=payload?.data?.timings;if(!remote)throw new Error('invalid reference response');
+      const local=S.calcFor(now), keys=['fajr','dhuhr','asr','maghrib','isha'];
+      const parse=v=>{const m=String(v||'').match(/(\d{1,2}):(\d{2})/);return m?Number(m[1])*60+Number(m[2]):null;};
+      const diffs=keys.map(k=>{const a=parse(local[k]),b=parse(remote[k[0].toUpperCase()+k.slice(1)]);return a===null||b===null?null:Math.abs(a-b);}).filter(x=>x!==null);
+      const max=diffs.length?Math.max(...diffs):null;
+      referenceStatus=max===null?'Online reference received, but timings could not be compared.':`Checked ${date}. Maximum difference from AlAdhan reference: ${max} min. This is a comparison only; confirm with your mosque.`;
+      localStorage.setItem(REF_KEY,JSON.stringify({key,checkedAt:Date.now(),summary:referenceStatus,maxDifference:max,provider:'AlAdhan'}));
+    }catch(_){referenceStatus=(cachedCurrent&&cached.summary)||'Online reference unavailable. Local calculations remain active.';}
+    finally{clearTimeout(timer);render();}
+  }
 
   function render() {
     const st = S.get(), now = new Date(), calc = S.calcFor(now), eff = S.timesFor(now), jam = S.jamaatFor(now);
@@ -41,6 +69,7 @@
       <div class="rm-actions"><button type="button" data-a="resetJamaat">Reset Jamaat defaults</button></div>
       <p class="tiny-note">Jamaat starts at common defaults (Fajr +20, Dhuhr +15, Asr +15, Maghrib +5, Isha +15 minutes after Adhan). These are not any particular mosque's schedule. Set your own mosque's times above.</p>
       <p class="tiny-note">Calculated times work offline and follow the seasons and daylight saving. They are an aid: your local mosque timetable can differ by a few minutes, so adjust to match it.</p>
+      <div class="v404-card"><strong>Monthly online reference check</strong><p class="tiny-note" id="ssOnlineReference" role="status" aria-live="polite">${esc(referenceStatus)}</p><button type="button" class="st-btn" data-a="checkOnline">Check prayer times online</button><p class="tiny-note">Compares this device’s calculation with AlAdhan for your coordinates, calculation method and Asr school. It never overwrites your prayer times. Local mosque timetables remain authoritative.</p></div>
       <p class="tiny-note ${note.startsWith('!') ? 'st-error' : ''}" role="status" aria-live="polite">${esc(note.replace(/^!/, ''))}</p>`;
     T.bind(body);
     if (st.mode === 'manual') { const m = manual(); times6.forEach(k => { const el = body.querySelector('#ssm-' + k); if (el) el.value = T.valid(m[k]) ? m[k] : eff[k]; }); }
@@ -65,6 +94,7 @@
   body.addEventListener('click', e => {
     const b = e.target.closest('[data-a]'); if (!b || b.tagName === 'SELECT') return;
     const st = S.get(), a = b.dataset.a, k = b.dataset.k;
+    if (a === 'checkOnline') { checkOnline(true); return; }
     if (a === 'mode') { if (b.dataset.v === 'manual' && !Object.keys(manual()).length) { const eff = S.timesFor(new Date()); localStorage.setItem(MANUAL_KEY, JSON.stringify(eff)); } S.set({ mode: b.dataset.v }); note = ''; }
     else if (a === 'adj') S.setAdj(k, (st.adj[k] || 0) + Number(b.dataset.d));
     else if (a === 'resetAdj') { S.resetAdj(); note = 'Adjustments cleared. Times are back to the calculated values.'; }
@@ -95,4 +125,6 @@
   window.addEventListener('naseem:tradition-changed', render);
   document.addEventListener('naseem:tradition-changed', render);
   render();
+  checkOnline(false);
+  window.addEventListener('online',()=>checkOnline(false));
 })();

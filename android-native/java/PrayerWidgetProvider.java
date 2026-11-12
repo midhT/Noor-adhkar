@@ -132,6 +132,7 @@ public class PrayerWidgetProvider extends AppWidgetProvider {
 
     private static RemoteViews build(Context context) {
         RemoteViews v = new RemoteViews(context.getPackageName(), R.layout.widget_prayer);
+        NoorWidgetStore.applyStyle(context, v, R.id.pw_root, R.id.pw_title, new int[]{R.id.pw_time,R.id.pw_hint});
         Intent launch = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         if (launch != null) {
             v.setOnClickPendingIntent(R.id.pw_root,

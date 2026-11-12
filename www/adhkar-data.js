@@ -44,5 +44,6 @@
     { id:'travel-takbir', title:'Supplication when mounting a ride', count:1, verified:false, arabic:'سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَىٰ رَبِّنَا لَمُنقَلِبُونَ', meaning:'Glory be to the One who has subjected this to us; we could not have done so ourselves, and surely to our Lord we will return.', source:'Qur’an 43:13–14' }
   ];
   const sessions = { morning: SHARED, evening: SHARED, after_salah: AFTER_SALAH, before_sleep: BEFORE_SLEEP, waking: WAKING, travel: TRAVEL };
-  return { sessions, items: which => sessions[which] || [], starterSet: true };
+  function setCustomRoutines(list){Object.keys(sessions).filter(k=>k.startsWith('custom_')).forEach(k=>delete sessions[k]);(Array.isArray(list)?list:[]).forEach(r=>{if(!r||!r.id||!Array.isArray(r.items))return;sessions['custom_'+r.id]=r.items.map((it,i)=>({...it,id:String(it.id||`custom-${r.id}-${i+1}`),count:Math.max(1,Math.min(10000,Number(it.count)||1)),verified:false}));});}
+  return { sessions, items: which => sessions[which] || [], setCustomRoutines, starterSet: true };
 });

@@ -6,7 +6,7 @@ from common import *
 R = Results(); srv = Server(8796); ok = R.ok
 SHIFT = """(()=>{window.__off=0;const RD=Date;class FD extends RD{constructor(...a){if(a.length===0){super(RD.now()+window.__off*86400000)}else{super(...a)}}static now(){return RD.now()+window.__off*86400000}}window.Date=FD})()"""
 with sync_playwright() as p:
-    b = p.chromium.launch()
+    b = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH'), args=['--no-sandbox'])
     ctx = b.new_context(viewport={'width': 393, 'height': 852}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata')
     pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e))); pg.on('dialog', lambda d: d.accept())
     pg.add_init_script(SHIFT)

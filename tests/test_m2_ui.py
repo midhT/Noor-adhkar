@@ -1,3 +1,4 @@
+import os
 import json, re, os, sys
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -5,7 +6,7 @@ from common import *
 R = Results(); srv = Server(8790); ok = R.ok
 TWELVE_BAD = re.compile(r'\b\d{1,2}:\d{2}\b(?!\s?[AP]M)')
 with sync_playwright() as p:
-    b = p.chromium.launch()
+    b = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH'), args=['--no-sandbox'])
     def ctx_new(**kw):
         return b.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=1, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata', accept_downloads=True, **kw)
     ctx = ctx_new(geolocation={'latitude': 28.6139, 'longitude': 77.2090}, permissions=['geolocation'])

@@ -1,7 +1,7 @@
 {
-  "version": "4.0.7",
-  "releaseUrl": "https://github.com/midhT/Noor-adhkar/releases/latest",
-  "downloadUrl": "https://github.com/midhT/Noor-adhkar/releases/latest",
-  "notesSummary": "System-aware theme, reliable one-time onboarding, daily Glance lessons and quizzes, complete Hijri date, school-specific Salah guidance, expanded adhkar routines and a Hijri date widget.",
-  "publishedAt": "2026-11-10T00:00:00Z"
+  "version": "4.0.8",
+  "releaseUrl": "https://github.com/midhT/Naseem-public/releases/latest",
+  "downloadUrl": "https://github.com/midhT/Naseem-public/releases/latest",
+  "notesSummary": "Naseem 4.0.8 RC3: user-composed Android Custom Widget with selectable content blocks, layout spacing and tap actions; Quran Arabic text offline download; custom Adhkar routines; first-run onboarding; versioned Glance and Dua feeds. Physical-device verification, offline Quran audio rights review and final release signing remain outstanding.",
+  "publishedAt": null
 }

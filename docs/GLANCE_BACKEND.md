@@ -1,13 +1,14 @@
-# Glance backend design
+# Naseem public content backend
 
-Naseem contains a read-only Glance client. Its feed URL is configured in `www/glance-config.js`. The app never contains a GitHub write token.
+The application is a read-only client. It fetches public JSON from `midhT/Naseem-public` without a GitHub token. The private application repository `midhT/Noor-adhkar` is not the public feed host.
 
-A separate public repository can host the JSON feed with GitHub Pages. A future admin app will publish content to that repository through a secure authenticated workflow. Do not put a personal access token in either the public feed or the Naseem APK.
+## Public files
+- `release.json` — current public release version and APK download URL.
+- `content/glance.json` — daily reflections, lessons and quizzes.
+- `content/duas.json` — reviewed Dua Library entries.
 
-The app's fallback order is:
+Both content feeds include `schemaVersion` and `contentVersion`. The client validates the schema, stores the latest valid content locally, and falls back to bundled/cached content when offline or when the feed is invalid. The app never contains a GitHub write token.
 
-1. Latest valid published feed item.
-2. Last successfully cached item if the network is unavailable or the feed is empty/invalid.
-3. Built-in Quranic reminder (Qur'an 2:152) if no cache exists.
+The release workflow builds the signed APK, publishes the APK to the public repository's Releases, then updates the public release metadata and content JSON files. The workflow requires the `NASEEM_PUBLIC_REPO_TOKEN` secret in the private source repository. Never place that token, signing keys, passwords or personal user data in the public repository or APK.
 
-The feed format is demonstrated in `glance-feed-template/content/glance.json`.
+Religious content must be checked against reliable sources before setting `published: true`.

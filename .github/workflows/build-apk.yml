@@ -2,9 +2,6 @@ name: Build Naseem debug APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'naseem-*'
 
 permissions:
   contents: read
