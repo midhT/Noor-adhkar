@@ -1,0 +1,62 @@
+name: Build Naseem debug APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install dependencies
+        env:
+          npm_config_fetch_retries: 5
+          npm_config_fetch_retry_mintimeout: 20000
+          npm_config_fetch_retry_maxtimeout: 120000
+          npm_config_fetch_timeout: 300000
+        run: npm install --no-audit --no-fund --prefer-online
+      - name: Build web app
+        run: npm run build
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --retries 5 --timeout 120 playwright
+          python -m playwright install --with-deps chromium
+      - name: Run source and browser verification
+        run: bash tests/run.sh
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK components
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+      - name: Add Android platform
+        run: npx cap add android
+      - name: Generate app icons and splash
+        run: npx --yes --package=@capacitor/assets capacitor-assets generate --android
+      - name: Apply themed icon layer
+        run: node scripts/patch-icons.mjs
+      - name: Integrate native Android widgets and back handling
+        run: node scripts/patch-android.mjs
+      - name: Build debug APK
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Naseem-${{ github.sha }}-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
