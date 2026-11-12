@@ -112,3 +112,10 @@ body.light .intro-crescent:after{background:#f4f6f2}
 body.light .intro-star{color:#286c4c;text-shadow:0 0 18px rgba(38,123,91,.22)}
 body.light .intro-tagline{color:#65766b}body.light .intro-tagline i{color:#286c4c}
 body.light .intro-rule{background:rgba(38,123,91,.16)}body.light .intro-rule span{background:#286c4c;box-shadow:0 0 10px rgba(38,123,91,.25)}
+
+/* Appearance motion selector: compact, accessible segmented control. */
+#stMotionSeg{display:inline-flex;flex-wrap:nowrap;gap:3px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--panel2);flex-shrink:0}
+#stMotionSeg button{border:0;border-radius:999px;padding:7px 9px;background:transparent;color:var(--muted);font:inherit;font-size:10px;font-weight:700;white-space:nowrap;cursor:pointer}
+#stMotionSeg button[aria-pressed="true"]{background:var(--panel);color:var(--gold);box-shadow:0 1px 4px rgba(0,0,0,.16)}
+#stMotionSeg button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media(max-width:370px){#stAppearance .setting-row:has(#stMotionSeg){align-items:flex-start;flex-direction:column;gap:9px}#stMotionSeg{max-width:100%}}
