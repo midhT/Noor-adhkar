@@ -11,6 +11,7 @@ def swipe(cdp, x0, x1, y=420, steps=8):
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH'), args=['--no-sandbox'])
     ctx = b.new_context(viewport={'width': 393, 'height': 852}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata')
+    seed_returning_user(ctx)
     pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto(srv.url()); pg.wait_for_timeout(2600); ev = pg.evaluate; cdp = ctx.new_cdp_session(pg)
     cur = lambda: ev("document.querySelector('.screen.active').id")
@@ -92,7 +93,7 @@ with sync_playwright() as p:
     ok('Full mode removes lite class', not ev("document.body.classList.contains('lite')"))
     # ---- no horizontal overflow across widths, large text ----
     for w in (320, 360, 393, 412, 600):
-        c2 = b.new_context(viewport={'width': w, 'height': 800}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata'); q = c2.new_page(); q.goto(srv.url()); q.wait_for_timeout(2300)
+        c2 = b.new_context(viewport={'width': w, 'height': 800}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata'); seed_returning_user(c2); q = c2.new_page(); q.goto(srv.url()); q.wait_for_timeout(2300)
         bad = []
         for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen']:
             q.click(f'.nav-item[data-screen="{sid}"]'); q.wait_for_timeout(450)

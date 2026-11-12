@@ -7,6 +7,7 @@ R = Results(); srv = Server(8798); ok = R.ok
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH'), args=['--no-sandbox'])
     ctx = b.new_context(viewport={'width': 393, 'height': 852}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata')
+    seed_returning_user(ctx)
     pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto(srv.url()); pg.wait_for_timeout(2600); ev = pg.evaluate; cdp = ctx.new_cdp_session(pg)
     # ================= compass =================

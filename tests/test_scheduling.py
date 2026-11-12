@@ -6,6 +6,7 @@ R = Results(); srv = Server(8791); ok = R.ok
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH'), args=['--no-sandbox'])
     ctx = b.new_context(viewport={'width': 393, 'height': 852}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata')
+    seed_returning_user(ctx)
     ctx.add_init_script("""window.Capacitor={isNativePlatform:()=>true};window.__w={prayer:null,tas:[],pending:0};
 window.__plugins={NoorWidgets:{setPrayerTimes:async o=>{window.__w.prayer=JSON.parse(o.json)},setTasbeeh:async o=>{window.__w.tas.push(o)},takePending:async()=>({count:0})}};""")
     pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))

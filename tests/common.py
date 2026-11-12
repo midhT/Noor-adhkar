@@ -8,6 +8,26 @@ class Server:
         time.sleep(1)
     def url(self): return f'http://localhost:{self.port}/index.html'
     def stop(self): self.p.terminate()
+def seed_returning_user(ctx):
+    """Start browser regression tests as an already-onboarded returning user.
+
+    First-launch onboarding is tested separately in test_ui_logic.cjs. These
+    tests focus on navigation/features, so seed both completion records before
+    page load and prevent the 2.2s setup overlay intercepting unrelated clicks.
+    """
+    ctx.add_init_script("""(() => {
+      try {
+        localStorage.setItem('naseem-onboarding-complete-v1', '1');
+        const key = 'naseem-v404-settings';
+        const saved = JSON.parse(localStorage.getItem(key) || '{}');
+        saved.setupComplete = true;
+        if (!saved.setupCompletedAt) saved.setupCompletedAt = 1;
+        localStorage.setItem(key, JSON.stringify(saved));
+      } catch (e) {
+        window.__naseemTestSeedError = String(e);
+      }
+    })();""")
+
 class Results:
     def __init__(self): self.r = {}
     def ok(self, name, cond, extra=''):
