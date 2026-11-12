@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b0b0d">
+  <meta name="theme-color" content="#080d0c">
   <meta name="description" content="Naseem — an offline-first Islamic daily companion for Dhikr, Salah, Duas, Zakat and reflection.">
-  <meta name="naseem-version" content="4.0.9">
+  <meta name="naseem-version" content="4.1.0">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css">
@@ -15,11 +15,25 @@
 </head>
 <body class="intro-pending">
   <div class="noor-intro" id="noorIntro" aria-label="Naseem opening animation" role="status">
-    <div class="intro-stars" aria-hidden="true"></div>
-    <div class="intro-emblem" aria-hidden="true"><span class="intro-crescent"></span><span class="intro-star">✦</span></div>
-    <div class="intro-wordmark">NASEEM</div>
-    <div class="intro-tagline">REMEMBER <i>•</i> PRAY <i>•</i> REFLECT</div>
-    <div class="intro-rule"><span></span></div>
+    <div class="intro-grain" aria-hidden="true"></div>
+    <div class="intro-geometry intro-geometry-one" aria-hidden="true"></div>
+    <div class="intro-geometry intro-geometry-two" aria-hidden="true"></div>
+    <div class="intro-content">
+      <div class="intro-emblem" aria-hidden="true">
+        <svg class="intro-mark" viewBox="0 0 120 120" role="presentation">
+          <circle class="mark-orbit" cx="60" cy="60" r="49" />
+          <path class="mark-crescent" d="M72 20a42 42 0 1 0 28 70A37 37 0 0 1 72 20Z" />
+          <path class="mark-star" d="m87 25 3.5 8.5L99 37l-8.5 3.5L87 49l-3.5-8.5L75 37l8.5-3.5Z" />
+          <circle class="mark-dot" cx="31" cy="83" r="2.2" />
+        </svg>
+      </div>
+      <div class="intro-arabic" lang="ar" dir="rtl">نَسِيم</div>
+      <div class="intro-wordmark">NASEEM</div>
+      <div class="intro-divider"><span></span></div>
+      <div class="intro-tagline">A MOMENT OF STILLNESS</div>
+      <div class="intro-subline">REMEMBER <i>·</i> PRAY <i>·</i> REFLECT</div>
+    </div>
+    <div class="intro-foot" aria-hidden="true"><span></span><small>YOUR DAILY COMPANION</small><span></span></div>
   </div>
   <div class="app-shell">
     <header class="topbar">

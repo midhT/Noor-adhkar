@@ -1,5 +1,10 @@
 # Naseem Changelog
 
+## 4.1.0 — redesigned opening experience · 12 November 2026
+- Rebuilt the in-app opening screen with a refined Arabic/Latin wordmark, geometric emblem, restrained emerald/silver palette, layered motion and safer screen-inset spacing.
+- Preserved the existing startup animation behaviour: it appears at launch, dismisses automatically and does not reopen first-run setup.
+- Kept the application ID and automated protected release-signing workflow unchanged. Every update must use the original release keystore and alias.
+
 ## 4.0.9 — update-test candidate · 12 November 2026
 - Restored the global app accent palette in Settings → Appearance, including six presets and a custom colour; preferences remain persistent across light and dark themes.
 - Quran recitation now highlights the active Ayah, advances through subsequent Ayahs automatically, and supports pause, resume and seeking.

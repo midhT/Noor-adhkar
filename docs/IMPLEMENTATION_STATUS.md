@@ -1,4 +1,4 @@
-# Naseem implementation status — V4.0.9 RC3
+# Naseem implementation status — V4.1.0 RC3
 
 ## Present in source (device verification pending)
 - Offline-first Dhikr sessions, streaks, custom Adhkar routine CRUD/reordering, Salah calculations, local reminder scheduling, profile/theme settings and backup/restore.

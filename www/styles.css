@@ -119,3 +119,33 @@ body.light .intro-rule{background:rgba(38,123,91,.16)}body.light .intro-rule spa
 #stMotionSeg button[aria-pressed="true"]{background:var(--panel);color:var(--gold);box-shadow:0 1px 4px rgba(0,0,0,.16)}
 #stMotionSeg button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @media(max-width:370px){#stAppearance .setting-row:has(#stMotionSeg){align-items:flex-start;flex-direction:column;gap:9px}#stMotionSeg{max-width:100%}}
+
+
+/* Naseem 4.1.0 — redesigned opening experience. */
+.noor-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;isolation:isolate;padding:calc(28px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));background:#080d0c;color:#edf3ef;opacity:1;visibility:visible;transition:opacity .72s cubic-bezier(.22,.7,.2,1),visibility .72s;}
+.noor-intro:before{content:"";position:absolute;inset:0;z-index:-3;background:radial-gradient(ellipse at 50% 44%,rgba(102,145,122,.19),transparent 35%),radial-gradient(ellipse at 50% 100%,rgba(40,75,60,.16),transparent 52%),linear-gradient(160deg,#0b1210 0%,#080d0c 58%,#060908 100%)}
+.intro-grain{position:absolute;inset:0;z-index:-1;opacity:.16;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E")}
+.intro-geometry{position:absolute;z-index:-2;width:min(88vw,430px);aspect-ratio:1;border:1px solid rgba(205,224,212,.10);border-radius:38%;transform:rotate(45deg);animation:introGeometry 24s linear infinite}
+.intro-geometry:before,.intro-geometry:after{content:"";position:absolute;inset:13%;border:1px solid rgba(205,224,212,.08);border-radius:38%}
+.intro-geometry:after{inset:26%;border-radius:50%;border-color:rgba(205,224,212,.07)}
+.intro-geometry-two{width:min(112vw,550px);border-radius:50%;transform:rotate(-22deg);animation-direction:reverse;animation-duration:34s;opacity:.55}
+.intro-content{display:flex;flex-direction:column;align-items:center;text-align:center;transform:translateY(-1.5vh);}
+.intro-emblem{width:clamp(116px,34vw,148px);height:clamp(116px,34vw,148px);margin:0 0 23px;opacity:0;transform:translateY(15px) scale(.88);animation:introRise .95s cubic-bezier(.2,.75,.2,1) .12s forwards;filter:drop-shadow(0 12px 32px rgba(125,171,143,.16))}
+.intro-mark{width:100%;height:100%;overflow:visible}
+.mark-orbit{fill:none;stroke:rgba(203,225,210,.22);stroke-width:.8;stroke-dasharray:2 5;transform-origin:60px 60px;animation:markOrbit 36s linear infinite}
+.mark-crescent{fill:none;stroke:#dce9df;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
+.mark-star{fill:#dce9df;filter:drop-shadow(0 0 7px rgba(220,239,225,.7));animation:markPulse 3.2s ease-in-out infinite}
+.mark-dot{fill:#a9c8b3}
+.intro-arabic{font-family:"Noto Naskh Arabic","Amiri",serif;font-size:clamp(32px,9vw,42px);line-height:1.35;letter-spacing:.02em;color:#dce9df;opacity:0;animation:introFade .8s ease .48s forwards}
+.intro-wordmark{margin-top:5px;padding-left:.24em;font-family:Georgia,"Times New Roman",serif;font-size:clamp(29px,8vw,38px);font-weight:400;letter-spacing:.24em;color:#f0f4f0;opacity:0;transform:translateY(9px);animation:introFade .8s ease .68s forwards;text-shadow:0 5px 30px rgba(180,211,190,.12)}
+.intro-divider{display:flex;align-items:center;justify-content:center;width:112px;height:1px;margin:22px 0 18px;background:linear-gradient(90deg,transparent,rgba(196,220,203,.34),transparent);opacity:0;animation:introFade .7s ease .92s forwards}
+.intro-divider span{width:20px;height:2px;background:#b8d1bf;box-shadow:0 0 12px rgba(184,209,191,.65)}
+.intro-tagline{font-size:9px;font-weight:600;letter-spacing:.25em;color:#c2d2c7;opacity:0;animation:introFade .7s ease 1.05s forwards}
+.intro-subline{margin-top:10px;font-size:8px;letter-spacing:.2em;color:#82968a;opacity:0;animation:introFade .7s ease 1.2s forwards}.intro-subline i{font-style:normal;color:#c1d5c7;padding:0 5px}
+.intro-foot{position:absolute;left:28px;right:28px;bottom:calc(24px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:12px;color:#71877a;opacity:0;animation:introFade .7s ease 1.45s forwards}
+.intro-foot span{width:24px;height:1px;background:rgba(179,205,187,.22)}.intro-foot small{font-size:7px;letter-spacing:.22em}
+body.intro-pending{overflow:hidden}body.intro-pending .app-shell{visibility:hidden}.noor-intro.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+@keyframes introRise{to{opacity:1;transform:translateY(0) scale(1)}}@keyframes introFade{to{opacity:1;transform:translateY(0)}}@keyframes introGeometry{to{transform:rotate(405deg)}}@keyframes markOrbit{to{transform:rotate(360deg)}}@keyframes markPulse{0%,100%{opacity:.75;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+body.light .noor-intro{background:#f1f4ef;color:#20362a}body.light .noor-intro:before{background:radial-gradient(ellipse at 50% 44%,rgba(92,142,108,.13),transparent 38%),linear-gradient(160deg,#f5f7f2,#e9efe8)}body.light .intro-geometry{border-color:rgba(49,91,64,.13)}body.light .intro-geometry:before,body.light .intro-geometry:after{border-color:rgba(49,91,64,.10)}body.light .mark-orbit{stroke:rgba(49,91,64,.28)}body.light .mark-crescent{stroke:#315d43}body.light .mark-star{fill:#315d43}body.light .mark-dot{fill:#638d70}body.light .intro-arabic,body.light .intro-wordmark{color:#203d2b;text-shadow:none}body.light .intro-divider{background:linear-gradient(90deg,transparent,rgba(49,91,64,.3),transparent)}body.light .intro-divider span{background:#477b56}body.light .intro-tagline{color:#496653}body.light .intro-subline,body.light .intro-foot{color:#718675}body.light .intro-subline i{color:#477b56}
+@media(max-height:620px){.intro-emblem{width:96px;height:96px;margin-bottom:12px}.intro-divider{margin:12px 0}.intro-content{transform:translateY(-2vh)}}
+@media(prefers-reduced-motion:reduce){.intro-geometry,.mark-orbit,.mark-star{animation:none!important}.intro-emblem,.intro-arabic,.intro-wordmark,.intro-divider,.intro-tagline,.intro-subline,.intro-foot{opacity:1;transform:none;animation:none!important}}

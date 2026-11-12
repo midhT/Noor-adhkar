@@ -9,7 +9,7 @@ intro = (ROOT / 'www/intro.js').read_text()
 pkg = json.loads((ROOT / 'package.json').read_text())
 ids = re.findall(r'id="([^"]+)"', html)
 assert len(ids) == len(set(ids)), 'Duplicate HTML ids'
-assert pkg['version'] == '4.0.9'
+assert pkg['version'] == '4.1.0'
 assert 'data-open-v404="hijri"' in html and "glance:'glanceScreen'" in js
 assert 'widgetStudioScreen' in js and 'glanceScreen' in js and 'traditionScreen' in js
 assert 'naseem-onboarding-complete-v1' in js and 'naseem:open-onboarding' not in js
@@ -38,7 +38,7 @@ assert 'data-accent="forest"' in html and 'data-accent="blue"' in html
 assert 'quran-playing' in (ROOT / 'www/features-v404.css').read_text()
 assert "addEventListener('change',()=>{const value=overlay.querySelector('#setupTradition').value" in js
 assert "addEventListener('change',()=>{window.NaseemTheme?.set?.(overlay.querySelector('#setupTheme').value)" in js
-print('V4.0.9 scoped feature static checks: all passed')
+print('V4.1.0 scoped feature static checks: all passed')
 
 assert 'refreshHijriReference' in js
 assert 'checkOnline' in (ROOT / 'www/salah-settings.js').read_text()
