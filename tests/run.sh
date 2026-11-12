@@ -19,6 +19,7 @@ node tests/test_public_updates.cjs
 rm -rf tests/.build && mkdir -p tests/.build && cp -r www tests/.build/wwwtest
 node "$ROOT/tests/build_native_bundle.cjs"
 python3 tests/test_v404_static.py
+python3 tests/test_navigation_contract.py
 # TERMUX_PLAYWRIGHT_SUITE_GUARD
 run_py_test() {
   local test="$1"

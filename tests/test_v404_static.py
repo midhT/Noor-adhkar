@@ -36,8 +36,10 @@ assert 'data-accent="emerald"' in html and 'data-accent="silver"' in html
 assert 'data-accent="purple"' in html and 'data-accent="gold"' in html
 assert 'data-accent="forest"' in html and 'data-accent="blue"' in html
 assert 'quran-playing' in (ROOT / 'www/features-v404.css').read_text()
-assert "addEventListener('change',()=>{const value=overlay.querySelector('#setupTradition').value" in js
-assert "addEventListener('change',()=>{window.NaseemTheme?.set?.(overlay.querySelector('#setupTheme').value)" in js
+assert "addEventListener('change',()=>{draft.tradition=traditionSelect.value" in js
+assert 'data-tradition-choice' in js and 'data-theme-choice' in js
+assert 'data-page=\"5\"' in js and 'setupProgress' in js
+assert "window.NaseemTheme?.set?.(draft.theme)" in js
 print('V4.1.0 scoped feature static checks: all passed')
 
 assert 'refreshHijriReference' in js

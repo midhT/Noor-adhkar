@@ -9,7 +9,9 @@ const manifestPath = join(androidMain, 'AndroidManifest.xml');
 const gradlePath = join(root, 'android', 'app', 'build.gradle');
 const packageInfo = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const versionParts = String(packageInfo.version || '4.0.1').split('.').map(v => Number.parseInt(v, 10) || 0);
-const versionCode = versionParts[0] * 10000 + versionParts[1] * 100 + versionParts[2];
+// Keep the public versionName unchanged while incrementing Android's internal
+// versionCode for the 4.1.0 onboarding hotfix (previous 4.1.0 build: 40100).
+const versionCode = versionParts[0] * 10000 + versionParts[1] * 100 + versionParts[2] + 1;
 if (existsSync(gradlePath)) {
   let gradle = readFileSync(gradlePath, 'utf8');
   if (/versionCode\s+\d+/.test(gradle)) gradle = gradle.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`);

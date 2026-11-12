@@ -342,52 +342,70 @@
   const routes={hijri:'hijriScreen',duas:'duaScreen','salah-learning':'salahLearningScreen',widgets:'widgetStudioScreen',occasions:'occasionsScreen',profiles:'traditionScreen',glance:'glanceScreen'};
   document.querySelectorAll('[data-open-v404]').forEach(button=>button.addEventListener('click',()=>open(routes[button.dataset.openV404])));
   document.querySelectorAll('[data-open-existing=\"adhkar\"]').forEach(button=>button.addEventListener('click',()=>{const routine=document.querySelector('[data-routine=\"morning\"]');if(routine)routine.click();else open('dhikrScreen');}));
-  // First-launch setup: local-only and shown once. All of these choices stay editable in Settings.
+  // First-launch setup: six focused pages. Preferences are committed only on completion.
   function startSetup(){
     const setupDone=localStorage.getItem('naseem-onboarding-complete-v1')==='1'||data.setupComplete===true;
     if(setupDone){try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}return;}
-    const overlay=document.createElement('div');overlay.className='v404-onboarding';
-    overlay.innerHTML=`<div class="v404-onboard-panel"><span class="eyebrow">WELCOME TO NASEEM</span><div class="v404-onboard-mark">ن</div><h1>Make space for remembrance.</h1><p>A few details help personalise your daily experience. You can change them later.</p><label class="v404-label" for="setupName">Your name (optional)</label><input id="setupName" class="v404-input" type="text" maxlength="40" autocomplete="name" placeholder="What should Naseem call you?"><label class="v404-label" for="setupTradition">Learning tradition</label><select id="setupTradition" class="v404-input"><option value="">Choose later</option>${traditions.map(t=>`<option value="${t[0]}">${esc(t[1])}</option>`).join('')}</select><label class="v404-label" for="setupCity">Prayer city</label><select id="setupCity" class="v404-input"></select><button type="button" id="setupGps" class="v404-secondary">Use device location</button><label class="v404-label" for="setupTheme">Appearance</label><select id="setupTheme" class="v404-input"><option value="system">Use device theme</option><option value="light">Light</option><option value="dark">Dark</option></select><div class="v404-onboard-actions"><button id="setupSkip" class="v404-secondary">Skip for now</button><button id="setupFinish" class="v404-primary">Finish setup</button></div><small>Your preferences stay on this device. Location is used for local prayer timings. Naseem does not require an account. Notifications help deliver Adhan and Jamaat reminders. Android will ask permission after you finish setup.</small></div>`;
+    const overlay=document.createElement('div');overlay.className='v404-onboarding';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Naseem setup');
+    overlay.innerHTML=`<div class="v404-onboard-panel">
+      <div class="v404-onboard-top"><span class="eyebrow">NASEEM · YOUR SPACE</span><span class="v404-onboard-count" id="setupCount">01 / 06</span></div>
+      <div class="v404-onboard-progress" aria-label="Setup progress"><span id="setupProgress"></span></div>
+      <div class="v404-onboard-mark" aria-hidden="true">ن</div>
+      <section class="setup-page active" data-page="0"><span class="setup-kicker">A QUIETER MOMENT, EVERY DAY</span><h1>Make space for remembrance.</h1><p>Build a daily companion around the way you pray, your place, and your rhythm.</p><div class="setup-orbit" aria-hidden="true"><i></i><b>ن</b></div></section>
+      <section class="setup-page" data-page="1" hidden><span class="setup-kicker">01 · PERSONALISE</span><h1>What should we call you?</h1><p>This is optional. Your name stays on this device.</p><label class="v404-label" for="setupName">Your name</label><input id="setupName" class="v404-input" type="text" maxlength="40" autocomplete="name" placeholder="Enter your name"><div class="setup-note">You can leave this blank and continue.</div></section>
+      <section class="setup-page" data-page="2" hidden><span class="setup-kicker">02 · LEARNING TRADITION</span><h1>Choose your learning path.</h1><p>Select the tradition you follow. You can change it later in Settings.</p><div class="setup-choice-list" id="setupTraditionChoices">${traditions.map(t=>`<button type="button" class="setup-choice" data-tradition-choice="${t[0]}"><span><strong>${esc(t[1])}</strong><small>${esc(t[2])}</small></span><b aria-hidden="true">○</b></button>`).join('')}</div><select id="setupTradition" class="v404-input setup-hidden-select" aria-label="Learning tradition"><option value="">Choose later</option>${traditions.map(t=>`<option value="${t[0]}">${esc(t[1])}</option>`).join('')}</select></section>
+      <section class="setup-page" data-page="3" hidden><span class="setup-kicker">03 · YOUR LOCATION</span><h1>Where do you pray?</h1><p>Choose a city for local prayer timings, or use your device location.</p><label class="v404-label" for="setupCitySearch">Find your city</label><input id="setupCitySearch" class="v404-input" type="search" autocomplete="off" placeholder="Search available cities"><select id="setupCity" class="v404-input" aria-label="Prayer city"></select><button type="button" id="setupGps" class="v404-secondary setup-gps">◎ &nbsp; Use device location</button><p id="setupLocationStatus" class="setup-note" role="status" aria-live="polite">Your location is only used to calculate local prayer times.</p></section>
+      <section class="setup-page" data-page="4" hidden><span class="setup-kicker">04 · APPEARANCE</span><h1>Set the atmosphere.</h1><p>Choose how Naseem should look. You can change this any time.</p><div class="setup-theme-list"><button type="button" class="setup-theme selected" data-theme-choice="dark"><span class="theme-swatch theme-dark"><i></i></span><strong>Dark</strong><small>Quiet · focused</small></button><button type="button" class="setup-theme" data-theme-choice="light"><span class="theme-swatch theme-light"><i></i></span><strong>Light</strong><small>Clear · bright</small></button><button type="button" class="setup-theme" data-theme-choice="system"><span class="theme-swatch theme-system"><i></i></span><strong>System</strong><small>Follow device</small></button></div><select id="setupTheme" class="setup-hidden-select" aria-label="Appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select><div class="setup-preview" id="setupPreview"><span>YOUR NASEEM</span><b>السَّلَامُ عَلَيْكُمْ</b><small>A moment of calm.</small></div></section>
+      <section class="setup-page" data-page="5" hidden><span class="setup-kicker">05 · READY</span><div class="setup-ready-mark">✓</div><h1>Your space is ready.</h1><p>Your choices will be saved on this device. Prayer location and appearance can be changed later in Settings.</p><div class="setup-summary" id="setupSummary"></div></section>
+      <div class="v404-onboard-actions"><button type="button" id="setupSkip" class="v404-secondary">Skip setup</button><div class="setup-nav"><button type="button" id="setupBack" class="v404-secondary" disabled>Back</button><button type="button" id="setupFinish" class="v404-primary">Continue</button></div></div>
+      <small class="setup-privacy">No account required. Your preferences stay on this device.</small>
+    </div>`;
     document.body.appendChild(overlay);
     let profile={name:'',photo:''};try{profile=Object.assign(profile,JSON.parse(localStorage.getItem('noorProfileV1')||'{}'));}catch(_){}
-    overlay.querySelector('#setupName').value=String(profile.name||'').slice(0,40);
-    overlay.querySelector('#setupTradition').value=data.tradition||'';
-    overlay.querySelector('#setupTheme').value=window.NaseemTheme?.get?.()||'system';
-    const citySelect=overlay.querySelector('#setupCity'),salah=window.NoorSalah;
-    citySelect.innerHTML='<option value="">Keep current location</option>'+(salah?.CITIES||[]).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
-    // Apply each preference as soon as the user changes it; Finish only closes setup and requests permissions.
-    const saveSetupName=()=>{profile.name=overlay.querySelector('#setupName').value.trim().slice(0,40);try{localStorage.setItem('noorProfileV1',JSON.stringify(profile));}catch(_){}document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{name:profile.name}}));};
-    const applySetupCity=()=>{const chosen=(salah?.CITIES||[]).find(c=>c.id===citySelect.value);if(chosen)salah.setLocation({id:chosen.id,name:chosen.name,lat:chosen.lat,lng:chosen.lng,tz:chosen.tz,source:chosen.id==='srinagar'?'default':'manual'});};
-    overlay.querySelector('#setupName').addEventListener('input',saveSetupName);
-    overlay.querySelector('#setupTradition').addEventListener('change',()=>{const value=overlay.querySelector('#setupTradition').value;if(value&&applySchool(value)){renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));notify('Learning tradition saved.');}});
-    citySelect.addEventListener('change',()=>{applySetupCity();if(citySelect.value)notify('Prayer city saved.');});
-    overlay.querySelector('#setupTheme').addEventListener('change',()=>{window.NaseemTheme?.set?.(overlay.querySelector('#setupTheme').value);notify('Appearance updated.');});
-    const finish=async(skipped=false)=>{
-      saveSetupName();
-      const name=profile.name;
-      const tradition=overlay.querySelector('#setupTradition').value;if(tradition)applySchool(tradition);
-      const theme=overlay.querySelector('#setupTheme').value;window.NaseemTheme?.set?.(theme);
-      applySetupCity();
-      data.setupComplete=true;data.setupCompletedAt=Date.now();save();try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}
-      let notificationMessage='';
-      const notifications=window.NoorNative?.notifications;
-      if(notifications){
-        try{
-          let permission=await notifications.permission();
-          if(permission==='prompt') permission=await notifications.request();
-          if(permission==='granted'){await notifications.ensureChannels();notificationMessage='Notifications are enabled.';}
-          else if(permission==='denied')notificationMessage='Notifications are blocked. Enable them in Android Settings → Apps → Naseem → Notifications.';
-          else notificationMessage='Notification permission is not available yet. You can enable reminders in Settings.';
-        }catch(_){notificationMessage='Notification permission could not be checked. You can enable reminders later in Settings.';}
-      }else notificationMessage='Install the Android app to receive background Adhan and Jamaat notifications.';
-      overlay.remove();
-      renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
-      notify((skipped?'Setup skipped. ':'Your preferences are saved. ')+notificationMessage);
-      document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{name}}));
+    const pages=[...overlay.querySelectorAll('.setup-page')],nameInput=overlay.querySelector('#setupName'),traditionSelect=overlay.querySelector('#setupTradition'),citySelect=overlay.querySelector('#setupCity'),themeSelect=overlay.querySelector('#setupTheme');
+    const salah=window.NoorSalah,citySearch=overlay.querySelector('#setupCitySearch');
+    const initialLoc=salah?.get?.().loc;
+    const draft={name:String(profile.name||'').slice(0,40),tradition:data.tradition||salah?.get?.().school||'',city:'',gps:null,theme:window.NaseemTheme?.get?.()||'system'};
+    nameInput.value=draft.name;traditionSelect.value=draft.tradition;
+    const cityOptions=[...(salah?.CITIES||[])];
+    const renderCityOptions=(query='')=>{const q=query.trim().toLowerCase(),filtered=cityOptions.filter(c=>!q||c.name.toLowerCase().includes(q));citySelect.innerHTML='<option value="">Keep current location</option>'+filtered.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');};
+    renderCityOptions();
+    citySearch.addEventListener('input',()=>{const selected=citySelect.value;renderCityOptions(citySearch.value);if([...citySelect.options].some(o=>o.value===selected))citySelect.value=selected;});
+    if(initialLoc?.source==='manual'&&initialLoc.id)citySelect.value=initialLoc.id;
+    else if(initialLoc?.source==='default'&&initialLoc.id)citySelect.value=initialLoc.id;
+    draft.city=citySelect.value;
+    const setSelected=(selector,attr,value)=>overlay.querySelectorAll(selector).forEach(el=>{const active=el.getAttribute(attr)===value;el.classList.toggle('selected',active);el.setAttribute('aria-pressed',String(active));});
+    const setPage=index=>{
+      pages.forEach((page,i)=>{page.hidden=i!==index;page.classList.toggle('active',i===index);});
+      overlay.querySelector('#setupCount').textContent=`${String(index+1).padStart(2,'0')} / 06`;
+      overlay.querySelector('#setupProgress').style.width=`${((index+1)/6)*100}%`;
+      overlay.querySelector('#setupBack').disabled=index===0;
+      overlay.querySelector('#setupSkip').hidden=index===5;
+      overlay.querySelector('#setupFinish').textContent=index===5?'Enter Naseem':index===4?'Continue':'Continue';
+      if(index===5){const school=traditions.find(t=>t[0]===draft.tradition)?.[1]||'Choose later';const city=(salah?.CITIES||[]).find(c=>c.id===draft.city)?.name||(draft.gps?'Device location':initialLoc?.name||'Keep current location');overlay.querySelector('#setupSummary').innerHTML=`<span>${esc(draft.name||'Personal profile')}</span><span>${esc(school)}</span><span>${esc(city)}</span><span>${esc(draft.theme[0].toUpperCase()+draft.theme.slice(1))} appearance</span>`;}
+      overlay.querySelector('#setupFinish').focus({preventScroll:true});
     };
-    overlay.querySelector('#setupGps').addEventListener('click',()=>{if(!navigator.geolocation){notify('Location is unavailable. Choose a city instead.');return;}navigator.geolocation.getCurrentPosition(pos=>{salah?.setLocation({id:'gps',name:`My location (${pos.coords.latitude.toFixed(3)}°, ${pos.coords.longitude.toFixed(3)}°)`,lat:pos.coords.latitude,lng:pos.coords.longitude,tz:Intl.DateTimeFormat().resolvedOptions().timeZone,source:'gps'});notify('Prayer location saved.');},()=>notify('Location was not available. You can choose a city instead.'),{enableHighAccuracy:false,timeout:12000,maximumAge:600000});});
-    overlay.querySelector('#setupFinish').addEventListener('click',()=>finish(false));
+    setSelected('[data-tradition-choice]','data-tradition-choice',draft.tradition);
+    setSelected('[data-theme-choice]','data-theme-choice',draft.theme);
+    overlay.querySelector('#setupTraditionChoices').addEventListener('click',e=>{const btn=e.target.closest('[data-tradition-choice]');if(!btn)return;draft.tradition=btn.dataset.tradition;traditionSelect.value=draft.tradition;setSelected('[data-tradition-choice]','data-tradition-choice',draft.tradition);});
+    traditionSelect.addEventListener('change',()=>{draft.tradition=traditionSelect.value;setSelected('[data-tradition-choice]','data-tradition-choice',draft.tradition);});
+    citySelect.addEventListener('change',()=>{draft.city=citySelect.value;draft.gps=null;overlay.querySelector('#setupLocationStatus').textContent=draft.city?'City selected. It will be saved when you finish.':'Your current prayer location will be kept.';});
+    overlay.querySelector('#setupGps').addEventListener('click',()=>{const status=overlay.querySelector('#setupLocationStatus');if(!navigator.geolocation){status.textContent='Location is unavailable. Choose a city instead.';return;}status.textContent='Requesting device location…';navigator.geolocation.getCurrentPosition(pos=>{draft.gps={id:'gps',name:`My location (${pos.coords.latitude.toFixed(3)}°, ${pos.coords.longitude.toFixed(3)}°)`,lat:pos.coords.latitude,lng:pos.coords.longitude,tz:Intl.DateTimeFormat().resolvedOptions().timeZone,source:'gps'};draft.city='';citySelect.value='';status.textContent='Device location found. It will be saved when you finish.';},()=>{status.textContent='Location was not available. You can choose a city instead.';},{enableHighAccuracy:false,timeout:12000,maximumAge:600000});});
+    overlay.querySelectorAll('[data-theme-choice]').forEach(btn=>btn.addEventListener('click',()=>{draft.theme=btn.dataset.themeChoice;themeSelect.value=draft.theme;setSelected('[data-theme-choice]','data-theme-choice',draft.theme);overlay.querySelector('#setupPreview').dataset.theme=draft.theme;}));
+    nameInput.addEventListener('input',()=>{draft.name=nameInput.value.trim().slice(0,40);});
+    const finish=async(skipped=false)=>{
+      if(!skipped){draft.name=nameInput.value.trim().slice(0,40);draft.tradition=traditionSelect.value;draft.theme=themeSelect.value;draft.city=citySelect.value;profile.name=draft.name;try{localStorage.setItem('noorProfileV1',JSON.stringify(profile));}catch(_){}if(draft.tradition)applySchool(draft.tradition);if(draft.gps)salah?.setLocation?.(draft.gps);else if(draft.city){const chosen=(salah?.CITIES||[]).find(c=>c.id===draft.city);if(chosen)salah?.setLocation?.({id:chosen.id,name:chosen.name,lat:chosen.lat,lng:chosen.lng,tz:chosen.tz,source:chosen.id==='srinagar'?'default':'manual'});}window.NaseemTheme?.set?.(draft.theme);}
+      data.setupComplete=true;data.setupCompletedAt=Date.now();save();try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}
+      let notificationMessage='';const notifications=window.NoorNative?.notifications;
+      if(notifications){try{let permission=await notifications.permission();if(permission==='prompt')permission=await notifications.request();if(permission==='granted'){await notifications.ensureChannels();notificationMessage='Notifications are enabled.';}else if(permission==='denied')notificationMessage='Notifications are blocked. Enable them in Android Settings → Apps → Naseem → Notifications.';else notificationMessage='You can enable reminders later in Settings.';}catch(_){notificationMessage='You can enable reminders later in Settings.';}}
+      else notificationMessage='Install the Android app to receive background Adhan and Jamaat notifications.';
+      overlay.remove();renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));notify((skipped?'Setup skipped. ':'Your preferences are saved. ')+notificationMessage);document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{name:skipped?profile.name:draft.name}}));
+    };
+    let current=0;
+    overlay.querySelector('#setupBack').addEventListener('click',()=>{if(current>0){current--;setPage(current);}});
+    overlay.querySelector('#setupFinish').addEventListener('click',()=>{if(current<5){current++;setPage(current);}else finish(false);});
     overlay.querySelector('#setupSkip').addEventListener('click',()=>finish(true));
+    setPage(0);
   }
   window.setTimeout(()=>startSetup(),2200);
   // Android back-button navigation: return to More from feature detail screens.

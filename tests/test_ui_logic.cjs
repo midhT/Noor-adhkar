@@ -94,8 +94,9 @@ let passed = 0; const ok = (c, m) => { assert.ok(c, m); passed++; console.log(' 
   ok(!entry.button && !entry.text, 'no separate "Edit setup preferences" entry');
   await page.waitForTimeout(2400);
   ok(await page.locator('.v404-onboarding').count() === 1, 'onboarding shows on first launch');
-  await page.evaluate(() => { document.getElementById('setupName').value = 'Test'; document.getElementById('setupTradition').value = 'shafii'; });
+  await page.evaluate(() => { document.getElementById('setupName').value = 'Test'; document.getElementById('setupTradition').value = 'shafii'; document.getElementById('setupTradition').dispatchEvent(new Event('change')); });
   await page.evaluate(() => { window.__notifAsked = false; if (window.Notification) { const o = Notification.requestPermission; Notification.requestPermission = (...a) => { window.__notifAsked = true; return o.apply(Notification, a); }; } });
+  for (let i = 0; i < 5; i++) { await page.click('#setupFinish'); await page.waitForTimeout(80); }
   await page.click('#setupFinish'); await page.waitForTimeout(300);
   ok(await page.locator('.v404-onboarding').count() === 0, 'onboarding closes after finishing');
   ok(!(await page.evaluate(() => window.__notifAsked)), 'finishing onboarding does not request notification permission');

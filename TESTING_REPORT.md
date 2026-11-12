@@ -1,18 +1,26 @@
-# Naseem V4.0.8 RC3 — verification record
+# Naseem 4.1.0 — onboarding, UI and Quran integration verification
 
-## Re-run in the working environment (12 Nov 2026)
-- JavaScript syntax check across `www/*.js`, `scripts/*.mjs`, `tests/*.js` and `tests/*.mjs`: passed.
-- Source checks passed: new tools (16 assertions), V4.0.4 source integration, V4.0.7 scope, Android patch, Adhkar core, custom Adhkar, custom Widget Studio composition, signing, Hadith, Quran Reader and release configuration.
-- Salah engine: 9,840 comparisons; worst difference 0.55 minutes against its reference set.
-- Python test files compile successfully.
-- Custom Widget source checks confirm content block selection (Prayer/Tasbeeh/Hijri/personal reminder), layout density, tap action, persisted configuration bridge, native provider, widget metadata and preview asset.
-- Android patch integration test confirms the new Custom Widget provider, layout, metadata and preview are copied into a generated Android project and declared in the manifest.
+## Included in this source package
+- Six-page first-launch onboarding with working tradition, city search, GPS request, theme selection, back/continue navigation and completion persistence.
+- Seven main destinations: Home, Dhikr, Salah, Quran, More, Zakat and Settings.
+- Dedicated Quran reader with Surah/Juz/Page/Bookmarks navigation, reading progress, bookmarks, Arabic text sizing, translation selection, online recitation and optional offline text storage.
+- Compact bottom navigation and adjusted page padding for the seven-tab layout.
+- Existing Salah, Adhkar, prayer calculation, widget, startup animation, update checker and app identity source retained.
+- Public app version remains 4.1.0. Android patch script calculates internal versionCode 40101 (previous baseline 40100) while keeping versionName 4.1.0.
+- Android signing material is not included. Release workflow must use the existing protected signing secrets and same keystore/certificate.
 
-## Not verified in this environment
-- `npm install` exceeded the available execution window. `npm run build` and the bundled web app build could not be run here.
-- Playwright UI test execution was attempted but Chromium navigation to the local test server was blocked by the execution environment. The UI suite is configured in GitHub-hosted Linux CI.
-- Android Gradle compilation, APK signing, installation and physical-device QA have not been performed.
-- Public repository publication has not been performed.
-- The complete Quran text downloader is source-checked only; test interrupted download recovery, storage limits and a complete 114-Surah download on Android.
+## Checks run in this environment (12 Nov 2026)
+- JavaScript syntax checks across www, scripts and test JS files: passed.
+- Source integration, new tools, V4.0.7 scope, Android patch, Adhkar core, custom routines, Custom Widget, signing, Hadith, Quran reader, release configuration and public update checker tests: passed.
+- Seven-tab navigation and Quran destination contract test: passed.
+- V4.1.0 static source test, including six onboarding pages and setup controls: passed.
+- Salah engine: 9,840 comparisons; worst difference 0.55 minutes; no failures.
 
-These checks are not release approval. See `RELEASE-BLOCKERS.md`.
+## Not verified here
+- Full `tests/run.sh` is blocked at the native bundle test because `esbuild` is not installed. `npm install` exceeded the environment execution window.
+- Playwright browser tests could not run because Chromium is not installed.
+- Android Gradle build, signed APK generation, signature comparison against the installed app, device installation and physical UI testing have not been performed.
+- Full offline Quran download recovery, storage limits and complete 114-Surah download remain device QA items.
+
+This package is a source candidate, not a signed APK or release approval. GitHub Actions must pass before installation. Preserve the existing signing key and all four NASEEM signing secrets.
+- Added a manual `Build signed Naseem 4.1.0 candidate (no public release)` workflow. It uses the existing four signing secrets, builds and verifies a signed APK, records its certificate fingerprint and uploads an Actions artifact without creating a public GitHub release or changing the public update feed.
