@@ -15,6 +15,7 @@ node tests/test_signing.mjs
 node tests/test_hadith_library.js
 node tests/test_quran_reader.js
 node tests/test_release_config.mjs
+node tests/test_public_updates.cjs
 rm -rf tests/.build && mkdir -p tests/.build && cp -r www tests/.build/wwwtest
 S="$ROOT/tests/stubs"
 ESB=""
