@@ -26,6 +26,7 @@ $ESB www/native.js --bundle --platform=browser --format=iife --outfile=tests/.bu
   --alias:@capacitor/core="$S/core.js" --alias:@capacitor/app="$S/app.js" --alias:@capacitor/haptics="$S/haptics.js" --alias:@capacitor/status-bar="$S/statusbar.js" \
   --alias:@capacitor/local-notifications="$S/ln.js" --alias:@capacitor/filesystem="$S/fs.js" --alias:@capacitor/share="$S/share.js" --log-level=warning
 python3 tests/test_v404_static.py
+python3 tests/test_navigation_contract.py
 python3 tests/test_m2_ui.py
 python3 tests/test_scheduling.py
 python3 tests/test_motion.py

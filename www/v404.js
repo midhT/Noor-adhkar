@@ -82,7 +82,7 @@
     if(!first){$('hijriGrid').textContent='Islamic calendar data is unavailable on this device.';return;}
     const length=hijriMonthLength(viewYear,viewMonth),last=new Date(first);last.setDate(last.getDate()+length-1);
     const names=hijriParts(first);
-    $('hijriMonthTitle').textContent=`${hijriMonthName(viewMonth)} ${viewYear} AH`; $('hijriMonthInput').value=String(viewMonth);
+    $('hijriMonthTitle').textContent=`${hijriMonthName(viewMonth)} ${viewYear} AH`; const hijriMonthInput=$('hijriMonthInput'); if(hijriMonthInput) hijriMonthInput.value=String(viewMonth);
     $('hijriGregorianTitle').textContent=`${first.toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${last.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
     const labels=['Su','Mo','Tu','We','Th','Fr','Sa'],todayKey=dayStart(new Date()).getTime();
     let cells='';for(let day=1;day<=length;day++){const d=new Date(first);d.setDate(d.getDate()+day-1);const isToday=dayStart(d).getTime()===todayKey;cells+=`<span class="v404-day ${isToday?'today':''}" ${isToday?'aria-current="date"':''} title="${esc(d.toDateString())}">${day}</span>`;}
@@ -93,9 +93,18 @@
   }
   $('hijriPrev').addEventListener('click',()=>shiftHijriMonth(-1));
   $('hijriNext').addEventListener('click',()=>shiftHijriMonth(1));
-  $('hijriDateInput').value=new Date().toLocaleDateString('en-CA');
-  $('hijriDateInput').addEventListener('change',e=>{if(!e.target.value)return;const d=new Date(e.target.value+'T12:00:00');$('hijriConversion').textContent=withAH(hijriParts(d).label);});
-  $('hijriDateInput').dispatchEvent(new Event('change'));const initialHijri=hijriNumeric(new Date());$('hijriDayInput').value=initialHijri.day;$('hijriMonthInput').value=initialHijri.month;$('hijriYearInput').value=initialHijri.year;$('hijriReverseBtn').addEventListener('click',()=>{const day=Number($('hijriDayInput').value),month=Number($('hijriMonthInput').value),year=Number($('hijriYearInput').value);if(day<1||day>30||month<1||month>12||year<1300||year>1600){$('hijriReverseResult').textContent='Enter a valid Hijri date.';return;}const found=hijriToGregorian(year,month,day);if(!found&&day===30&&hijriToGregorian(year,month,29)){$('hijriReverseResult').textContent='This Hijri month has only 29 days.';return;}$('hijriReverseResult').textContent=found?found.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'Enter a valid Hijri date (years 1300–1600).';}); renderHijri();
+  const hijriDateInput=$('hijriDateInput'),hijriDayInput=$('hijriDayInput'),hijriYearInput=$('hijriYearInput'),hijriReverseBtn=$('hijriReverseBtn');
+  if(hijriDateInput){
+    hijriDateInput.value=new Date().toLocaleDateString('en-CA');
+    hijriDateInput.addEventListener('change',e=>{if(!e.target.value)return;const d=new Date(e.target.value+'T12:00:00');const output=$('hijriConversion');if(output)output.textContent=withAH(hijriParts(d).label);});
+    hijriDateInput.dispatchEvent(new Event('change'));
+  }
+  const initialHijri=hijriNumeric(new Date());
+  if(hijriDayInput)hijriDayInput.value=initialHijri.day;
+  const initialHijriMonth=$('hijriMonthInput');if(initialHijriMonth)initialHijriMonth.value=initialHijri.month;
+  if(hijriYearInput)hijriYearInput.value=initialHijri.year;
+  if(hijriReverseBtn)hijriReverseBtn.addEventListener('click',()=>{const result=$('hijriReverseResult');const day=Number(hijriDayInput?.value),month=Number(initialHijriMonth?.value),year=Number(hijriYearInput?.value);if(day<1||day>30||month<1||month>12||year<1300||year>1600){if(result)result.textContent='Enter a valid Hijri date.';return;}const found=hijriToGregorian(year,month,day);if(!found&&day===30&&hijriToGregorian(year,month,29)){if(result)result.textContent='This Hijri month has only 29 days.';return;}if(result)result.textContent=found?found.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'Enter a valid Hijri date (years 1300–1600).';});
+  renderHijri();
   $('hijriCheckOnline').addEventListener('click',()=>refreshHijriReference(true));
   $('hijriGrid').closest('.v404-card').addEventListener('click',e=>{const b=e.target.closest('[data-hijri-adjust]');if(!b)return;hijriCorrection=Number(b.dataset.hijriAdjust);data.hijriCorrection=hijriCorrection;save();renderHijri();updateHomeCalendar();nextOccasions=buildNextOccasions();renderOccasions();});
   refreshHijriReference(false);window.addEventListener('online',()=>refreshHijriReference(false));
@@ -198,6 +207,14 @@
     </div>
     <div class="v404-card v404-widget-card"><div class="v404-row"><span class="eyebrow">HIJRI DATE WIDGET</span><span class="v404-live-dot">DAILY SYNC</span></div><div class="v404-widget-preview hijri"><strong>NASEEM · ISLAMIC CALENDAR</strong><b id="studioHijriDate">Loading Islamic date…</b><small>Complete Hijri date · updated when Naseem opens</small></div><p class="v404-note">Shows the Islamic day, month and year on your Android home screen. Calendar dates can differ with local moon sighting.</p></div>
     <div class="v404-card"><span class="eyebrow">WIDGET APPEARANCE</span><p class="v404-note">Configure the appearance of your installed Naseem widgets. Add or resize widget types from your Android home-screen picker.</p><label class="v404-label" for="studioWidgetTheme">Widget theme</label><select class="v404-input" id="studioWidgetTheme"><option value="system">Follow Naseem theme</option><option value="dark">Dark</option><option value="light">Light</option></select><label class="v404-label" for="studioWidgetAccent">Accent</label><select class="v404-input" id="studioWidgetAccent"><option value="emerald">Emerald</option><option value="silver">Silver</option><option value="blue">Blue</option></select><label class="v404-label" for="studioWidgetDensity">Spacing</label><select class="v404-input" id="studioWidgetDensity"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select><button type="button" class="v404-primary" id="studioWidgetSave">Save widget appearance</button><p class="v404-note" id="studioWidgetAppearanceStatus" aria-live="polite"></p></div>
+    <div class="v404-card"><span class="eyebrow">CUSTOM WIDGET STUDIO</span><p class="v404-note">Choose the information shown in your custom widget, then set its layout and tap action.</p>
+      <div class="v404-widget-options"><label class="v404-label"><input class="studio-widget-block" type="checkbox" value="prayer"> Prayer times</label><label class="v404-label"><input class="studio-widget-block" type="checkbox" value="tasbeeh"> Tasbeeh counter</label><label class="v404-label"><input class="studio-widget-block" type="checkbox" value="hijri"> Hijri date</label><label class="v404-label"><input class="studio-widget-block" type="checkbox" value="dua"> Personal reminder</label></div>
+      <label class="v404-label" for="studioWidgetLayout">Widget layout</label><select class="v404-input" id="studioWidgetLayout"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select>
+      <label class="v404-label" for="studioWidgetAction">Tap action</label><select class="v404-input" id="studioWidgetAction"><option value="open">Open Naseem</option><option value="count">Increment Tasbeeh</option></select>
+      <label class="v404-label" for="studioWidgetDua">Personal reminder text</label><textarea class="v404-input" id="studioWidgetDua" rows="2" maxlength="180" placeholder="Write a short reminder"></textarea>
+      <div class="v404-widget-preview custom" id="studioCustomPreview"><strong>NASEEM · MY WIDGET</strong><p id="studioCustomPreviewBlocks" aria-live="polite">Prayer times · Tasbeeh counter · Hijri date</p></div>
+      <button type="button" class="v404-primary" id="studioCustomSave">Save custom widget</button><p class="v404-note" id="studioCustomStatus" aria-live="polite"></p>
+    </div>
     <div class="v404-card"><p id="studioWidgetStatus" class="v404-note">Widget data syncs automatically in the installed Android app. Add Prayer Times, Tasbeeh or Hijri Date from your Android home-screen widget picker.</p></div>`;
   screen('widgetStudioScreen','Widget Studio','YOUR HOME SCREEN',widgetBody);
   const WIDGET_STYLE_KEY='naseem-widget-style-v1';
@@ -206,14 +223,24 @@
   ['Theme','Accent','Density'].forEach(k=>{const el=$('studioWidget'+k);if(el)el.value=widgetStyle[k.toLowerCase()];});
   const CUSTOM_WIDGET_KEY='naseem-custom-widget-v1';
   let customWidget={blocks:['prayer','tasbeeh','hijri'],layout:'comfortable',action:'open',dua:''};
-  try{customWidget={...customWidget,...JSON.parse(localStorage.getItem(CUSTOM_WIDGET_KEY)||'{}')};}catch(_){}
+  try{const saved=JSON.parse(localStorage.getItem(CUSTOM_WIDGET_KEY)||'null');if(saved&&typeof saved==='object')customWidget={...customWidget,...saved};}catch(_){}
+  if(!Array.isArray(customWidget.blocks))customWidget.blocks=['prayer','tasbeeh','hijri'];
+  customWidget.blocks=customWidget.blocks.filter(k=>['prayer','tasbeeh','hijri','dua'].includes(k));
+  if(!['comfortable','compact'].includes(customWidget.layout))customWidget.layout='comfortable';
+  if(!['open','count'].includes(customWidget.action))customWidget.action='open';
+  customWidget.dua=String(customWidget.dua||'').slice(0,180);
+  const customLayout=$('studioWidgetLayout'),customAction=$('studioWidgetAction'),customDua=$('studioWidgetDua'),customPreviewBlocks=$('studioCustomPreviewBlocks'),customPreview=$('studioCustomPreview'),customStatus=$('studioCustomStatus'),customSave=$('studioCustomSave');
   document.querySelectorAll('.studio-widget-block').forEach(el=>{el.checked=customWidget.blocks.includes(el.value);});
-  $('studioWidgetLayout').value=customWidget.layout;$('studioWidgetAction').value=customWidget.action;$('studioWidgetDua').value=customWidget.dua||'';
-  const renderCustomWidgetPreview=()=>{customWidget.blocks=[...document.querySelectorAll('.studio-widget-block:checked')].map(el=>el.value);customWidget.layout=$('studioWidgetLayout').value;customWidget.action=$('studioWidgetAction').value;customWidget.dua=$('studioWidgetDua').value.trim();const labels={prayer:'Prayer times',tasbeeh:'Tasbeeh counter',hijri:'Hijri date',dua:'Personal reminder'};const parts=customWidget.blocks.map(k=>labels[k]);if(!parts.length)parts.push('Choose at least one content block');$('studioCustomPreviewBlocks').textContent=parts.join(' · ')+(customWidget.layout==='compact'?' · Compact':'');$('studioCustomPreview').style.padding=customWidget.layout==='compact'?'10px':'18px';};
+  if(customLayout)customLayout.value=customWidget.layout;if(customAction)customAction.value=customWidget.action;if(customDua)customDua.value=customWidget.dua;
+  const renderCustomWidgetPreview=()=>{
+    customWidget.blocks=[...document.querySelectorAll('.studio-widget-block:checked')].map(el=>el.value);
+    if(customLayout)customWidget.layout=customLayout.value;if(customAction)customWidget.action=customAction.value;if(customDua)customWidget.dua=customDua.value.trim().slice(0,180);
+    const labels={prayer:'Prayer times',tasbeeh:'Tasbeeh counter',hijri:'Hijri date',dua:'Personal reminder'};const parts=customWidget.blocks.map(k=>labels[k]);if(!parts.length)parts.push('Choose at least one content block');if(customWidget.blocks.includes('dua')&&customWidget.dua)parts.push(customWidget.dua);
+    if(customPreviewBlocks)customPreviewBlocks.textContent=parts.join(' · ')+(customWidget.layout==='compact'?' · Compact':'');if(customPreview)customPreview.style.padding=customWidget.layout==='compact'?'10px':'18px';
+  };
   document.querySelectorAll('.studio-widget-block').forEach(el=>el.addEventListener('change',renderCustomWidgetPreview));
-  ['studioWidgetLayout','studioWidgetAction','studioWidgetDua'].forEach(id=>$(id).addEventListener('input',renderCustomWidgetPreview));
-  ['studioWidgetLayout','studioWidgetAction'].forEach(id=>$(id).addEventListener('change',renderCustomWidgetPreview));
-  $('studioCustomSave').addEventListener('click',async()=>{renderCustomWidgetPreview();if(!customWidget.blocks.length){$('studioCustomStatus').textContent='Select at least one content block.';return;}if(customWidget.blocks.includes('dua')&&!customWidget.dua){$('studioCustomStatus').textContent='Enter the text for your personal reminder.';return;}try{localStorage.setItem(CUSTOM_WIDGET_KEY,JSON.stringify(customWidget));const ok=await window.NoorNative?.widgets?.setCustomWidget?.({...customWidget,blocks:customWidget.blocks.join(',')});$('studioCustomStatus').textContent=ok?'Your custom widget is saved and synced. Add “Naseem · Custom widget” from the Android widget picker.':'Your design is saved on this device. Install the updated Android app to add it to your home screen.';}catch(_){$('studioCustomStatus').textContent='Could not save the custom widget.';}});
+  [customLayout,customAction,customDua].filter(Boolean).forEach(el=>{el.addEventListener('input',renderCustomWidgetPreview);el.addEventListener('change',renderCustomWidgetPreview);});
+  if(customSave)customSave.addEventListener('click',async()=>{renderCustomWidgetPreview();if(!customWidget.blocks.length){if(customStatus)customStatus.textContent='Select at least one content block.';return;}if(customWidget.blocks.includes('dua')&&!customWidget.dua){if(customStatus)customStatus.textContent='Enter the text for your personal reminder.';return;}try{localStorage.setItem(CUSTOM_WIDGET_KEY,JSON.stringify(customWidget));const ok=await window.NoorNative?.widgets?.setCustomWidget?.({...customWidget,blocks:customWidget.blocks.join(',')});if(customStatus)customStatus.textContent=ok?'Your custom widget is saved and synced. Add “Naseem · Custom widget” from the Android widget picker.':'Your design is saved on this device. Install the updated Android app to add it to your home screen.';}catch(_){if(customStatus)customStatus.textContent='Could not save the custom widget.';}});
   renderCustomWidgetPreview();
   const paintWidgetPreview=()=>{
     const light=widgetStyle.theme==='light'||(widgetStyle.theme==='system'&&document.body.classList.contains('light'));
@@ -325,9 +352,10 @@
     overlay.innerHTML=`<div class="v404-onboard-panel"><span class="eyebrow">WELCOME TO NASEEM</span><div class="v404-onboard-mark">ن</div><h1>Make space for remembrance.</h1><p>A few details help personalise your daily experience. You can change them later.</p><label class="v404-label" for="setupName">Your name (optional)</label><input id="setupName" class="v404-input" type="text" maxlength="40" autocomplete="name" placeholder="What should Naseem call you?"><label class="v404-label" for="setupTradition">Learning tradition</label><select id="setupTradition" class="v404-input"><option value="">Choose later</option>${traditions.map(t=>`<option value="${t[0]}">${esc(t[1])}</option>`).join('')}</select><label class="v404-label" for="setupCity">Prayer city</label><select id="setupCity" class="v404-input"></select><button type="button" id="setupGps" class="v404-secondary">Use device location</button><label class="v404-label" for="setupTheme">Appearance</label><select id="setupTheme" class="v404-input"><option value="system">Use device theme</option><option value="light">Light</option><option value="dark">Dark</option></select><div class="v404-onboard-actions"><button id="setupSkip" class="v404-secondary">Skip for now</button><button id="setupFinish" class="v404-primary">Finish setup</button></div><small>Your preferences stay on this device. Location is used for local prayer timings. Naseem does not require an account. Notifications help deliver Adhan and Jamaat reminders. Android will ask permission after you finish setup.</small></div>`;
     document.body.appendChild(overlay);
     let profile={name:'',photo:''};try{profile=Object.assign(profile,JSON.parse(localStorage.getItem('noorProfileV1')||'{}'));}catch(_){}
-    overlay.querySelector('#setupName').value=String(profile.name||'').slice(0,40);
-    overlay.querySelector('#setupTradition').value=data.tradition||'';
-    overlay.querySelector('#setupTheme').value=window.NaseemTheme?.get?.()||'system';
+    const setupName=overlay.querySelector('#setupName'),setupTradition=overlay.querySelector('#setupTradition'),setupTheme=overlay.querySelector('#setupTheme');
+    if(setupName)setupName.value=String(profile.name||'').slice(0,40);
+    if(setupTradition)setupTradition.value=data.tradition||'';
+    if(setupTheme)setupTheme.value=window.NaseemTheme?.get?.()||'system';
     const citySelect=overlay.querySelector('#setupCity'),salah=window.NoorSalah;
     citySelect.innerHTML='<option value="">Keep current location</option>'+(salah?.CITIES||[]).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
     const finish=async(skipped=false)=>{
