@@ -205,6 +205,8 @@
   try{widgetStyle={...widgetStyle,...JSON.parse(localStorage.getItem(WIDGET_STYLE_KEY)||'{}')};}catch(_){}
   ['Theme','Accent','Density'].forEach(k=>{const el=$('studioWidget'+k);if(el)el.value=widgetStyle[k.toLowerCase()];});
   const CUSTOM_WIDGET_KEY='naseem-custom-widget-v1';
+/* CUSTOM_WIDGET_EDITOR_GUARD */
+  if ($('studioWidgetLayout') && $('studioWidgetAction') && $('studioWidgetDua') && $('studioCustomPreviewBlocks') && $('studioCustomPreview') && $('studioCustomSave') && $('studioCustomStatus') && document.querySelector('.studio-widget-block')) {
   let customWidget={blocks:['prayer','tasbeeh','hijri'],layout:'comfortable',action:'open',dua:''};
   try{customWidget={...customWidget,...JSON.parse(localStorage.getItem(CUSTOM_WIDGET_KEY)||'{}')};}catch(_){}
   document.querySelectorAll('.studio-widget-block').forEach(el=>{el.checked=customWidget.blocks.includes(el.value);});
@@ -215,6 +217,7 @@
   ['studioWidgetLayout','studioWidgetAction'].forEach(id=>$(id).addEventListener('change',renderCustomWidgetPreview));
   $('studioCustomSave').addEventListener('click',async()=>{renderCustomWidgetPreview();if(!customWidget.blocks.length){$('studioCustomStatus').textContent='Select at least one content block.';return;}if(customWidget.blocks.includes('dua')&&!customWidget.dua){$('studioCustomStatus').textContent='Enter the text for your personal reminder.';return;}try{localStorage.setItem(CUSTOM_WIDGET_KEY,JSON.stringify(customWidget));const ok=await window.NoorNative?.widgets?.setCustomWidget?.({...customWidget,blocks:customWidget.blocks.join(',')});$('studioCustomStatus').textContent=ok?'Your custom widget is saved and synced. Add “Naseem · Custom widget” from the Android widget picker.':'Your design is saved on this device. Install the updated Android app to add it to your home screen.';}catch(_){$('studioCustomStatus').textContent='Could not save the custom widget.';}});
   renderCustomWidgetPreview();
+  }
   const paintWidgetPreview=()=>{
     const light=widgetStyle.theme==='light'||(widgetStyle.theme==='system'&&document.body.classList.contains('light'));
     const accents={emerald:light?'#267b5b':'#8fd2aa',silver:light?'#53616a':'#dce3e8',blue:light?'#315f9c':'#91baff'};
