@@ -167,7 +167,7 @@ body.light .v404-onboarding{background:rgba(3,7,6,.96)}body.light .v404-onboard-
 
 /* Naseem 4.1.0 UI refinement + dedicated Quran destination */
 main{padding-bottom:calc(154px + env(safe-area-inset-bottom))}
-.bottom-nav{bottom:calc(8px + env(safe-area-inset-bottom));left:10px;right:10px;width:auto;max-width:540px;min-height:64px;padding:5px;gap:2px;border-radius:22px;display:flex;align-items:stretch;justify-content:space-between}
+.bottom-nav{bottom:calc(8px + env(safe-area-inset-bottom));left:10px;right:10px;width:auto;max-width:540px;min-height:64px;padding:5px;gap:2px;border-radius:22px;display:flex;align-items:stretch;justify-content:space-between;transform:none}
 .nav-item{flex:1 1 0;min-width:0;min-height:54px;border-radius:15px;gap:3px;padding:5px 1px}
 .nav-item.active{flex:1.35 1 0}
 .nav-item small{font-size:9px;white-space:nowrap}
