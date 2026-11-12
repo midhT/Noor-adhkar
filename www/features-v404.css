@@ -145,3 +145,5 @@ button:focus:not(:focus-visible){outline:none}
 .hijri-adjust-row{flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:7px}.hijri-adjust-row .v404-note{flex:1 1 100%}
 
 .custom-routine-tile{display:grid;gap:7px;min-width:0}.custom-routine-edit{justify-self:start;min-height:34px;padding:7px 14px}.cr-item{display:grid;gap:4px}.cr-item textarea.v404-input{min-height:74px;resize:vertical}.cr-item .rm-actions{margin-top:4px}.cr-item .rm-actions button{min-width:42px}
+
+.naseem-update-banner{flex-wrap:wrap}.naseem-update-banner button{min-height:36px}.naseem-update-banner button:nth-last-child(1){background:transparent;color:var(--muted);font-size:18px;padding:5px}.naseem-update-banner button:nth-last-child(2){background:var(--panel-2,var(--panel));color:var(--text);border:1px solid var(--line)}#naseemUpdateStatus[data-state="error"]{color:var(--danger,#c45b5b)}

@@ -12,3 +12,7 @@ assert.ok(!existsSync('signing/naseem.keystore'), 'legacy embedded keystore remo
 assert.match(readFileSync('.gitignore', 'utf8'), /\*\.keystore/);
 assert.match(readFileSync('www/sw.js', 'utf8'), /noor-adhkar-cache-v408/);
 console.log('V4.0.8 release configuration checks passed.');
+
+assert.match(release, /app-release\.apk\.sha256/);
+assert.match(release, /APK_SHA256/);
+assert.match(release, /checksumUrl/);

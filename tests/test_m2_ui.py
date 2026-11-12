@@ -10,6 +10,8 @@ with sync_playwright() as p:
     def ctx_new(**kw):
         return b.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=1, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata', accept_downloads=True, **kw)
     ctx = ctx_new(geolocation={'latitude': 28.6139, 'longitude': 77.2090}, permissions=['geolocation'])
+    # This suite validates navigation after setup; first-launch onboarding is tested separately.
+    ctx.add_init_script("localStorage.setItem('naseem-onboarding-complete-v1','1')")
     pg = ctx.new_page(); errs = []; dialogs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     ACCEPT = [True]
@@ -19,7 +21,8 @@ with sync_playwright() as p:
     ev = pg.evaluate
     # ---------- navigation + scrolling ----------
     labels = ev("[...document.querySelectorAll('.nav-item small')].map(e=>e.textContent)")
-    ok('six tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'Explore', 'Zakat', 'Settings'], str(labels))
+    ok('onboarding does not cover returning-user navigation', not ev("!!document.querySelector('.v404-onboarding')"))
+    ok('six tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'More', 'Zakat', 'Settings'], str(labels))
     for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen']:
         pg.click(f'.nav-item[data-screen="{sid}"]'); pg.wait_for_timeout(450)
         ev("window.scrollTo(0,0)"); pg.wait_for_timeout(100)

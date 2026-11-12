@@ -64,6 +64,13 @@ jobs:
       - name: Build signed APK
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleRelease
+      - name: Generate APK SHA-256 checksum
+        id: checksum
+        shell: bash
+        run: |
+          (cd android/app/build/outputs/apk/release && sha256sum app-release.apk > app-release.apk.sha256)
+          cat android/app/build/outputs/apk/release/app-release.apk.sha256
+          echo "apk_sha256=$(cut -d' ' -f1 android/app/build/outputs/apk/release/app-release.apk.sha256)" >> "$GITHUB_OUTPUT"
       - name: Publish APK to public Naseem repository
         uses: softprops/action-gh-release@v2
         with:
@@ -72,7 +79,9 @@ jobs:
           tag_name: v${{ steps.meta.outputs.version }}
           name: Naseem v${{ steps.meta.outputs.version }}
           generate_release_notes: true
-          files: android/app/build/outputs/apk/release/app-release.apk
+          files: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/release/app-release.apk.sha256
       - name: Check out public content repository
         uses: actions/checkout@v4
         with:
@@ -82,6 +91,7 @@ jobs:
       - name: Publish versioned public feeds and release metadata
         env:
           VERSION: ${{ steps.meta.outputs.version }}
+          APK_SHA256: ${{ steps.checksum.outputs.apk_sha256 }}
           GH_TOKEN: ${{ secrets.NASEEM_PUBLIC_REPO_TOKEN }}
         run: |
           mkdir -p public-feed/content
@@ -90,7 +100,7 @@ jobs:
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const version=process.env.VERSION;
-          const release={version,releaseUrl:`https://github.com/midhT/Naseem-public/releases/tag/v${version}`,downloadUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk`,notesSummary:'Naseem public release. See release notes for verified changes and known limitations.',publishedAt:new Date().toISOString()};
+          const release={version,releaseUrl:`https://github.com/midhT/Naseem-public/releases/tag/v${version}`,downloadUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk`,checksumUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk.sha256`,sha256:process.env.APK_SHA256,notesSummary:'Naseem public release. See release notes for verified changes and known limitations.',publishedAt:new Date().toISOString()};
           fs.writeFileSync('public-feed/release.json',JSON.stringify(release,null,2)+'\n');
           NODE
           cd public-feed
