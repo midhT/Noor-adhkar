@@ -20,4 +20,4 @@ bash tests/run.sh
 The Android project is generated in CI with `npx cap add android`, then native widgets and permissions are copied from `android-native/` by `scripts/patch-android.mjs`. See `RELEASE-SETUP.md` for protected release signing and public-repository publication.
 
 ## Release status
-This V4.0.8 working archive is a release candidate, not a declaration of Play Store readiness. Read `RELEASE-BLOCKERS.md` before publishing. Static checks do not replace Chromium tests or testing on a physical Android device.
+This V4.0.9 working archive is a release candidate, not a declaration of Play Store readiness. Read `RELEASE-BLOCKERS.md` before publishing. Static checks do not replace Chromium tests or testing on a physical Android device.

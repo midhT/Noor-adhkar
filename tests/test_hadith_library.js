@@ -13,6 +13,6 @@ for (const token of [
   'AbortController', 'encodeURIComponent', 'textContent'
 ]) if (!js.includes(token)) throw new Error(`Missing Hadith integration safeguard/endpoint: ${token}`);
 if (!html.includes('<script src="hadith-library.js"></script>')) throw new Error('Hadith module is not loaded');
-if (!js.includes('not a complete digital edition') || !js.includes('not bundled')) throw new Error('Source scope and online-only disclaimer missing');
+if (!js.includes('not a complete digital edition') || !js.includes('not bundled') || !js.includes('Settings → About Naseem → Credits &amp; Acknowledgements')) throw new Error('Source scope and online-only disclaimer missing');
 if (!css.includes('.hadith-result')) throw new Error('Hadith UI styles missing');
 console.log('Hadith Library integration static checks passed.');

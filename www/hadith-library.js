@@ -21,7 +21,7 @@
     </div>
     <div class="v404-list" id="hadithResults"></div>
     <div class="v404-card" id="hadithDetail" hidden></div>
-    <div class="v404-card"><p class="v404-note">Source: HadeethEnc.com. This is a curated multilingual hadith encyclopedia, not a complete digital edition of Sahih al-Bukhari or Sahih Muslim. References and grading are shown only when supplied by the source. Translations may differ between editions. Content is fetched online; it is not bundled or represented as scholar-reviewed by Naseem.</p><a href="https://hadeethenc.com" target="_blank" rel="noopener">Visit HadeethEnc ↗</a></div>`;
+    <div class="v404-card"><p class="v404-note">This is a curated multilingual hadith encyclopedia, not a complete digital edition of Sahih al-Bukhari or Sahih Muslim. References and grading are shown only when supplied by the provider. Translations may differ between editions. Content is fetched online, is not bundled, and is not represented as scholar-reviewed by Naseem. Provider acknowledgements are listed in Settings → About Naseem → Credits &amp; Acknowledgements.</p></div>`;
   document.querySelector('main')?.appendChild(screen);
   const status = message => { const el=$('hadithStatus'); if(el)el.textContent=message; };
   const request = async (path) => {

@@ -9,7 +9,7 @@ intro = (ROOT / 'www/intro.js').read_text()
 pkg = json.loads((ROOT / 'package.json').read_text())
 ids = re.findall(r'id="([^"]+)"', html)
 assert len(ids) == len(set(ids)), 'Duplicate HTML ids'
-assert pkg['version'] == '4.0.8'
+assert pkg['version'] == '4.0.9'
 assert 'data-open-v404="hijri"' in html and "glance:'glanceScreen'" in js
 assert 'widgetStudioScreen' in js and 'glanceScreen' in js and 'traditionScreen' in js
 assert 'naseem-onboarding-complete-v1' in js and 'naseem:open-onboarding' not in js
@@ -23,7 +23,22 @@ assert 'setHijriDate' in (ROOT / 'www/native.js').read_text()
 assert 'HijriWidgetProvider' in (ROOT / 'scripts/patch-android.mjs').read_text()
 assert 'noor-adhkar-cache-v4081' in (ROOT / 'www/sw.js').read_text()
 assert 'naseem-onboarding-complete-v1' in settings
-print('V4.0.8 scoped feature static checks: all passed')
+assert 'accentPalette' in html and 'accentCustom' in html
+assert 'Credits &amp; Acknowledgements' in html
+assert 'Omar Hisham Al Arabi' in html
+assert 'Marmaduke Pickthall' in html
+assert 'AlQuran Cloud' in html and 'HadeethEnc.com' in html
+quran = (ROOT / 'www/quran-reader.js').read_text()
+hadith = (ROOT / 'www/hadith-library.js').read_text()
+for credit in ['Omar Hisham Al Arabi', 'Marmaduke Pickthall', 'GlobalQuran.com']:
+    assert credit not in quran and credit not in hadith, f'{credit} must appear only in About credits'
+assert 'data-accent="emerald"' in html and 'data-accent="silver"' in html
+assert 'data-accent="purple"' in html and 'data-accent="gold"' in html
+assert 'data-accent="forest"' in html and 'data-accent="blue"' in html
+assert 'quran-playing' in (ROOT / 'www/features-v404.css').read_text()
+assert "addEventListener('change',()=>{const value=overlay.querySelector('#setupTradition').value" in js
+assert "addEventListener('change',()=>{window.NaseemTheme?.set?.(overlay.querySelector('#setupTheme').value)" in js
+print('V4.0.9 scoped feature static checks: all passed')
 
 assert 'refreshHijriReference' in js
 assert 'checkOnline' in (ROOT / 'www/salah-settings.js').read_text()

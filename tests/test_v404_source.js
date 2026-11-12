@@ -8,7 +8,7 @@ const html = read('www/index.html');
 const js = read('www/v404.js');
 const workflow = read('.github/workflows/build-apk.yml');
 const pkg = JSON.parse(read('package.json'));
-assert.equal(pkg.version, '4.0.8');
+assert.equal(pkg.version, '4.0.9');
 for (const key of ['hijri','salah-learning','widgets','occasions','profiles']) assert.match(html, new RegExp(`data-open-v404="${key}"`), `${key} More card`);
 for (const key of ['hijriScreen','duaScreen','salahLearningScreen','widgetStudioScreen','occasionsScreen','traditionScreen','glanceScreen']) assert.ok(js.includes(`'${key}'`), `${key} screen route`);
 assert.match(js, /GLANCE_FEED_URL/);
@@ -47,4 +47,4 @@ assert.match(read('android-native/java/MainActivity.java'), /getRegistrations\(\
 assert.match(read('android-native/java/MainActivity.java'), /noor-adhkar-cache-/);
 assert.doesNotMatch(read('android-native/java/MainActivity.java'), /localStorage\.clear/);
 assert.match(read('www/app.js'), /!nativeWebView/);
-console.log('V4.0.8 source integration: all assertions passed.');
+console.log('V4.0.9 source integration: all assertions passed.');

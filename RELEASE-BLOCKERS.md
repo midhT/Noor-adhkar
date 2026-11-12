@@ -1,7 +1,7 @@
-# Naseem 4.0.8 release audit — RC3
+# Naseem 4.0.9 release audit — RC3
 
 ## Implemented in source (not all device-verified)
-- V4.0.7 cumulative feature work is integrated into the V4.0.6 source baseline; app version metadata is 4.0.8.
+- V4.0.7 cumulative feature work is integrated into the V4.0.6 source baseline; app version metadata is 4.0.9.
 - First-run onboarding is not exposed as a repeatable Settings action. Notification permission is explained/requested during setup and its status is visible in Settings.
 - Quran Reader stores reading progress, supports Surah/Juz/Ayah navigation, caches opened Surahs, and includes an explicit IndexedDB download action for complete Arabic text (114 Surahs). Translation is cached as opened. Audio remains online/on-demand; offline audio and word-by-word synchronized highlighting are not implemented.
 - Custom Adhkar routines support create/edit/delete/reorder, per-item counts, local persistence, progress and undo. They are separate from core daily routine streak credit.

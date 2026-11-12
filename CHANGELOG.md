@@ -1,5 +1,12 @@
 # Naseem Changelog
 
+## 4.0.9 — update-test candidate · 12 November 2026
+- Restored the global app accent palette in Settings → Appearance, including six presets and a custom colour; preferences remain persistent across light and dark themes.
+- Quran recitation now highlights the active Ayah, advances through subsequent Ayahs automatically, and supports pause, resume and seeking.
+- Moved contributor and recording acknowledgements into Settings → About Naseem → Credits & Acknowledgements.
+- First-run setup now fills the screen and applies name, learning tradition, prayer city and theme selections immediately; completion is still required only to close setup and request notification permission.
+
+
 ## 4.0.8 — working release candidate · 12 November 2026
 - Quran Reader saves and resumes the last Surah/Ayah, caches recently opened text for offline reading, and supports on-demand per-Ayah recitation when available.
 - First-run onboarding no longer has a Settings reopen action; Android notification permission is explained and requested only when Android reports `prompt`.

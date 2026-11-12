@@ -17,13 +17,14 @@
     <div class="v404-row"><button class="v404-secondary" id="quranPrev" type="button" disabled>Previous</button><button class="v404-secondary" id="quranNext" type="button" disabled>Next</button></div>
     <label class="v404-label" for="quranEdition">Display</label><select class="v404-input" id="quranEdition"><option value="arabic">Arabic only</option><option value="translation">Arabic + English meaning</option></select>
     <p class="v404-note" id="quranStatus" aria-live="polite">Connecting to the Quran text service…</p></div>
+    <div class="v404-card quran-player" id="quranPlayer" hidden><div class="v404-row"><strong id="quranNowPlaying">Quran recitation</strong><button type="button" class="v404-secondary" id="quranPauseResume">Pause</button></div><audio id="quranAudio" controls preload="none" aria-label="Quran recitation audio"></audio><label class="v404-label" for="quranSeek">Seek within this verse</label><input id="quranSeek" type="range" min="0" max="1000" value="0"><p class="v404-note" id="quranPlaybackStatus" aria-live="polite">Ready to play.</p></div>
     <div id="quranVerses" class="v404-list"></div>
-    <div class="v404-card"><p class="v404-note">Arabic text is supplied by AlQuran Cloud, whose contributors include GlobalQuran.com, Tanzil.net and Quran Academy. English edition: Marmaduke Pickthall. Translation is an interpretation of meaning, not a replacement for the Arabic Qur’an. Quran text can be saved to this device for offline reading using the download control. Audio is fetched on first play and is not included in the offline text download. Review provider terms and translation/audio rights before commercial distribution.</p><a href="https://alquran.cloud" target="_blank" rel="noopener noreferrer">Source: AlQuran Cloud ↗</a> · <a href="https://tanzil.net" target="_blank" rel="noopener noreferrer">Tanzil Project ↗</a></div>`;
+    <div class="v404-card"><p class="v404-note">Translation is an interpretation of meaning, not a replacement for the Arabic Qur’an. Quran text can be saved to this device for offline reading. Audio is fetched on first play and is not included in the offline text download. Provider and contributor acknowledgements are listed in Settings → About Naseem → Credits &amp; Acknowledgements.</p></div>`;
   document.querySelector('main')?.appendChild(section);
   let surahs=[],current=1,busy=false;
   const PROGRESS_KEY='naseem-quran-progress-v1', CACHE_KEY='naseem-quran-cache-v1';
   const readJSON=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key)||'null')||fallback;}catch(_){return fallback;}};
-  let progress=readJSON(PROGRESS_KEY,{surah:1,ayah:1}), cache=readJSON(CACHE_KEY,{}), recitation=new Audio(); recitation.preload='none';
+  let progress=readJSON(PROGRESS_KEY,{surah:1,ayah:1}), cache=readJSON(CACHE_KEY,{}), recitation=$('quranAudio'), audioQueue=[], audioIndex=0; recitation.preload='none';
   const DB_NAME='naseem-quran-offline-v1', DB_STORE='surahs';
   let dbPromise=null;
   function openOfflineDB(){if(!('indexedDB' in window))return Promise.reject(new Error('Offline storage is unavailable'));if(dbPromise)return dbPromise;dbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE,{keyPath:'key'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Database open failed'));});return dbPromise;}
@@ -39,7 +40,7 @@
       surahSelect.innerHTML=rows.map(x=>`<option value="${Number(x.number)}">${Number(x.number)}. ${esc(x.englishName||x.name)} · ${esc(x.name)}</option>`).join('');current=Math.max(1,Math.min(114,Number(progress.surah)||1));surahSelect.value=String(current);await loadSurah(current,Number(progress.ayah)||1);
     }catch(_){surahSelect.innerHTML='<option value="">Unavailable</option>';status('Could not load the Quran index. Check your connection and retry.');}
   }
-  async function loadSurah(number,focusAyah=1){if(busy)return;busy=true;current=Math.max(1,Math.min(114,Number(number)||1));$('quranVerses').innerHTML='';status('Loading surah…');$('quranPrev').disabled=current===1;$('quranNext').disabled=current===114;
+  async function loadSurah(number,focusAyah=1){if(busy)return;stopRecitation();busy=true;current=Math.max(1,Math.min(114,Number(number)||1));$('quranVerses').innerHTML='';status('Loading surah…');$('quranPrev').disabled=current===1;$('quranNext').disabled=current===114;
     const edition=$('quranEdition').value==='translation'?'translation':'arabic',cacheKey=`${current}:${edition}`;
     try{
       const editions=edition==='translation'?'quran-uthmani,en.pickthall':'quran-uthmani';
@@ -60,16 +61,38 @@
     }catch(_){status('This surah is not cached yet. Connect to the internet and try again.');$('quranVerses').innerHTML='<div class="v404-card">Quran text is temporarily unavailable.</div>';}
     finally{busy=false;}
   }
+  function highlightPlayingAyah(number){
+    $('quranVerses').querySelectorAll('.quran-ayah.quran-playing').forEach(el=>el.classList.remove('quran-playing'));
+    const active=$(`quran-ayah-${number}`);if(active){active.classList.add('quran-playing');active.scrollIntoView({block:'nearest',behavior:'smooth'});}
+    $('quranNowPlaying').textContent=`Now playing · ${current}:${number}`;
+    $('quranPlaybackStatus').textContent=`Reciting Surah ${current}, Ayah ${number}`;
+    $('quranPauseResume').textContent=recitation.paused?'Resume':'Pause';
+    saveProgress(current,number);
+  }
+  function playQueueItem(){
+    const item=audioQueue[audioIndex];if(!item?.audio){finishQueue();return;}
+    recitation.src=item.audio;$('quranSeek').value='0';highlightPlayingAyah(Number(item.numberInSurah));
+    recitation.play().then(()=>{$('quranPlayer').hidden=false;$('quranPauseResume').textContent='Pause';status(`Playing recitation · ${current}:${item.numberInSurah}`);}).catch(()=>{status('Recitation could not start. Check your connection and audio settings.');$('quranPlaybackStatus').textContent='Playback could not start.';});
+  }
+  function finishQueue(){audioQueue=[];audioIndex=0;recitation.pause();$('quranPlayer').hidden=true;$('quranPauseResume').textContent='Resume';$('quranPlaybackStatus').textContent='Recitation finished.';$('quranVerses').querySelectorAll('.quran-ayah.quran-playing').forEach(el=>el.classList.remove('quran-playing'));}
+  function stopRecitation(){if(!recitation)return;recitation.pause();recitation.removeAttribute('src');recitation.load();audioQueue=[];audioIndex=0;if($('quranPlayer'))$('quranPlayer').hidden=true;}
+  recitation.addEventListener('ended',()=>{audioIndex++;if(audioIndex<audioQueue.length)playQueueItem();else finishQueue();});
+  recitation.addEventListener('pause',()=>{if(audioQueue.length)$('quranPauseResume').textContent='Resume';});
+  recitation.addEventListener('play',()=>{$('quranPauseResume').textContent='Pause';});
+  recitation.addEventListener('timeupdate',()=>{const seek=$('quranSeek');if(Number.isFinite(recitation.duration)&&recitation.duration>0){seek.value=String(Math.round(recitation.currentTime/recitation.duration*1000));}});
+  $('quranPauseResume').addEventListener('click',async()=>{if(recitation.paused){if(recitation.src){try{await recitation.play();}catch(_){status('Tap play again to resume recitation.');}}else if(audioQueue.length)playQueueItem();}else recitation.pause();});
+  $('quranSeek').addEventListener('input',e=>{if(Number.isFinite(recitation.duration)&&recitation.duration>0)recitation.currentTime=(Number(e.target.value)/1000)*recitation.duration;});
   $('quranVerses').addEventListener('click',async e=>{
     const play=e.target.closest('[data-play-ayah]');const verse=e.target.closest('[data-ayah]');
-    if(verse)saveProgress(current,Number(verse.dataset.ayah));
-    if(!play)return;
+    if(verse)saveProgress(current,Number(verse.dataset.ayah));if(!play)return;
     const n=Number(play.dataset.playAyah),audioKey=`audio:${current}`;
+    if(audioQueue.length&&audioQueue[audioIndex]?.numberInSurah===n&&!recitation.paused){recitation.pause();return;}
     let aud=cache[audioKey];
     if(!aud){status('Loading recitation…');try{aud=await request(`/surah/${current}/ar.alafasy`);saveCache(audioKey,aud);}catch(_){status('Recitation audio is unavailable. Text reading remains available.');return;}}
-    const items=Array.isArray(aud)?aud:[aud],ayahs=items.find(x=>Array.isArray(x?.ayahs))?.ayahs||items[0]?.ayahs||[],item=ayahs.find(x=>Number(x.numberInSurah)===n);
-    if(!item?.audio){status('Recitation audio is unavailable. Text reading remains available.');return;}
-    try{recitation.pause();recitation.src=item.audio;await recitation.play();status(`Playing recitation · ${current}:${n}`);saveProgress(current,n);}catch(_){status('Recitation could not start. Check your connection and audio settings.');}
+    const items=Array.isArray(aud)?aud:[aud],ayahs=items.find(x=>Array.isArray(x?.ayahs))?.ayahs||items[0]?.ayahs||[];
+    audioQueue=ayahs.filter(x=>Number(x.numberInSurah)>=n&&x.audio);audioIndex=0;
+    if(!audioQueue.length){status('Recitation audio is unavailable. Text reading remains available.');return;}
+    $('quranPlayer').hidden=false;playQueueItem();
   });
   $('quranResume').addEventListener('click',()=>loadSurah(progress.surah||1,progress.ayah||1));
   $('quranDownloadOffline').addEventListener('click',async()=>{

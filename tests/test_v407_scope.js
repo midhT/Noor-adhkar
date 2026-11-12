@@ -7,4 +7,4 @@ assert.doesNotMatch(html,/stOpenSetup/);assert.match(v,/naseem-onboarding-comple
 assert.match(v,/HIJRI_MONTHS/);assert.match(v,/Dhul-Hijjah/);assert.match(v,/BUILTIN_GLANCE/);assert.match(v,/glanceCacheVersion/);assert.match(v,/duaCacheVersion/);assert.match(v,/data-quiz-answer/);
 for(const routine of ['after_salah','before_sleep','waking','travel'])assert.ok(adhkar.includes(routine),`missing ${routine}`);
 assert.match(native,/setHijriDate/);assert.match(native,/setWidgetStyle/);assert.match(v,/studioWidgetSave/);assert.match(plugin,/setHijriDate/);assert.match(provider,/HijriWidgetProvider/);
-console.log('V4.0.8 scoped feature checks passed.');
+console.log('V4.0.9 scoped feature checks passed.');

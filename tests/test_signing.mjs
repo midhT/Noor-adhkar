@@ -4,7 +4,7 @@ const cfg = { storeFile: '/runner/temp/naseem-release.keystore', storePassword: 
 const cap = `apply plugin: 'com.android.application'
 android {
     namespace = "com.noor.adhkar"
-    defaultConfig { applicationId "com.noor.adhkar"; versionCode 40008; versionName "4.0.8" }
+    defaultConfig { applicationId "com.noor.adhkar"; versionCode 40009; versionName "4.0.9" }
     buildTypes { release { minifyEnabled false } }
 }`;
 const out = applySigning(cap, cfg);

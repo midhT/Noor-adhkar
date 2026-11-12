@@ -355,12 +355,19 @@
     overlay.querySelector('#setupTheme').value=window.NaseemTheme?.get?.()||'system';
     const citySelect=overlay.querySelector('#setupCity'),salah=window.NoorSalah;
     citySelect.innerHTML='<option value="">Keep current location</option>'+(salah?.CITIES||[]).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+    // Apply each preference as soon as the user changes it; Finish only closes setup and requests permissions.
+    const saveSetupName=()=>{profile.name=overlay.querySelector('#setupName').value.trim().slice(0,40);try{localStorage.setItem('noorProfileV1',JSON.stringify(profile));}catch(_){}document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{name:profile.name}}));};
+    const applySetupCity=()=>{const chosen=(salah?.CITIES||[]).find(c=>c.id===citySelect.value);if(chosen)salah.setLocation({id:chosen.id,name:chosen.name,lat:chosen.lat,lng:chosen.lng,tz:chosen.tz,source:chosen.id==='srinagar'?'default':'manual'});};
+    overlay.querySelector('#setupName').addEventListener('input',saveSetupName);
+    overlay.querySelector('#setupTradition').addEventListener('change',()=>{const value=overlay.querySelector('#setupTradition').value;if(value&&applySchool(value)){renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));notify('Learning tradition saved.');}});
+    citySelect.addEventListener('change',()=>{applySetupCity();if(citySelect.value)notify('Prayer city saved.');});
+    overlay.querySelector('#setupTheme').addEventListener('change',()=>{window.NaseemTheme?.set?.(overlay.querySelector('#setupTheme').value);notify('Appearance updated.');});
     const finish=async(skipped=false)=>{
-      const name=overlay.querySelector('#setupName').value.trim().slice(0,40);
-      profile.name=name;try{localStorage.setItem('noorProfileV1',JSON.stringify(profile));}catch(_){}
+      saveSetupName();
+      const name=profile.name;
       const tradition=overlay.querySelector('#setupTradition').value;if(tradition)applySchool(tradition);
       const theme=overlay.querySelector('#setupTheme').value;window.NaseemTheme?.set?.(theme);
-      const chosen=(salah?.CITIES||[]).find(c=>c.id===citySelect.value);if(chosen)salah.setLocation({id:chosen.id,name:chosen.name,lat:chosen.lat,lng:chosen.lng,tz:chosen.tz,source:chosen.id==='srinagar'?'default':'manual'});
+      applySetupCity();
       data.setupComplete=true;data.setupCompletedAt=Date.now();save();try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}
       let notificationMessage='';
       const notifications=window.NoorNative?.notifications;

@@ -13,7 +13,7 @@ assert.match(m2, /'Home', 'Dhikr', 'Salah', 'More', 'Zakat', 'Settings'/);
 const store = new Map();
 const listeners = {};
 const document = {
-  querySelector: selector => selector === 'meta[name="naseem-version"]' ? ({ content: '4.0.8' }) : ({ prepend() {} }),
+  querySelector: selector => selector === 'meta[name="naseem-version"]' ? ({ content: '4.0.9' }) : ({ prepend() {} }),
   getElementById: () => null,
   createElement: tag => ({ tagName: tag, className: '', children: [], listeners: {}, append(...nodes) { this.children.push(...nodes); }, addEventListener(name, fn) { this.listeners[name] = fn; }, setAttribute() {}, querySelectorAll: () => [] })
 };
@@ -21,20 +21,20 @@ const window = { addEventListener(name, fn) { listeners[name] = fn; }, setTimeou
 const context = {
   document, window, URL, Date, Math, Number, String, JSON,
   localStorage: { getItem: k => store.get(k) || null, setItem: (k,v) => store.set(k,v) },
-  setTimeout() {}, fetch: async () => ({ ok: true, json: async () => ({ version: '4.0.9', releaseUrl: 'https://github.com/midhT/Naseem-public/releases/tag/v4.0.9', downloadUrl: 'https://github.com/midhT/Naseem-public/releases/download/v4.0.9/app-release.apk', notesSummary: 'Bug fixes and improvements.' }) })
+  setTimeout() {}, fetch: async () => ({ ok: true, json: async () => ({ version: '4.1.0', releaseUrl: 'https://github.com/midhT/Naseem-public/releases/tag/v4.1.0', downloadUrl: 'https://github.com/midhT/Naseem-public/releases/download/v4.1.0/app-release.apk', notesSummary: 'Bug fixes and improvements.' }) })
 };
 vm.runInNewContext(source, context, { filename: 'public-updates.js' });
 (async () => {
-  assert.equal(window.NaseemUpdates.currentVersion, '4.0.8');
-  assert.equal(window.NaseemUpdates.isNewer('4.0.9', '4.0.8'), true);
-  assert.equal(window.NaseemUpdates.isNewer('4.0.8', '4.0.8'), false);
-  assert.equal(window.NaseemUpdates.isNewer('4.0.7', '4.0.8'), false);
+  assert.equal(window.NaseemUpdates.currentVersion, '4.0.9');
+  assert.equal(window.NaseemUpdates.isNewer('4.1.0', '4.0.9'), true);
+  assert.equal(window.NaseemUpdates.isNewer('4.0.9', '4.0.9'), false);
+  assert.equal(window.NaseemUpdates.isNewer('4.0.8', '4.0.9'), false);
   const result = await window.NaseemUpdates.check(true);
   assert.equal(result.ok, true);
   assert.equal(result.updateAvailable, true);
-  assert.equal(result.version, '4.0.9');
+  assert.equal(result.version, '4.1.0');
   const state = JSON.parse(store.get('naseem-public-update-state-v1'));
-  assert.equal(state.latest, '4.0.9');
-  assert.equal(state.notifiedVersion, '4.0.9');
+  assert.equal(state.latest, '4.1.0');
+  assert.equal(state.notifiedVersion, '4.1.0');
   console.log('Public update checker tests passed.');
 })().catch(error => { console.error(error); process.exit(1); });
