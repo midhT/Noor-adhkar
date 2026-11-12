@@ -198,6 +198,28 @@
     </div>
     <div class="v404-card v404-widget-card"><div class="v404-row"><span class="eyebrow">HIJRI DATE WIDGET</span><span class="v404-live-dot">DAILY SYNC</span></div><div class="v404-widget-preview hijri"><strong>NASEEM · ISLAMIC CALENDAR</strong><b id="studioHijriDate">Loading Islamic date…</b><small>Complete Hijri date · updated when Naseem opens</small></div><p class="v404-note">Shows the Islamic day, month and year on your Android home screen. Calendar dates can differ with local moon sighting.</p></div>
     <div class="v404-card"><span class="eyebrow">WIDGET APPEARANCE</span><p class="v404-note">Configure the appearance of your installed Naseem widgets. Add or resize widget types from your Android home-screen picker.</p><label class="v404-label" for="studioWidgetTheme">Widget theme</label><select class="v404-input" id="studioWidgetTheme"><option value="system">Follow Naseem theme</option><option value="dark">Dark</option><option value="light">Light</option></select><label class="v404-label" for="studioWidgetAccent">Accent</label><select class="v404-input" id="studioWidgetAccent"><option value="emerald">Emerald</option><option value="silver">Silver</option><option value="blue">Blue</option></select><label class="v404-label" for="studioWidgetDensity">Spacing</label><select class="v404-input" id="studioWidgetDensity"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select><button type="button" class="v404-primary" id="studioWidgetSave">Save widget appearance</button><p class="v404-note" id="studioWidgetAppearanceStatus" aria-live="polite"></p></div>
+    <div class="v404-card" id="studioCustomWidgetEditor">
+      <span class="eyebrow">CUSTOM WIDGET</span>
+      <p class="v404-note">Build a home-screen widget from the information you use most.</p>
+      <div class="v404-row" role="group" aria-label="Widget content blocks">
+        <label class="v404-label"><input class="studio-widget-block" type="checkbox" value="prayer"> Prayer times</label>
+        <label class="v404-label"><input class="studio-widget-block" type="checkbox" value="tasbeeh"> Tasbeeh counter</label>
+        <label class="v404-label"><input class="studio-widget-block" type="checkbox" value="hijri"> Hijri date</label>
+        <label class="v404-label"><input class="studio-widget-block" type="checkbox" value="dua"> Personal reminder</label>
+      </div>
+      <label class="v404-label" for="studioWidgetLayout">Widget layout</label>
+      <select class="v404-input" id="studioWidgetLayout"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select>
+      <label class="v404-label" for="studioWidgetAction">Tap action</label>
+      <select class="v404-input" id="studioWidgetAction"><option value="open">Open Naseem</option><option value="count">Open counter</option></select>
+      <label class="v404-label" for="studioWidgetDua">Personal reminder text</label>
+      <textarea class="v404-input" id="studioWidgetDua" rows="2" placeholder="A short reminder (optional unless selected)"></textarea>
+      <div class="v404-widget-preview" id="studioCustomPreview">
+        <strong>NASEEM · YOUR WIDGET</strong>
+        <small id="studioCustomPreviewBlocks" aria-live="polite">Prayer times · Tasbeeh counter · Hijri date</small>
+      </div>
+      <button type="button" class="v404-primary" id="studioCustomSave">Save custom widget</button>
+      <p class="v404-note" id="studioCustomStatus" aria-live="polite"></p>
+    </div>
     <div class="v404-card"><p id="studioWidgetStatus" class="v404-note">Widget data syncs automatically in the installed Android app. Add Prayer Times, Tasbeeh or Hijri Date from your Android home-screen widget picker.</p></div>`;
   screen('widgetStudioScreen','Widget Studio','YOUR HOME SCREEN',widgetBody);
   const WIDGET_STYLE_KEY='naseem-widget-style-v1';
