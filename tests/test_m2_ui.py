@@ -10,8 +10,21 @@ with sync_playwright() as p:
     def ctx_new(**kw):
         return b.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=1, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata', accept_downloads=True, **kw)
     ctx = ctx_new(geolocation={'latitude': 28.6139, 'longitude': 77.2090}, permissions=['geolocation'])
-    # This suite validates navigation after setup; first-launch onboarding is tested separately.
-    ctx.add_init_script("localStorage.setItem('naseem-onboarding-complete-v1','1')")
+    # This suite validates the app after setup. Seed BOTH completion records:
+    # the standalone compatibility flag and the app's persisted settings object.
+    # The app checks either value in startSetup(); seeding both makes this test
+    # independent of migration timing and gives a useful failure if storage is blocked.
+    ctx.add_init_script("""(() => {
+      try {
+        const key = 'naseem-v404-settings';
+        const saved = JSON.parse(localStorage.getItem(key) || '{}');
+        saved.setupComplete = true;
+        localStorage.setItem(key, JSON.stringify(saved));
+        localStorage.setItem('naseem-onboarding-complete-v1', '1');
+      } catch (error) {
+        window.__naseemTestSeedError = String(error);
+      }
+    })();""")
     pg = ctx.new_page(); errs = []; dialogs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     ACCEPT = [True]
@@ -19,6 +32,8 @@ with sync_playwright() as p:
     pg.goto(srv.url()); pg.wait_for_timeout(2600)
     cdp = ctx.new_cdp_session(pg)
     ev = pg.evaluate
+    seed = ev("({flag:localStorage.getItem('naseem-onboarding-complete-v1'),settings:JSON.parse(localStorage.getItem('naseem-v404-settings')||'{}').setupComplete,error:window.__naseemTestSeedError||null})")
+    ok('returning-user test storage seeded before app startup', seed['flag'] == '1' and seed['settings'] is True and seed['error'] is None, str(seed))
     # ---------- navigation + scrolling ----------
     labels = ev("[...document.querySelectorAll('.nav-item small')].map(e=>e.textContent)")
     ok('onboarding does not cover returning-user navigation', not ev("!!document.querySelector('.v404-onboarding')"))

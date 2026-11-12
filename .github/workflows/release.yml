@@ -8,6 +8,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 75
     steps:
       - name: Check out private application source
         uses: actions/checkout@v4
@@ -24,14 +25,32 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        env:
+          npm_config_fetch_retries: 5
+          npm_config_fetch_retry_mintimeout: 20000
+          npm_config_fetch_retry_maxtimeout: 120000
+          npm_config_fetch_timeout: 300000
+        run: npm install --no-audit --no-fund --prefer-online
       - name: Build web app
         run: npm run build
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --retries 5 --timeout 120 playwright
+          python -m playwright install --with-deps chromium
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK components
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
       - name: Add Android platform
         run: npx cap add android
       - name: Generate app icons and splash
@@ -42,8 +61,7 @@ jobs:
         run: node scripts/patch-android.mjs
       - name: Install browser test dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install playwright
+          python -m pip install --disable-pip-version-check --retries 5 --timeout 120 playwright
           python -m playwright install --with-deps chromium
       - name: Run full verification suite
         run: bash tests/run.sh
