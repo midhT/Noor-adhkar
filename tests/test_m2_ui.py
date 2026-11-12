@@ -26,7 +26,7 @@ with sync_playwright() as p:
       }
     })();""")
     pg = ctx.new_page(); errs = []; dialogs = []
-    pg.on('pageerror', lambda e: errs.append(str(e)))
+    pg.on('pageerror', lambda e: errs.append(f"{e}\n{e.stack}"))
     ACCEPT = [True]
     pg.on('dialog', lambda d: (dialogs.append(d.message), d.accept() if ACCEPT[0] else d.dismiss()))
     pg.goto(srv.url()); pg.wait_for_timeout(2600)
