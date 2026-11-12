@@ -1,0 +1,62 @@
+{
+  "application": {
+    "name": "Naseem",
+    "arabicName": "نسيم",
+    "baselineVersion": "4.1.0",
+    "baselineStatus": "Designated release baseline; final signed APK verification pending",
+    "packageId": "com.noor.adhkar",
+    "sourceRepository": "https://github.com/midhT/Noor-adhkar",
+    "publicRepository": "https://github.com/midhT/Naseem-public"
+  },
+  "android": {
+    "candidateVersionCode": 40100,
+    "versionCodeStatus": "Previously assigned candidate; verify against final APK",
+    "previousInstalledVersion": "4.0.9",
+    "minimumUpgradeRequirement": "Version code must increase",
+    "packageIdRequirement": "Must remain com.noor.adhkar"
+  },
+  "signing": {
+    "keystoreSecret": "NASEEM_KEYSTORE_BASE64",
+    "storePasswordSecret": "NASEEM_STORE_PASSWORD",
+    "keyAliasSecret": "NASEEM_KEY_ALIAS",
+    "keyPasswordSecret": "NASEEM_KEY_PASSWORD",
+    "certificateSHA256": "NOT_YET_VERIFIED",
+    "certificateBaseline": "Must be extracted from the verified 4.1.0 APK",
+    "keystorePolicy": "Reuse the established signing keystore for every compatible update",
+    "neverGenerateReplacementKeyForUpdate": true,
+    "neverOverwriteSigningSecrets": true
+  },
+  "previousRelease": {
+    "version": "4.0.9",
+    "apkFile": "app-release.apk",
+    "apkSHA256": "2469fe6e0906a8b5a0d923e5fa745997835d128ff6142ab4c5ba8427b04574e4",
+    "checksumType": "APK file SHA-256, not signing certificate fingerprint"
+  },
+  "distribution": {
+    "updateFeed": "https://raw.githubusercontent.com/midhT/Naseem-public/main/release.json",
+    "releaseTag": "v4.1.0",
+    "releaseURL": "https://github.com/midhT/Naseem-public/releases/tag/v4.1.0",
+    "downloadURL": "https://github.com/midhT/Naseem-public/releases/download/v4.1.0/app-release.apk",
+    "feedVersion": "4.1.0",
+    "feedPreviouslyVerifiedHTTP": 200
+  },
+  "mandatoryChecksBeforeEveryRelease": [
+    "Keep package ID identical to the previous release",
+    "Verify the APK signing certificate SHA-256 matches the established certificate",
+    "Verify the Android versionCode is greater than the previous release",
+    "Verify the APK is signed and installable as an in-place update",
+    "Never uninstall the existing app merely to bypass a signing mismatch",
+    "Never replace or regenerate the established signing keystore",
+    "Verify the release APK and update feed point to the same version",
+    "Verify the published APK checksum"
+  ],
+  "verificationStatus": {
+    "packageId": "KNOWN",
+    "baselineVersion": "KNOWN",
+    "previousAPKChecksum": "RECORDED",
+    "candidateVersionCode": "UNVERIFIED",
+    "certificateSHA256": "NOT_YET_EXTRACTED",
+    "final410APK": "NOT_CONFIRMED_PUBLISHED",
+    "signingCompatibility": "NOT_YET_VERIFIED"
+  }
+}
