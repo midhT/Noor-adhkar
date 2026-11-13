@@ -9,7 +9,8 @@ const js = read('www/v404.js');
 const workflow = read('.github/workflows/build-apk.yml');
 const pkg = JSON.parse(read('package.json'));
 assert.equal(pkg.version, '4.1.0');
-for (const key of ['hijri','salah-learning','widgets','occasions','profiles']) assert.match(html, new RegExp(`data-open-v404="${key}"`), `${key} More card`);
+for (const key of ['hijri','salah-learning','widgets','occasions']) assert.match(html, new RegExp(`data-open-v404="${key}"`), `${key} More card`);
+assert.doesNotMatch(html, /data-open-v404="profiles"/); // school preference is managed in Settings > Salah only
 for (const key of ['hijriScreen','duaScreen','salahLearningScreen','widgetStudioScreen','occasionsScreen','traditionScreen','glanceScreen']) assert.ok(js.includes(`'${key}'`), `${key} screen route`);
 assert.match(js, /GLANCE_FEED_URL/);
 assert.doesNotMatch(js, /glanceFeedUrl|glanceSaveFeed|studioSyncTasbeeh/);
@@ -18,7 +19,9 @@ assert.match(js, /studioPrayerTimes/);
 assert.match(js, /setPrayerTimes\(times\)/);
 assert.match(js, /setTasbeeh\(dhikr\)/);
 assert.match(js, /salahDuaEntry/);
-assert.match(js, /notifications\.request\(\)/); // first-run setup requests permission when Android reports prompt
+assert.match(js, /setupNotificationStatus/);
+assert.match(js, /setupEnableNotifications/);
+assert.match(js, /n\.request\(\)/); // explicit reminder actions still request permission
 assert.match(js, /setupComplete/);
 assert.match(js, /naseem-onboarding-complete-v1/);
 assert.match(read('www/app.js'), /theme:"system"/);

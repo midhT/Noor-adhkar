@@ -18,3 +18,13 @@ The public app version remains 4.1.0. Android internal `versionCode` advances fr
 Passed: JavaScript syntax check; V4.1.0 static scope checks; V4.1.0 source integration; V4.0.9 scoped feature checks; public update checker tests; new tools; Adhkar core; custom routines; custom widget; Hadith; Quran reader; release configuration; Salah engine comparison.
 
 Not completed in this environment: `npm run build` because `esbuild` could not be installed (`npm ci` timed out); Playwright browser interaction tests because the browser runtime is not available here. GitHub Actions should run the complete CI/build pipeline after this source is pushed.
+
+
+## Responsive stabilisation patch — 13 November 2026
+- The onboarding overlay now owns vertical scrolling, rather than relying on a nested full-height panel. This is safer for short Android displays, landscape orientation, system bars and the on-screen keyboard.
+- The action area reflows on narrow screens so Skip, Back and Continue cannot exceed the available width. Learning-tradition options have larger touch targets and wrap long labels.
+- Onboarding completion is synchronous and closes the overlay before any optional notification flow. Notification permission is left to the user's explicit reminder action.
+- `www/responsive.css` loads after the existing stylesheets and provides shared compact-phone, tablet, safe-area and reduced-motion rules.
+- `tests/test_responsive_foundation.py` guards the layout contract; `tests/test_onboarding_responsive.py` exercises the visible learning-tradition card across compact-phone, tablet and landscape viewports.
+
+Browser interaction tests still need to run in CI and on physical Android devices. The source-only environment used for this patch did not permit Chromium navigation to local files or loopback URLs, so no physical-device compatibility claim is made.

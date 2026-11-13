@@ -11,9 +11,9 @@
     { id: 'maghrib', label: 'Maghrib', ar: 'المغرب' },
     { id: 'isha', label: 'Isha', ar: 'العشاء' }
   ];
-  const home = document.getElementById('homeScreen');
-  const greeting = home?.querySelector('.greeting');
-  if (!greeting || document.getElementById('prayerDashboard') || !S) return;
+  const salahScreen = document.getElementById('salahScreen');
+  const heading = salahScreen?.querySelector('.screen-heading');
+  if (!heading || document.getElementById('prayerDashboard') || !S) return;
   const fmt = v => T.to12(v);
 
   const dashboard = document.createElement('section');
@@ -47,7 +47,7 @@
         <span class="pd-ring-label">NEXT ON YOUR DAY</span>
       </div>
     </div>
-    <div class="pd-date card-surface"><div><span class="pd-kicker" id="pdPlace">TODAY</span><strong id="pdDate"></strong><small id="pdSource"></small></div><button type="button" id="pdSettings" class="pd-edit">Prayer settings</button></div>`;
+    <div class="pd-date card-surface"><div><span class="pd-kicker" id="pdPlace">TODAY</span><strong id="pdDate"></strong><small id="pdSource"></small></div><div class="pd-actions"><button type="button" id="pdQibla" class="pd-edit">Qibla</button><button type="button" id="pdSettings" class="pd-edit">Prayer settings</button></div></div>`;
   greeting.insertAdjacentElement('afterend', dashboard);
   const $ = id => dashboard.querySelector(`#${id}`);
   $('pdSettings').addEventListener('click', () => { switchScreen('settingsScreen'); setTimeout(() => { const g = document.getElementById('stSalah'); if (g) { g.open = true; g.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 300); });

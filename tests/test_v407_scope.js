@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const read=f=>fs.readFileSync(f,'utf8');
 const app=read('www/app.js'),v=read('www/v404.js'),html=read('www/index.html'),native=read('www/native.js'),plugin=read('android-native/java/NoorWidgetsPlugin.java'),provider=read('android-native/java/HijriWidgetProvider.java'),adhkar=read('www/adhkar-data.js');
 assert.match(app,/theme:\"system\"/);assert.match(app,/prefers-color-scheme/);assert.match(app,/setTheme/);
-assert.doesNotMatch(html,/stOpenSetup/);assert.match(v,/naseem-onboarding-complete-v1/);assert.doesNotMatch(v,/naseem:open-onboarding/);assert.match(v,/notifications\.request\(\)/);
+assert.doesNotMatch(html,/stOpenSetup/);assert.match(v,/naseem-onboarding-complete-v1/);assert.doesNotMatch(v,/naseem:open-onboarding/);assert.doesNotMatch(v,/notifications\.request\(\)/);
 assert.match(v,/HIJRI_MONTHS/);assert.match(v,/Dhul-Hijjah/);assert.match(v,/BUILTIN_GLANCE/);assert.match(v,/glanceCacheVersion/);assert.match(v,/duaCacheVersion/);assert.match(v,/data-quiz-answer/);
 for(const routine of ['after_salah','before_sleep','waking','travel'])assert.ok(adhkar.includes(routine),`missing ${routine}`);
 assert.match(native,/setHijriDate/);assert.match(native,/setWidgetStyle/);assert.match(v,/studioWidgetSave/);assert.match(plugin,/setHijriDate/);assert.match(provider,/HijriWidgetProvider/);
