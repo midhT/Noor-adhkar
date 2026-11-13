@@ -48,7 +48,7 @@
       </div>
     </div>
     <div class="pd-date card-surface"><div><span class="pd-kicker" id="pdPlace">TODAY</span><strong id="pdDate"></strong><small id="pdSource"></small></div><div class="pd-actions"><button type="button" id="pdQibla" class="pd-edit">Qibla</button><button type="button" id="pdSettings" class="pd-edit">Prayer settings</button></div></div>`;
-  greeting.insertAdjacentElement('afterend', dashboard);
+  heading.insertAdjacentElement('afterend', dashboard);
   const $ = id => dashboard.querySelector(`#${id}`);
   $('pdSettings').addEventListener('click', () => { switchScreen('settingsScreen'); setTimeout(() => { const g = document.getElementById('stSalah'); if (g) { g.open = true; g.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 300); });
 
