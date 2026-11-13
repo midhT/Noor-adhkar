@@ -86,7 +86,7 @@
     const miniArrow=$('homeQiblaArrow'), miniBearing=$('homeQiblaMiniBearing'), miniDirection=$('homeQiblaMiniDirection');
     if(miniBearing)miniBearing.textContent=sensor?`${Math.round(heading)}°`:`${Math.round(bearing)}°`;
     if(miniDirection)miniDirection.textContent=!sensor?`${cardinal(bearing)} · compass off`:(aligned?'Facing the Qibla ✓':turn);
-    if(miniArrow){miniArrow.style.transform=`translate(-50%,-50%) rotate(${bearing-spin}deg)`;miniArrow.parentElement.classList.toggle('aligned',aligned);}
+    if(miniArrow){miniArrow.style.setProperty('--home-qibla-angle',`${bearing-spin}deg`);miniArrow.parentElement.classList.toggle('aligned',aligned);}
     const rose=$('qiblaRose'), needle=$('qiblaNeedle'), mark=$('qiblaMark');
     rose.style.transform=`rotate(${-spin}deg)`;
     needle.style.transform=`translate(-50%,-50%) rotate(${bearing-spin}deg)`;
