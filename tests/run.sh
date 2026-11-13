@@ -14,6 +14,7 @@ node tests/test_custom_widget.js
 node tests/test_signing.mjs
 node tests/test_hadith_library.js
 node tests/test_quran_reader.js
+node tests/test_quran_memory.js
 node tests/test_release_config.mjs
 node tests/test_public_updates.cjs
 rm -rf tests/.build && mkdir -p tests/.build && cp -r www tests/.build/wwwtest
@@ -37,6 +38,9 @@ run_py_test tests/test_adhkar_ui.py
 run_py_test tests/test_custom_routines_ui.py
 run_py_test tests/test_widget_studio_ui.py
 run_py_test tests/test_compass_nav.py
+run_py_test tests/test_quran_ui.py
+run_py_test tests/test_glance.py
+run_py_test tests/test_layout_overlap.py
 python3 tests/verify_salah_engine.py
 node tests/test_hadith_library.js
 node tests/test_quran_reader.js

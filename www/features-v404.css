@@ -187,3 +187,11 @@ main{padding-bottom:calc(154px + env(safe-area-inset-bottom))}
 
 /* Salah learning density: keep the learning material ahead of its profile summary. */
 #salahScreen .v3-hero{padding:17px 18px;margin:0 0 14px;border-radius:16px;min-height:0}#salahScreen .v3-hero h2{font-size:clamp(22px,6vw,27px);margin:8px 0}#salahScreen .v3-hero p{font-size:12px;line-height:1.65;margin:7px 0 10px;max-width:38ch}#salahScreen .v3-badge{font-size:9px;padding:6px 10px}#salahScreen .search-wrap{margin:0 0 12px;padding:8px 12px;min-height:54px;border-radius:14px}#salahScreen .salah-list{gap:8px}#salahScreen .salah-item{padding:14px 15px;border-radius:14px}#salahScreen .tiny-note{padding-bottom:10px}
+
+/* Naseem 4.1.0 navigation clearance: the floating bar is fully opaque (scrolled content no longer shows through
+   it) and a soft fade sits under it, so cards never look like they collide with the bar or its rounded corners. */
+:root{--nav-solid:#17181b}
+body.light{--nav-solid:#fbfaf7}
+body .bottom-nav,body.light .bottom-nav{background:var(--nav-solid)}
+main::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(96px + env(safe-area-inset-bottom));z-index:15;pointer-events:none;background:linear-gradient(to bottom,transparent,var(--bg) 58%)}
+body.sheet-open main::after{display:none}

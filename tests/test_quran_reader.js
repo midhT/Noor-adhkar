@@ -24,12 +24,25 @@ assert(q.includes('quranSeek'));
 assert(q.includes("recitation.addEventListener('ended'"));
 assert(q.includes('Provider and contributor acknowledgements are listed in Settings'));
 assert(q.includes('/juz/${juz}/quran-uthmani'));
-assert(q.includes('quranOpenJuz'));
+assert(q.includes('data-open-juz')&&q.includes('async function openJuz'));
 assert(!q.includes('quranGoAyah'));
 assert(!q.includes('quranAyahJump'));
 assert(q.includes('quranOpenPage'));
-assert(q.includes('quranOpenJuz'));
+assert(q.includes('data-open-juz')&&q.includes('async function openJuz'));
 const html=fs.readFileSync('www/index.html','utf8');
 assert(html.includes('quran-reader.js'));
 assert(q.includes("section.id='quranReaderScreen'"));
 console.log('Quran reader integration checks passed.');
+
+// --- redesign: highlight + follow-along, memorisation, glance ---
+assert(q.includes('function scrollToAyah')&&q.includes('quran-playing')&&q.includes('lastUserScroll'), 'recitation highlight and centring');
+assert(q.includes('data-quran-view="memory"')&&q.includes('NaseemQuranMemory'), 'memory tab uses the tested core');
+assert(!q.includes('quranGoAyah')&&!q.includes('quranAyahJump'), 'no Ayah Jump orphan');
+const indexHtml=fs.readFileSync('www/index.html','utf8');
+assert(indexHtml.indexOf('quran-memory-core.js')>-1&&indexHtml.indexOf('quran-memory-core.js')<indexHtml.indexOf('quran-reader.js'), 'core loads before the reader');
+assert(indexHtml.includes('quran-reader.css'));
+const swSrc=fs.readFileSync('www/sw.js','utf8');
+assert(swSrc.includes('quran-reader.css')&&swSrc.includes('quran-memory-core.js'), 'offline cache lists new files');
+const v404Src=fs.readFileSync('www/v404.js','utf8');
+assert(v404Src.includes('AbortController')&&v404Src.includes('GLANCE_TIMEOUT_MS')&&v404Src.includes('glanceBusy'), 'glance feed is time-limited and non-overlapping');
+console.log('Quran redesign static checks passed.');

@@ -321,20 +321,35 @@
     renderHomeGlance(content);
   }
   function showFallback(status){renderGlanceItem(fallback);$('glanceStatus').textContent=status+' Daily lessons and quizzes are available offline.';}
-  async function refreshGlance(){
+  // The feed request is time-limited (a hanging connection used to leave the Home card empty and Refresh silent),
+  // never overlaps itself, and every outcome is reported on screen.
+  const GLANCE_TIMEOUT_MS=8000;let glanceBusy=false,glanceLastFetch=0,glanceOffset=0;
+  async function fetchGlanceFeed(){
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),GLANCE_TIMEOUT_MS);
+    try{const response=await fetch(GLANCE_FEED_URL,{cache:'no-store',signal:controller.signal});if(!response.ok)throw new Error(`Feed returned ${response.status}.`);return await response.json();}
+    finally{clearTimeout(timer);}
+  }
+  async function refreshGlance(manual){
+    manual=manual===true;
+    if(glanceBusy)return;
+    if(!manual&&Date.now()-glanceLastFetch<600000)return;
+    glanceBusy=true;const button=$('glanceRefresh');
+    if(manual){glanceOffset+=1;if(button){button.disabled=true;button.textContent='Refreshing…';}$('glanceStatus').textContent='Checking for today’s Glance…';}
     try{
-      const response=await fetch(GLANCE_FEED_URL,{cache:'no-store'});if(!response.ok)throw new Error(`Feed returned ${response.status}.`);
-      const json=await response.json();if(!json||Number(json.schemaVersion)!==1||!Array.isArray(json.items))throw new Error('Unsupported Glance feed schema.');const items=Array.isArray(json.items)?json.items:[],published=items.filter(x=>x&&x.published===true),pool=[...published,...BUILTIN_GLANCE],item=pool[Math.floor(Date.now()/86400000)%pool.length]||fallback;
-      if(!item||!item.title||!item.body)throw new Error('No published item in the feed.');
+      const json=await fetchGlanceFeed();
+      if(!json||Number(json.schemaVersion)!==1||!Array.isArray(json.items))throw new Error('Unsupported Glance feed schema.');
+      const items=json.items,published=items.filter(x=>x&&x.published===true&&x.title&&x.body),pool=[...published,...BUILTIN_GLANCE],item=pool[(Math.floor(Date.now()/86400000)+glanceOffset)%pool.length]||fallback;
       const content={title:String(item.title).slice(0,120),body:String(item.body).slice(0,1200),reference:String(item.reference||item.source||'').slice(0,160),type:String(item.type||'Naseem update').slice(0,60),quiz:item.quiz&&Array.isArray(item.quiz.options)?item.quiz:null,contentVersion:Number(json.contentVersion)||1,fetchedAt:Date.now()};
-      data.glanceCache=content;data.glanceCacheVersion=content.contentVersion;save();renderGlanceItem(content);$('glanceStatus').textContent=`Today’s Glance is ready · public content v${content.contentVersion}.`; 
+      data.glanceCache=content;data.glanceCacheVersion=content.contentVersion;save();glanceLastFetch=Date.now();renderGlanceItem(content);$('glanceStatus').textContent=`Today’s Glance is ready · public content v${content.contentVersion}.`;
     }catch(error){
       const cached=data.glanceCache;
       if(cached&&Date.now()-Number(cached.fetchedAt||0)<30*86400000){renderGlanceItem(cached);$('glanceStatus').textContent='Offline or feed unavailable. Showing the last saved reflection.';}
-      else showFallback('Online content is unavailable. Showing the built-in reminder.');
-    }
+      else showFallback(error&&error.name==='AbortError'?'The connection is slow right now. Showing the built-in reminder.':'Online content is unavailable. Showing the built-in reminder.');
+    }finally{glanceBusy=false;if(button){button.disabled=false;button.textContent='Refresh Glance';}}
   }
-  $('glanceRefresh').addEventListener('click',refreshGlance);
+  $('glanceRefresh').addEventListener('click',()=>refreshGlance(true));
+  // Show something immediately (last saved item, else the built-in one) so the Home card is never empty, then refresh in the background.
+  {const saved=data.glanceCache;if(saved&&saved.title&&saved.body&&Date.now()-Number(saved.fetchedAt||0)<30*86400000)renderGlanceItem(saved);else renderGlanceItem(fallback);}
   refreshGlance();
   document.addEventListener('noor:screen',e=>{if(e.detail==='glanceScreen')refreshGlance();});
 
