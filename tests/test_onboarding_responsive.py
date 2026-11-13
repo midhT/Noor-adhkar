@@ -63,7 +63,9 @@ with sync_playwright() as p:
         page.click('#setupFinish')
         page.locator('#setupNotificationStatus').wait_for()
         check(f'{width}x{height}: notification opt-in page is reachable', page.locator('#setupEnableNotifications').is_visible())
-        page.click('#setupFinish')
+        page.click('#setupFinish')   # notifications page -> summary page
+        check(f'{width}x{height}: summary page offers Enter Naseem', page.locator('#setupFinish').inner_text() == 'Enter Naseem')
+        page.click('#setupFinish')   # Enter Naseem
         page.wait_for_timeout(100)
         check(f'{width}x{height}: setup completes', page.locator('.v404-onboarding').count() == 0)
         check(f'{width}x{height}: completion persists', page.evaluate("localStorage.getItem('naseem-onboarding-complete-v1')") == '1')
