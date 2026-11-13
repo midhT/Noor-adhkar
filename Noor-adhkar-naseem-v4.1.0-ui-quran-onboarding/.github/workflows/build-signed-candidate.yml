@@ -1,0 +1,75 @@
+name: Build signed Naseem 4.1.0 candidate (no public release)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-signed-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install dependencies
+        env:
+          npm_config_fetch_retries: 5
+          npm_config_fetch_retry_mintimeout: 20000
+          npm_config_fetch_retry_maxtimeout: 120000
+          npm_config_fetch_timeout: 300000
+        run: npm install --no-audit --no-fund --prefer-online
+      - name: Build web app
+        run: npm run build
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --retries 5 --timeout 120 playwright
+          python -m playwright install --with-deps chromium
+      - name: Generate Android project
+        run: |
+          npx cap add android
+          npx --yes --package=@capacitor/assets capacitor-assets generate --android
+          node scripts/patch-icons.mjs
+          node scripts/patch-android.mjs
+      - name: Run full verification suite
+        run: bash tests/run.sh
+      - name: Decode existing protected signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NASEEM_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || { echo 'Missing NASEEM_KEYSTORE_BASE64 secret' >&2; exit 1; }
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/naseem-release.keystore"
+          test -s "$RUNNER_TEMP/naseem-release.keystore"
+      - name: Configure existing release signing
+        env:
+          NASEEM_KEYSTORE: ${{ runner.temp }}/naseem-release.keystore
+          NASEEM_STORE_PASSWORD: ${{ secrets.NASEEM_STORE_PASSWORD }}
+          NASEEM_KEY_ALIAS: ${{ secrets.NASEEM_KEY_ALIAS }}
+          NASEEM_KEY_PASSWORD: ${{ secrets.NASEEM_KEY_PASSWORD }}
+        run: node scripts/apply-signing.mjs
+      - name: Build signed APK candidate
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleRelease
+      - name: Verify APK and record certificate fingerprint
+        shell: bash
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          test -s "$APK"
+          sha256sum "$APK" | tee android/app/build/outputs/apk/release/app-release.apk.sha256
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$APK" | tee android/app/build/outputs/apk/release/signing-certificate.txt
+      - name: Upload signed candidate (not published)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Naseem-v4.1.0-signed-candidate-${{ github.sha }}
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/release/app-release.apk.sha256
+            android/app/build/outputs/apk/release/signing-certificate.txt
+          if-no-files-found: error

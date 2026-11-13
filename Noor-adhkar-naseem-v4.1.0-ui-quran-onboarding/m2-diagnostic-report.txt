@@ -1,0 +1,311 @@
+========== NASEEM M2 DIAGNOSTICS ==========
+Thu Nov 12 10:20:54 IST 2026
+
+========== ENVIRONMENT ==========
+Linux localhost 5.15.197-android13-3-34492332 #1 SMP PREEMPT Wed Oct 7 11:19:30 KST 2026 aarch64 Android
+Python 3.13.13
+v24.17.0
+CHROMIUM_PATH=not set
+
+========== TEST SERVER ==========
+1-import os, subprocess, time, json
+2-HERE = os.path.dirname(os.path.abspath(__file__))
+3-BUILD = os.path.join(HERE, '.build')
+4:class Server:
+5-    def __init__(self, port):
+6-        self.port = port
+7-        self.p = subprocess.Popen(['python3', '-m', 'http.server', str(port), '-d', BUILD + '/wwwtest'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+8-        time.sleep(1)
+9:    def url(self): return f'http://localhost:{self.port}/index.html'
+10-    def stop(self): self.p.terminate()
+11-class Results:
+12-    def __init__(self): self.r = {}
+13-    def ok(self, name, cond, extra=''):
+14-        print(('PASS' if cond else 'FAIL'), name, extra); self.r[name] = bool(cond)
+15-    def done(self, label):
+16-        bad = [k for k, v in self.r.items() if not v]
+17-        print(f'{label}:', 'ALL PASS' if not bad else f'FAILED {bad}', f'({sum(self.r.values())}/{len(self.r)})')
+18-        return 0 if not bad else 1
+19-def drag(cdp, y0, y1, x=200):
+20-    cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': x, 'y': y0}]})
+21-    for i in range(1, 13):
+22-        cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': x, 'y': y0 + (y1 - y0) * i / 12}]}); time.sleep(0.016)
+23-    cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []}); time.sleep(0.6)
+24-def open_group(pg, gid):
+25-    pg.click('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(300)
+26-    if not pg.evaluate(f"document.getElementById('{gid}').open"): pg.click(f'#{gid} > summary')
+27-    pg.wait_for_timeout(250)
+
+========== ONBOARDING FUNCTION AND CALLS ==========
+336-      else showFallback('Online content is unavailable. Showing the built-in reminder.');
+337-    }
+338-  }
+339-  $('glanceRefresh').addEventListener('click',refreshGlance);
+340-  refreshGlance();
+341-  document.addEventListener('noor:screen',e=>{if(e.detail==='glanceScreen')refreshGlance();});
+342-
+343-  // Routes for the More-screen cards; each opens a working screen.
+344-  const routes={hijri:'hijriScreen',duas:'duaScreen','salah-learning':'salahLearningScreen',widgets:'widgetStudioScreen',occasions:'occasionsScreen',profiles:'traditionScreen',glance:'glanceScreen'};
+345-  document.querySelectorAll('[data-open-v404]').forEach(button=>button.addEventListener('click',()=>open(routes[button.dataset.openV404])));
+346-  document.querySelectorAll('[data-open-existing=\"adhkar\"]').forEach(button=>button.addEventListener('click',()=>{const routine=document.querySelector('[data-routine=\"morning\"]');if(routine)routine.click();else open('dhikrScreen');}));
+347-  // First-launch setup: local-only and shown once. All of these choices stay editable in Settings.
+348:  function startSetup(){
+349-    const setupDone=localStorage.getItem('naseem-onboarding-complete-v1')==='1'||data.setupComplete===true;
+350-    if(setupDone){try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}return;}
+351-    const overlay=document.createElement('div');overlay.className='v404-onboarding';
+352-    overlay.innerHTML=`<div class="v404-onboard-panel"><span class="eyebrow">WELCOME TO NASEEM</span><div class="v404-onboard-mark">ن</div><h1>Make space for remembrance.</h1><p>A few details help personalise your daily experience. You can change them later.</p><label class="v404-label" for="setupName">Your name (optional)</label><input id="setupName" class="v404-input" type="text" maxlength="40" autocomplete="name" placeholder="What should Naseem call you?"><label class="v404-label" for="setupTradition">Learning tradition</label><select id="setupTradition" class="v404-input"><option value="">Choose later</option>${traditions.map(t=>`<option value="${t[0]}">${esc(t[1])}</option>`).join('')}</select><label class="v404-label" for="setupCity">Prayer city</label><select id="setupCity" class="v404-input"></select><button type="button" id="setupGps" class="v404-secondary">Use device location</button><label class="v404-label" for="setupTheme">Appearance</label><select id="setupTheme" class="v404-input"><option value="system">Use device theme</option><option value="light">Light</option><option value="dark">Dark</option></select><div class="v404-onboard-actions"><button id="setupSkip" class="v404-secondary">Skip for now</button><button id="setupFinish" class="v404-primary">Finish setup</button></div><small>Your preferences stay on this device. Location is used for local prayer timings. Naseem does not require an account. Notifications help deliver Adhan and Jamaat reminders. Android will ask permission after you finish setup.</small></div>`;
+353-    document.body.appendChild(overlay);
+354-    let profile={name:'',photo:''};try{profile=Object.assign(profile,JSON.parse(localStorage.getItem('noorProfileV1')||'{}'));}catch(_){}
+355-    const setupName=overlay.querySelector('#setupName'),setupTradition=overlay.querySelector('#setupTradition'),setupTheme=overlay.querySelector('#setupTheme');
+356-    if(setupName)setupName.value=String(profile.name||'').slice(0,40);
+357-    if(setupTradition)setupTradition.value=data.tradition||'';
+358-    if(setupTheme)setupTheme.value=window.NaseemTheme?.get?.()||'system';
+359-    const citySelect=overlay.querySelector('#setupCity'),salah=window.NoorSalah;
+360-    citySelect.innerHTML='<option value="">Keep current location</option>'+(salah?.CITIES||[]).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+--
+376-          else notificationMessage='Notification permission is not available yet. You can enable reminders in Settings.';
+377-        }catch(_){notificationMessage='Notification permission could not be checked. You can enable reminders later in Settings.';}
+378-      }else notificationMessage='Install the Android app to receive background Adhan and Jamaat notifications.';
+379-      overlay.remove();
+380-      renderTraditions();syncTraditionNote();document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
+381-      notify((skipped?'Setup skipped. ':'Your preferences are saved. ')+notificationMessage);
+382-      document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{name}}));
+383-    };
+384-    overlay.querySelector('#setupGps').addEventListener('click',()=>{if(!navigator.geolocation){notify('Location is unavailable. Choose a city instead.');return;}navigator.geolocation.getCurrentPosition(pos=>{salah?.setLocation({id:'gps',name:`My location (${pos.coords.latitude.toFixed(3)}°, ${pos.coords.longitude.toFixed(3)}°)`,lat:pos.coords.latitude,lng:pos.coords.longitude,tz:Intl.DateTimeFormat().resolvedOptions().timeZone,source:'gps'});notify('Prayer location saved.');},()=>notify('Location was not available. You can choose a city instead.'),{enableHighAccuracy:false,timeout:12000,maximumAge:600000});});
+385-    overlay.querySelector('#setupFinish').addEventListener('click',()=>finish(false));
+386-    overlay.querySelector('#setupSkip').addEventListener('click',()=>finish(true));
+387-  }
+388:  window.setTimeout(()=>startSetup(),2200);
+389-  // Android back-button navigation: return to More from feature detail screens.
+390-  document.addEventListener('naseem:back',e=>{const active=document.querySelector('.screen.active');if(!active||active.id==='homeScreen')return;e.preventDefault();if(active.id==='duaScreen'){open('salahScreen');return;}if(active.id==='glanceScreen'){open('homeScreen');return;}if(Object.values(routes).includes(active.id)||['qiblaScreen','zakatScreen'].includes(active.id))open('featuresScreen');else open('homeScreen');});
+391-  window.NaseemV404={hijriParts,hijriNumeric,hijriToGregorian,hijriMonthLength,duas,traditions,refreshGlance};
+392-})();
+
+========== ONBOARDING STORAGE REFERENCES ==========
+www/settings.js:205:    localStorage.removeItem('naseem-onboarding-complete-v1');
+www/v404.js:166:  if(data.setupComplete!==true&&!data.tradition){data.tradition='hanafi';save();}
+www/v404.js:349:    const setupDone=localStorage.getItem('naseem-onboarding-complete-v1')==='1'||data.setupComplete===true;
+www/v404.js:350:    if(setupDone){try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}return;}
+www/v404.js:351:    const overlay=document.createElement('div');overlay.className='v404-onboarding';
+www/v404.js:367:      data.setupComplete=true;data.setupCompletedAt=Date.now();save();try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}
+www/features-v404.css:1:.v404-screen{padding-bottom:26px}.v404-card{padding:17px;margin:0 0 12px;border:1px solid var(--line,rgba(255,255,255,.09));border-radius:20px;background:var(--card,rgba(255,255,255,.035));color:var(--text)}.v404-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.v404-centre{text-align:center;display:flex;flex-direction:column;gap:4px}.v404-centre strong{font-size:17px}.v404-centre small,.v404-note,.v404-reference{color:var(--muted);font-size:11px;line-height:1.65}.v404-btn,.v404-icon-btn{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:12px;padding:9px 13px;font-size:20px}.v404-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:18px;text-align:center}.v404-weekday{font-size:10px;color:var(--muted);padding:7px 0}.v404-day{padding:10px 2px;border-radius:11px;font-size:12px;background:rgba(127,127,127,.08)}.v404-day.today{background:var(--accent,#20a875);color:#fff;font-weight:800}.v404-input{display:block;width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:var(--surface,rgba(127,127,127,.08));color:var(--text);font:inherit;margin:9px 0 13px}.v404-label{display:block;margin-top:14px;font-size:11px;color:var(--muted)}.v404-list{display:grid;gap:10px}.v404-chips{display:flex;gap:7px;overflow:auto;padding-bottom:3px}.v404-chip{white-space:nowrap;border:1px solid var(--line);background:transparent;color:var(--text);border-radius:999px;padding:8px 12px;font-size:11px}.v404-chip.selected,.v404-option.selected{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}.dua-card p{font-size:13px;line-height:1.7}.v404-arabic{font-family:serif;font-size:25px;line-height:1.9;text-align:right;margin:12px 0;color:var(--text)}.v404-latin{color:var(--muted);font-style:italic}.v404-option{display:grid;grid-template-columns:1fr auto;gap:5px 12px;text-align:left;padding:14px;border:1px solid var(--line);border-radius:14px;background:transparent;color:var(--text)}.v404-option small{grid-column:1;color:var(--muted)}.v404-option span{grid-column:2;grid-row:1/3;align-self:center;font-size:11px;color:var(--accent)}.v404-lesson{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(127,127,127,.05)}.v404-lesson summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}.v404-lesson summary::-webkit-details-marker{display:none}.v404-lesson p,.v404-occasion p{font-size:12px;line-height:1.7;color:var(--muted);margin-bottom:0}.v404-lesson-num{color:var(--accent);font-variant-numeric:tabular-nums}.v404-occasion{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.v404-occasion:last-child{border-bottom:0}.v404-occasion small{display:block;color:var(--muted);margin-top:3px}.v404-occasion time{white-space:nowrap;color:var(--accent);font-size:12px}.v404-widget-preview{display:grid;gap:7px;padding:18px;border-radius:17px;background:linear-gradient(145deg,#1d2824,#101512);color:#f1f5f2;margin:12px 0}.v404-widget-preview strong{font-size:9px;letter-spacing:.16em;color:#a4b9ad}.v404-widget-preview b{font-size:27px}.v404-widget-preview small{font-size:11px;color:#b6c6bd}.v404-widget-preview.tasbeeh{background:linear-gradient(145deg,#20232b,#111318)}.v404-primary,.v404-secondary{border:0;border-radius:999px;padding:12px 17px;font-weight:700;font-size:12px}.v404-primary{background:var(--accent,#20a875);color:white}.v404-secondary{background:transparent;border:1px solid var(--line);color:var(--text)}.v404-glance{padding:20px 0}.v404-glance small,.v404-live-dot{font-size:10px;letter-spacing:.12em;color:var(--accent)}.v404-glance h2{font-size:23px;margin:12px 0}.v404-glance p{font-size:17px;line-height:1.7}.v404-glance strong{font-size:12px;color:var(--muted)}.v404-feed-settings{border-top:1px solid var(--line);padding-top:13px}.v404-feed-settings summary{cursor:pointer;font-size:12px}.v404-onboarding{position:fixed;inset:0;z-index:10001;background:rgba(4,7,6,.88);display:grid;place-items:center;padding:18px;backdrop-filter:blur(12px)}.v404-onboard-panel{width:min(100%,420px);box-sizing:border-box;padding:25px;border-radius:25px;background:#151a17;color:#f2f4f1;border:1px solid rgba(255,255,255,.1);box-shadow:0 25px 80px #0008}.v404-onboard-panel h1{font-size:28px;margin:12px 0}.v404-onboard-panel p,.v404-onboard-panel small{color:#b4c0b8;font-size:12px;line-height:1.7}.v404-onboard-mark{font-size:42px;color:#61c49a;margin-top:15px}.v404-onboard-actions{display:flex;gap:8px;margin:18px 0 10px}.v404-onboard-actions button{flex:1}body.light .v404-card{background:#fff;border-color:#e7e4dc}body.light .v404-widget-preview{box-shadow:0 8px 24px #0001}
+www/features-v404.css:118:.v404-onboarding{overscroll-behavior:contain;overflow-y:auto;padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom))}
+www/features-v404.css:140:#extraRoutineGrid{margin-bottom:18px}.extra-routine{min-height:124px}.st-seg#stThemeSeg{flex-wrap:wrap}.st-seg#stThemeSeg button{min-width:58px}.glance-quiz{margin-top:16px}.glance-quiz .v404-option{width:100%;cursor:pointer}.glance-quiz .v404-option:disabled{opacity:.72;cursor:default}.v404-onboard-panel{background:var(--panel,#151a17);color:var(--text)}body.light .v404-onboarding{background:rgba(236,239,235,.88)}body.light .v404-onboard-panel{background:#fff;color:#1d2822;border-color:#dce5de}body.light .v404-onboard-panel p,body.light .v404-onboard-panel small{color:#65736b}body.light .v404-check{color:#394b41}
+tests/test_m2_ui.py:14:    ctx.add_init_script("localStorage.setItem('naseem-onboarding-complete-v1','1')")
+tests/test_m2_ui.py:24:    ok('onboarding does not cover returning-user navigation', not ev("!!document.querySelector('.v404-onboarding')"))
+tests/test_v404_static.py:15:assert 'naseem-onboarding-complete-v1' in js and 'naseem:open-onboarding' not in js
+tests/test_v404_static.py:25:assert 'naseem-onboarding-complete-v1' in settings
+tests/test_v404_source.js:22:assert.match(js, /setupComplete/);
+tests/test_v404_source.js:23:assert.match(js, /naseem-onboarding-complete-v1/);
+tests/test_ui_logic.cjs:96:  ok(await page.locator('.v404-onboarding').count() === 1, 'onboarding shows on first launch');
+tests/test_ui_logic.cjs:100:  ok(await page.locator('.v404-onboarding').count() === 0, 'onboarding closes after finishing');
+tests/test_ui_logic.cjs:103:  ok(await page.locator('.v404-onboarding').count() === 0, 'onboarding does not reopen on the next launch');
+tests/test_ui_logic.cjs:109:  await p2.addInitScript(() => { if (!localStorage.getItem('seeded')) { localStorage.setItem('seeded', '1'); localStorage.setItem('noorSalahV1', JSON.stringify({ method: 'egypt', asr: 'standard' })); localStorage.setItem('naseem-v404-settings', JSON.stringify({ tradition: 'hanafi', setupComplete: true })); } });
+tests/test_v407_scope.js:6:assert.doesNotMatch(html,/stOpenSetup/);assert.match(v,/naseem-onboarding-complete-v1/);assert.doesNotMatch(v,/naseem:open-onboarding/);assert.match(v,/notifications\.request\(\)/);
+tests/test_custom_routines_ui.py:11:        ctx.add_init_script("localStorage.setItem('naseem-onboarding-complete-v1','1')")
+tests/test_widget_studio_ui.py:11:        ctx.add_init_script("localStorage.setItem('naseem-onboarding-complete-v1','1')")
+tests/test_public_updates.cjs:9:assert.match(m2, /add_init_script\("localStorage\.setItem\('naseem-onboarding-complete-v1','1'\)"\)/);
+
+========== SCRIPT LOAD ORDER ==========
+242:  <script src="accent.js"></script>
+243:  <script src="intro.js"></script>
+244:  <script src="native.bundle.js"></script>
+245:  <script src="sheet.js"></script>
+246:  <script src="adhkar-core.js"></script>
+247:  <script src="adhkar-data.js"></script>
+248:  <script src="app.js"></script>
+249:  <script src="v3.js"></script>
+250:  <script src="time12.js"></script>
+251:  <script src="salah.js"></script>
+252:  <script src="prayer-dashboard.js"></script>
+253:  <script src="salah-settings.js"></script>
+254:  <script src="reminders.js"></script>
+255:  <script src="profile.js"></script>
+256:  <script src="settings.js"></script>
+257:  <script src="motion.js"></script>
+258:  <script src="qibla-core.js"></script>
+259:  <script src="zakat-core.js"></script>
+260:  <script src="features.js"></script>
+261:  <script src="v404.js"></script>
+262:  <script src="hadith-library.js"></script>
+263:  <script src="quran-reader.js"></script>
+264:  <script src="public-updates.js"></script>
+
+========== M2 TEST ==========
+import os
+import json, re, os, sys
+from playwright.sync_api import sync_playwright
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from common import *
+R = Results(); srv = Server(8790); ok = R.ok
+TWELVE_BAD = re.compile(r'\b\d{1,2}:\d{2}\b(?!\s?[AP]M)')
+with sync_playwright() as p:
+    b = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH'), args=['--no-sandbox'])
+    def ctx_new(**kw):
+        return b.new_context(viewport={'width': 393, 'height': 852}, device_scale_factor=1, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata', accept_downloads=True, **kw)
+    ctx = ctx_new(geolocation={'latitude': 28.6139, 'longitude': 77.2090}, permissions=['geolocation'])
+    # This suite validates navigation after setup; first-launch onboarding is tested separately.
+    ctx.add_init_script("localStorage.setItem('naseem-onboarding-complete-v1','1')")
+    pg = ctx.new_page(); errs = []; dialogs = []
+    pg.on('pageerror', lambda e: errs.append(str(e)))
+    ACCEPT = [True]
+    pg.on('dialog', lambda d: (dialogs.append(d.message), d.accept() if ACCEPT[0] else d.dismiss()))
+    pg.goto(srv.url()); pg.wait_for_timeout(2600)
+    cdp = ctx.new_cdp_session(pg)
+    ev = pg.evaluate
+    # ---------- navigation + scrolling ----------
+    labels = ev("[...document.querySelectorAll('.nav-item small')].map(e=>e.textContent)")
+    ok('onboarding does not cover returning-user navigation', not ev("!!document.querySelector('.v404-onboarding')"))
+    ok('six tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'More', 'Zakat', 'Settings'], str(labels))
+    for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen']:
+        pg.click(f'.nav-item[data-screen="{sid}"]'); pg.wait_for_timeout(450)
+        ev("window.scrollTo(0,0)"); pg.wait_for_timeout(100)
+        h = ev("document.documentElement.scrollHeight")
+        drag(cdp, 700, 300); y = ev("scrollY")
+        if h > 900: ok(f'touch scroll {sid}', y > 100, f'y={y}')
+    # ---------- defaults: Kashmir, Karachi method, Hanafi ----------
+    st = ev("NoorSalah.get()")
+    ok('default location Srinagar Kashmir', st['loc']['name'] == 'Srinagar, Kashmir' and abs(st['loc']['lat'] - 34.0837) < 1e-3 and st['loc']['tz'] == 'Asia/Kolkata' and st['loc']['source'] == 'default')
+    ok('Hanafi Asr default', st['asr'] == 'hanafi' and st['method'] == 'karachi' and st['mode'] == 'calculated')
+    pg.click('.nav-item[data-screen="homeScreen"]'); pg.wait_for_timeout(500); ev("window.scrollTo(0,0)")
+    home = pg.inner_text('#prayerDashboard')
+    t = ev("NoorSalah.timesFor(new Date())")
+    ok('home pre-filled without any setup', all(ev(f"NoorTime.to12('{t[k]}')") in home for k in ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']), home[:80])
+    ok('home 12-hour only', not TWELVE_BAD.findall(home), str(TWELVE_BAD.findall(home)))
+    dm = int(t['dhuhr'][:2]) * 60 + int(t['dhuhr'][3:])
+    ok('Srinagar Dhuhr is around 12:15 (longitude west of IST meridian)', 12 * 60 <= dm <= 12 * 60 + 40, t['dhuhr'])
+    ok('home shows Jamaat for next prayer', 'Jamaat' in pg.inner_text('#pdNextJamaat'), pg.inner_text('#pdNextJamaat'))
+    ok('home has no editor or reminder card any more', ev("!document.getElementById('pdEditor') && !document.getElementById('rmCard')"))
+    ok('Prayer settings button opens Settings › Salah', (pg.click('#pdSettings'), pg.wait_for_timeout(700), ev("document.querySelector('.screen.active').id=='settingsScreen' && document.getElementById('stSalah').open"))[2])
+    # ---------- Settings structure ----------
+    groups = ev("[...document.querySelectorAll('.st-group .st-title strong')].map(e=>e.textContent)")
+    ok('settings groups', groups == ['Account', 'Salah', 'Adhkar', 'Notifications', 'Appearance', 'Audio & Haptics', 'Data & Backup', 'About Naseem'], str(groups))
+    ok('Salah settings 12-hour only', not TWELVE_BAD.findall(pg.inner_text('#stSalah .st-body')), str(TWELVE_BAD.findall(pg.inner_text('#stSalah .st-body')))[:80])
+    # ---------- method / Asr ----------
+    asr_h = ev("NoorSalah.timesFor(new Date()).asr"); fajr_k = ev("NoorSalah.timesFor(new Date()).fajr")
+    pg.select_option('#ssAsr', 'standard'); pg.wait_for_timeout(200)
+    asr_s = ev("NoorSalah.timesFor(new Date()).asr"); mm = lambda v: int(v[:2]) * 60 + int(v[3:])
+    ok('Standard Asr earlier than Hanafi by 30-70 min', 30 <= mm(asr_h) - mm(asr_s) <= 70, f'{asr_h} vs {asr_s}')
+    pg.select_option('#ssAsr', 'hanafi'); pg.select_option('#ssMethod', 'isna'); pg.wait_for_timeout(200)
+    ok('method change moves Fajr (ISNA 15° later than Karachi 18°)', mm(ev("NoorSalah.timesFor(new Date()).fajr")) > mm(fajr_k) + 8)
+    pg.select_option('#ssMethod', 'karachi'); pg.wait_for_timeout(200)
+    # ---------- adjustments ----------
+    base = ev("NoorSalah.timesFor(new Date()).fajr")
+    for _ in range(5): pg.click('[data-a="adj"][data-k="fajr"][data-d="1"]')
+    ok('+5 min adjustment', mm(ev("NoorSalah.timesFor(new Date()).fajr")) == mm(base) + 5 and ev("NoorSalah.get().adj.fajr") == 5)
+    pg.reload(); pg.wait_for_timeout(2200)
+    ok('adjustment persists after restart', ev("NoorSalah.get().adj.fajr") == 5)
+    open_group(pg, 'stSalah'); pg.click('[data-a="resetAdj"]'); pg.wait_for_timeout(200)
+    ok('reset to calculated', ev("NoorSalah.get().adj.fajr") == 0 and mm(ev("NoorSalah.timesFor(new Date()).fajr")) == mm(base))
+    # ---------- city + GPS + decline ----------
+    dhuhr_sri = ev("NoorSalah.timesFor(new Date()).dhuhr")
+    pg.select_option('#ssCity', 'delhi'); pg.wait_for_timeout(200)
+    ok('manual city (Delhi) changes times', mm(ev("NoorSalah.timesFor(new Date()).dhuhr")) < mm(dhuhr_sri) - 5 and ev("NoorSalah.get().loc.source") == 'manual')
+    pg.select_option('#ssCity', 'srinagar'); pg.wait_for_timeout(200)
+    ok('back to default city', ev("NoorSalah.get().loc.source") == 'default')
+    pg.click('[data-a="gps"]'); pg.wait_for_timeout(1500)
+    loc = ev("NoorSalah.get().loc")
+    ok('GPS detection sets location (mock fix: Delhi)', loc['source'] == 'gps' and abs(loc['lat'] - 28.6139) < 1e-3, str(loc))
+    ok('GPS choice is selectable and labelled', 'from GPS' in pg.inner_text('#stSalah .st-body'))
+    pg.select_option('#ssCity', 'srinagar'); pg.wait_for_timeout(200)
+    # ---------- Jamaat ----------
+    j = ev("NoorSalah.jamaatFor(new Date())"); tt = ev("NoorSalah.timesFor(new Date())")
+    ok('default Jamaat offsets (20/15/15/5/15)', [mm(j[k]) - mm(tt[k]) for k in ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']] == [20, 15, 15, 5, 15])
+    pg.click('[data-a="joff"][data-k="dhuhr"][data-d="1"]'); pg.click('[data-a="joff"][data-k="dhuhr"][data-d="1"]')
+    ok('Jamaat offset editable per prayer', mm(ev("NoorSalah.jamaatFor(new Date()).dhuhr")) - mm(tt['dhuhr']) == 17 and mm(ev("NoorSalah.jamaatFor(new Date()).asr")) - mm(tt['asr']) == 15)
+    pg.select_option('[data-a="jmode"][data-k="isha"]', 'fixed'); pg.wait_for_timeout(250)
+    pg.select_option('#ssj-isha [data-p="h"]', '8'); pg.select_option('#ssj-isha [data-p="m"]', '45'); pg.select_option('#ssj-isha [data-p="ap"]', 'PM'); pg.wait_for_timeout(250)
+    ok('fixed Jamaat time (8:45 PM) stored and used', ev("NoorSalah.jamaatFor(new Date()).isha") == '20:45' and ev("NoorSalah.get().jamaat.isha.fixed") == '20:45')
+    ok('Jamaat adhan time unaffected', ev("NoorSalah.timesFor(new Date()).isha") == tt['isha'])
+    pg.reload(); pg.wait_for_timeout(2200)
+    ok('Jamaat settings persist', ev("NoorSalah.jamaatFor(new Date()).isha") == '20:45' and mm(ev("NoorSalah.jamaatFor(new Date()).dhuhr")) - mm(tt['dhuhr']) == 17)
+    open_group(pg, 'stSalah'); pg.click('[data-a="resetJamaat"]'); pg.wait_for_timeout(200)
+    ok('Jamaat reset', ev("NoorSalah.get().jamaat.isha.mode") == 'offset' and ev("NoorSalah.get().jamaat.dhuhr.offset") == 15)
+    # ---------- own times mode ----------
+    pg.click('[data-a="mode"][data-v="manual"]'); pg.wait_for_timeout(300)
+    pg.select_option('#ssm-fajr [data-p="h"]', '5'); pg.select_option('#ssm-fajr [data-p="m"]', '10'); pg.select_option('#ssm-fajr [data-p="ap"]', 'AM')
+    pg.click('[data-a="saveManual"]'); pg.wait_for_timeout(300)
+    ok('own times saved and used', ev("NoorSalah.timesFor(new Date()).fajr") == '05:10' and ev("NoorSalah.get().mode") == 'manual')
+    pg.click('.nav-item[data-screen="homeScreen"]'); pg.wait_for_timeout(300)
+    ok('home reflects own times in 12-hour', '5:10 AM' in pg.inner_text('#pdTimetable') and 'YOUR OWN TIMES' in pg.inner_text('#pdPlace'))
+    open_group(pg, 'stSalah'); pg.click('[data-a="mode"][data-v="calculated"]'); pg.wait_for_timeout(300)
+    ok('back to calculated', ev("NoorSalah.get().mode") == 'calculated' and ev("NoorSalah.timesFor(new Date()).fajr") == base)
+    # ---------- Account ----------
+    open_group(pg, 'stAccount')
+
+========== TEST RUNNER BROWSER SECTION ==========
+1-#!/usr/bin/env bash
+2-# Run source and phone-sized browser tests from the project root.
+3:# Needs: npm dependencies plus Playwright Chromium installed.
+4-set -euo pipefail
+5-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+6-cd "$ROOT"
+7-node tests/test_new_tools.js
+8-node tests/test_v404_source.js
+9-node tests/test_v407_scope.js
+10-node tests/test_android_patch.mjs
+11-node tests/test_adhkar_core.js
+12-node tests/test_custom_routines.js
+13-node tests/test_custom_widget.js
+14-node tests/test_signing.mjs
+15-node tests/test_hadith_library.js
+16-node tests/test_quran_reader.js
+17-node tests/test_release_config.mjs
+18-node tests/test_public_updates.cjs
+19-rm -rf tests/.build && mkdir -p tests/.build && cp -r www tests/.build/wwwtest
+20-S="$ROOT/tests/stubs"
+21-ESB=""
+22-command -v esbuild >/dev/null 2>&1 && ESB=esbuild
+23-[ -x "$ROOT/node_modules/.bin/esbuild" ] && ESB="$ROOT/node_modules/.bin/esbuild"
+24-[ -x /opt/npm-tools/node_modules/.bin/esbuild ] && ESB=/opt/npm-tools/node_modules/.bin/esbuild
+25-if [ -z "$ESB" ]; then echo "Missing esbuild. Run npm install before the browser test suite." >&2; exit 2; fi
+26-node <<'NODE'
+27-const esbuild = require('esbuild');
+28-const path = require('path');
+29-const stubs = path.resolve('tests/stubs');
+30-
+31-esbuild.buildSync({
+32-  entryPoints: ['www/native.js'],
+33-  bundle: true,
+34-  platform: 'browser',
+35-  format: 'iife',
+36-  outfile: 'tests/.build/wwwtest/native.bundle.js',
+37-  alias: {
+38-    '@capacitor/core': path.join(stubs, 'core.js'),
+--
+44-    '@capacitor/share': path.join(stubs, 'share.js')
+45-  },
+46-  logLevel: 'warning'
+47-});
+48-NODE
+49-
+50-python3 tests/test_v404_static.py
+51-python3 tests/test_navigation_contract.py
+52:IS_TERMUX=0
+53-case "${PREFIX:-}" in
+54:  /data/data/com.termux/*) IS_TERMUX=1 ;;
+55-esac
+56:[ -n "${TERMUX_VERSION:-}" ] && IS_TERMUX=1
+57-
+58:if [ "$IS_TERMUX" -eq 1 ]; then
+59:  echo "Termux detected: skipping 7 Playwright browser tests."
+60-  echo "These tests remain enabled for Linux/GitHub Actions."
+61-else
+62:  python3 tests/test_m2_ui.py
+63-  python3 tests/test_scheduling.py
+64-  python3 tests/test_motion.py
+65-  python3 tests/test_p0.py
+66-  python3 tests/test_adhkar_ui.py
+67-  python3 tests/test_custom_routines_ui.py
+68-  python3 tests/test_widget_studio_ui.py
+69-  python3 tests/test_compass_nav.py
+70-fi
+71-python3 tests/verify_salah_engine.py
+72-node tests/test_hadith_library.js
+73-node tests/test_quran_reader.js
+
+========== GIT STATUS ==========
+?? diagnose-m2.sh
+?? m2-diagnostic-report.txt
+
+========== END ==========

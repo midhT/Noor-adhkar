@@ -1,0 +1,15 @@
+
+.DS_Store
+android/.gradle/
+android/app/build/
+android/build/
+node_modules/
+tests/.build/
+www/native.bundle.js
+
+# Signing material must never be committed
+signing/
+*.keystore
+*.jks
+.env
+.env.*
