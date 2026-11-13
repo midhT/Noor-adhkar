@@ -42,9 +42,22 @@ with sync_playwright() as p:
     def fire(alpha, absolute=True):
         ev("(a,abs)=>{const e=new Event('deviceorientationabsolute');e.alpha=a;e.absolute=abs;window.dispatchEvent(e)}" if False else f"(()=>{{const e=new Event('deviceorientationabsolute');e.alpha={alpha};e.absolute={'true' if absolute else 'false'};window.dispatchEvent(e)}})()")
         pg.wait_for_timeout(150)
-    rot = lambda: ev("(()=>{const m=getComputedStyle(document.getElementById('homeQiblaArrow')).transform;if(m==='none')return null;const v=m.match(/matrix\\(([^)]+)\\)/)[1].split(',').map(Number);let a=Math.atan2(v[1],v[0])*180/Math.PI;return (a+360)%360})()")
+    def rot():
+        value = ev("""(() => {
+            const el = document.getElementById('homeQiblaArrow');
+            if (!el) return null;
+            const m = getComputedStyle(el).transform;
+            if (!m || m === 'none') return null;
+            const v = m.match(/matrix\(([^)]+)\)/);
+            if (!v) return null;
+            const n = v[1].split(',').map(Number);
+            if (n.length < 2 || !Number.isFinite(n[0]) || !Number.isFinite(n[1])) return null;
+            return (Math.atan2(n[1], n[0]) * 180 / Math.PI + 360) % 360;
+        })()""")
+        return float(value) if value is not None else float('nan')
+
     fire(0)   # phone facing north: arrow should sit at the bearing
-    ok('sensor auto-started: Home label leaves "compass off" without pressing Enable', 'compass off' not in pg.inner_text('#homeQiblaMiniDirection'), pg.inner_text('#homeQiblaMiniDirection'))
+    ok('sensor auto-started: Home label leaves compass off without pressing Enable', 'compass off' not in pg.inner_text('#homeQiblaMiniDirection'), pg.inner_text('#homeQiblaMiniDirection'))
     ok('Home arrow at the bearing when phone faces north', abs(((rot() - bearing + 180) % 360) - 180) < 2, f'{rot()} vs {bearing}')
     fire(360 - 90)  # phone now facing east (heading 90): arrow = bearing - 90
     want = (bearing - 90) % 360
