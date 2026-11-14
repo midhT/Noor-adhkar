@@ -129,47 +129,11 @@
     ['Final sitting and salam','Complete the required rakats, sit for tashahhud, send blessings upon the Prophet, and conclude with salam. Learn the exact sequence and recitations from a trusted teacher.'],
     ['Ghusl overview','Ghusl is a full ritual bath required in specific circumstances. Learn its obligations and recommended practices from a reliable teacher; do not rely on a short app summary for complex cases.']
   ];
-  const salahBody=`<div class="v404-card"><p class="v404-note">A learning aid, not a substitute for a qualified teacher. Some details differ between recognised schools.</p><div id="salahLessons" class="v404-list"></div></div>`;
+  const salahBody=`<div class="v404-card"><p class="v404-note">A learning aid, not a substitute for a qualified teacher. Details and recitations can vary by trusted local teaching.</p><div id="salahLessons" class="v404-list"></div></div>`;
   screen('salahLearningScreen','Salah learning','LEARN STEP BY STEP',salahBody);
   $('salahLessons').innerHTML=lessons.map((x,i)=>`<details class="v404-lesson"><summary><span class="v404-lesson-num">${String(i+1).padStart(2,'0')}</span><strong>${esc(x[0])}</strong></summary><p>${esc(x[1])}</p></details>`).join('');
 
-  // Traditional learning profiles are preferences only; they do not calculate rulings.
-  const traditions=[['hanafi','Sunni · Hanafi','A recognised Sunni school of jurisprudence.'],['shafii','Sunni · Shafi‘i','A recognised Sunni school of jurisprudence.'],['maliki','Sunni · Maliki','A recognised Sunni school of jurisprudence.'],['hanbali','Sunni · Hanbali','A recognised Sunni school of jurisprudence.'],['jafari','Shia · Ja‘fari (Twelver)','A recognised Ja‘fari school of jurisprudence.']];
-  const SCHOOL_GUIDANCE={
-    hanafi:[['Asr timing','Asr begins when an object’s shadow reaches twice its height, in addition to its noon shadow.'],['Prayer structure','Hanafi teaching distinguishes Fard, Wajib, Sunnah and Nafl; Witr is treated as Wajib.'],['Common practice','The opening takbir is followed by folded hands and the opening supplication; details such as recitation behind the imam follow Hanafi rulings.'],['Learn next','Rak‘at structure, Witr and Qunut, Sajdah Sahw, and the rules of following an imam.']],
-    shafii:[['Asr timing','Asr begins when an object’s shadow reaches its height, in addition to its noon shadow.'],['Prayer structure','Shafi‘i teaching classifies the pillars (arkan), conditions and recommended Sunnahs distinctly; Witr is Sunnah.'],['Common practice','The school has specific guidance on basmalah, recitation behind the imam, raising the hands and the sitting posture.'],['Learn next','Pillars and conditions, recitation in each rak‘ah, Qunut in Fajr, and Witr.']],
-    maliki:[['Asr timing','Asr follows the single-shadow rule in the standard calculation.'],['Prayer structure','Maliki teaching has its own classifications and details for obligatory acts and Sunnahs; Witr is recommended.'],['Common practice','The school recognises practices such as sadl (arms at the sides) in prayer; details are taught according to the relied-upon Maliki position.'],['Learn next','Prayer prerequisites, recitation, sadl, Qunut practice and Witr.']],
-    hanbali:[['Asr timing','Asr follows the single-shadow rule in the standard calculation.'],['Prayer structure','Hanbali teaching distinguishes pillars, obligations and Sunnahs; Witr is a strongly emphasised Sunnah.'],['Common practice','The school has specific narrational preferences for raising the hands, recitation and supplications in prayer.'],['Learn next','Pillars and obligations, raising the hands, Qunut in Witr and prostration of forgetfulness.']],
-    jafari:[['Prayer timing','Ja‘fari timing conventions include distinct definitions for Fajr and Maghrib; the selected method uses a Ja‘fari calculation profile.'],['Prayer structure','Ja‘fari jurisprudence has distinct rules for combining prayers, Qunut, hand placement and recitation.'],['Common practice','Follow a qualified Ja‘fari authority (marja‘) for the exact method and rulings; do not apply Sunni school summaries to Ja‘fari practice.'],['Learn next','Wudu, prayer times, recitation, Qunut, sajdah and the rules of combining prayers.']]
-  };
-
-  const profileBody=`<div class="v404-card"><p>Choose your school. Naseem uses this preference for the Asr shadow rule and displays school-specific learning notes. Calculation method and jurisprudential school are separate settings. Local mosque timetables remain the practical authority for congregational prayer.</p><div id="traditionOptions" class="v404-list"></div><p class="v404-note" id="traditionSaved"></p></div><div class="v404-card"><span class="eyebrow">YOUR SCHOOL'S PRAYER GUIDE</span><div id="schoolGuidance" class="v404-list"></div><p class="v404-note">This is an introductory comparison, not a fatwa. Details can vary within a school and by circumstance. Follow a qualified teacher of your tradition.</p><div class="v404-list"><a href="https://daruliftabirmingham.co.uk/method-of-hanafi-salah/" target="_blank" rel="noopener noreferrer">Hanafi Salah guide · Darul Ifta Birmingham</a><a href="https://seekersguidance.org/answers/prayer-shafii-fiqh/" target="_blank" rel="noopener noreferrer">Shafi‘i prayer answers · SeekersGuidance</a><a href="https://www.fiqhpedia.org/articles/article:kwfe:v27:a016?lang=en" target="_blank" rel="noopener noreferrer">Comparative Sunni fiqh · Kuwait Fiqh Encyclopedia</a><a href="https://www.sistani.org/english/book/48/" target="_blank" rel="noopener noreferrer">Ja‘fari prayer rulings · Office of Sayyid al-Sistani</a></div></div>`;
-  screen('traditionScreen','Traditional profiles','YOUR LEARNING PATH',profileBody);
-  function renderTraditions(){ $('traditionOptions').innerHTML=traditions.map(t=>`<button class="v404-option ${data.tradition===t[0]?'selected':''}" data-tradition="${t[0]}"><strong>${esc(t[1])}</strong><small>${esc(t[2])}</small><span>${data.tradition===t[0]?'Selected':'Select'}</span></button>`).join('');$('traditionSaved').textContent=`Current preference: ${(traditions.find(t=>t[0]===data.tradition)||null)?.[1]||'Not selected'}. You can change this any time.`; }
-  const syncTraditionNote=()=>{
-    const chosen=traditions.find(t=>t[0]===data.tradition), label=chosen?.[1]||'Not selected';
-    const lessonNote=$('salahLearningScreen').querySelector('.v404-note');
-    if(lessonNote)lessonNote.textContent=`Learning profile: ${label}. The learning cards now follow this selected school at an introductory level. Confirm detailed rulings with a qualified teacher.`;
-    const guide=$('schoolGuidance');if(guide){const rows=SCHOOL_GUIDANCE[data.tradition]||[];guide.innerHTML=rows.map(([h,t])=>`<article class="v404-lesson"><strong>${esc(h)}</strong><p>${esc(t)}</p></article>`).join('');}
-    const hero=$('salahScreen')?.querySelector('.v3-hero');
-    if(hero){hero.querySelector('.v3-kicker').textContent='SELECTED LEARNING PROFILE';hero.querySelector('h2').textContent=chosen?chosen[1]:'Choose a learning profile';hero.querySelector('p').textContent=`Salah learning follows your ${chosen?chosen[1]:'selected'} profile at an introductory level. Follow a qualified teacher for detailed rulings.`;hero.querySelector('.v3-badge').textContent=chosen?chosen[1].toUpperCase()+' · LEARNING GUIDE':'LEARNING PROFILE NOT SELECTED';}
-  };
-  if(data.setupComplete!==true&&!data.tradition){data.tradition='hanafi';save();}
-  // Migration: adopt a previously saved profile as the school WITHOUT touching the saved Asr rule or method.
-  {const S=window.NoorSalah;if(S&&S.get&&S.SCHOOLS){const st=S.get();if(!st.school&&S.SCHOOLS[data.tradition])S.setSchool(data.tradition,false);else if(st.school&&S.SCHOOLS[st.school]&&st.school!==data.tradition){data.tradition=st.school;save();}}}
-  renderTraditions();syncTraditionNote();
-  // Single source of truth for the school is NoorSalah.get().school; the local copy only mirrors it for the learning screens.
-  function applySchool(id){
-    const S=window.NoorSalah;if(!S||!S.setSchool(id)){notify('That school is not supported.');return false;}
-    data.tradition=id;save();return true;
-  }
-  document.addEventListener('naseem:tradition-changed',()=>{const S=window.NoorSalah,school=S?.get?.().school;if(school&&school!==data.tradition){data.tradition=school;save();}renderTraditions();syncTraditionNote();});
-  $('traditionOptions').addEventListener('click',e=>{
-    const b=e.target.closest('[data-tradition]');if(!b)return;
-    if(!applySchool(b.dataset.tradition))return;
-    notify(data.tradition==='jafari'?'Ja‘fari school saved. Calculation method set to Ja‘fari; you can still change it in Salah settings.':`School saved. Asr now uses the ${data.tradition==='hanafi'?'Hanafi (double shadow)':'standard (single shadow)'} rule; the calculation method is unchanged.`);
-    document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
-  });
+  // Asr timing is configured as Earlier/Later in Salah settings. No school labels are required.
 
   // Islamic occasions use the local Hijri calendar and are explicitly approximate.
   const occasions=[['1 Muharram','Islamic New Year',1,1,'A new Hijri year begins. Practices and observances vary.'],['10 Muharram','Ashura',1,10,'A significant day of fasting and remembrance; consult trusted scholarship for its merits.'],['12 Rabi‘ al-Awwal','Mawlid (observance varies)',3,12,'Commemorations vary across communities and scholars.'],['27 Rajab','Isra and Mi‘raj (date not definitive)',7,27,'The exact historical date is not established with certainty.'],['15 Sha‘ban','Mid-Sha‘ban (observance varies)',8,15,'Practices differ; avoid treating disputed reports as universally established.'],['1 Ramadan','Ramadan begins',9,1,'The start depends on local moon sighting or the calendar authority followed.'],['1 Shawwal','Eid al-Fitr',10,1,'The date depends on the end of Ramadan and local moon sighting.'],['9 Dhul-Hijjah','Day of ‘Arafah',12,9,'The date follows the local or adopted Hijri calendar.'],['10 Dhul-Hijjah','Eid al-Adha',12,10,'The date depends on the local or adopted Hijri calendar.']];
@@ -296,7 +260,7 @@
   const BUILTIN_GLANCE=[
     {type:'Quranic reminder',title:'A moment of reflection',body:'Indeed, with hardship comes ease.',reference:'Qur’an 94:5–6'},
     {type:'Daily lesson',title:'Learn the meaning of Tasbeeh',body:'SubhanAllah means that Allah is free from every imperfection. Alhamdulillah is praise and gratitude to Allah.',reference:'Daily learning · Dhikr'},
-    {type:'Salah lesson',title:'Pause in Ruku and Sujood',body:'Perform each movement with calmness and composure. Learn the exact recitations and rulings according to your selected school.',reference:'Sahih al-Bukhari 757 · introductory reminder'},
+    {type:'Salah lesson',title:'Pause in Ruku and Sujood',body:'Perform each movement with calmness and composure. Learn the exact recitations and rulings with a trusted teacher.',reference:'Sahih al-Bukhari 757 · introductory reminder'},
     {type:'Daily quiz',title:'Quick knowledge check',body:'Which Surah is known as Umm al-Kitab (the Mother of the Book)?',reference:'Qur’an · Surah Al-Fatihah',quiz:{options:['Al-Baqarah','Al-Fatihah','Al-Ikhlas'],answer:1,explanation:'Al-Fatihah is also known as Umm al-Kitab.'}},
     {type:'Daily quiz',title:'Test your knowledge',body:'How many obligatory daily prayers are there?',reference:'Basic Islamic knowledge',quiz:{options:['Three','Four','Five'],answer:2,explanation:'Muslims are obligated to perform five daily prayers.'}}
   ];
@@ -354,98 +318,146 @@
   document.addEventListener('noor:screen',e=>{if(e.detail==='glanceScreen')refreshGlance();});
 
   // Routes for the More-screen cards; each opens a working screen.
-  const routes={hijri:'hijriScreen',duas:'duaScreen','salah-learning':'salahLearningScreen',widgets:'widgetStudioScreen',occasions:'occasionsScreen',profiles:'traditionScreen',glance:'glanceScreen'};
+  const routes={hijri:'hijriScreen',duas:'duaScreen','salah-learning':'salahLearningScreen',widgets:'widgetStudioScreen',occasions:'occasionsScreen',glance:'glanceScreen'};
   document.querySelectorAll('[data-open-v404]').forEach(button=>button.addEventListener('click',()=>open(routes[button.dataset.openV404])));
   document.querySelectorAll('[data-open-existing=\"adhkar\"]').forEach(button=>button.addEventListener('click',()=>{const routine=document.querySelector('[data-routine=\"morning\"]');if(routine)routine.click();else open('dhikrScreen');}));
-  // First-launch setup: six focused pages. Preferences are committed only on completion.
+  // First-launch setup: prayer preferences, calculation, reminders and location.
+  // Choices are committed together; the city picker is a true selectable search list.
   function startSetup(){
     let setupDone=data.setupComplete===true;
     try{setupDone=setupDone||localStorage.getItem('naseem-onboarding-complete-v1')==='1';}catch(_){}
     if(setupDone){try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}return;}
-    const overlay=document.createElement('div');overlay.className='v404-onboarding';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Naseem setup');
-    overlay.innerHTML=`<div class="v404-onboard-panel">
-      <div class="v404-onboard-top"><span class="eyebrow">NASEEM · YOUR SPACE</span><span class="v404-onboard-count" id="setupCount">01 / 06</span></div>
+    const salah=window.NoorSalah;
+    if(!salah)return;
+    const st=salah.get();
+    const overlay=document.createElement('div');
+    overlay.className='v404-onboarding naseem-onboarding';
+    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Naseem setup');
+    overlay.innerHTML=`<div class="v404-onboard-panel naseem-onboard-panel">
+      <div class="v404-onboard-top"><span class="eyebrow">NASEEM · YOUR DAILY COMPANION</span><span class="v404-onboard-count" id="setupCount">01 / 07</span></div>
       <div class="v404-onboard-progress" aria-label="Setup progress"><span id="setupProgress"></span></div>
-      <div class="v404-onboard-mark" aria-hidden="true">ن</div>
-      <section class="setup-page active" data-page="0"><span class="setup-kicker">A QUIETER MOMENT, EVERY DAY</span><h1>Make space for remembrance.</h1><p>Build a daily companion around the way you pray, your place, and your rhythm.</p><div class="setup-orbit" aria-hidden="true"><i></i><b>ن</b></div></section>
-      <section class="setup-page" data-page="1" hidden><span class="setup-kicker">01 · PERSONALISE</span><h1>What should we call you?</h1><p>This is optional. Your name stays on this device.</p><label class="v404-label" for="setupName">Your name</label><input id="setupName" class="v404-input" type="text" maxlength="40" autocomplete="name" placeholder="Enter your name"><div class="setup-note">You can leave this blank and continue.</div></section>
-      <section class="setup-page" data-page="2" hidden><span class="setup-kicker">02 · LEARNING TRADITION</span><h1>Choose your learning path.</h1><p>Select the tradition you follow. You can change it later in Settings.</p><div class="setup-choice-list" id="setupTraditionChoices">${traditions.map(t=>`<button type="button" class="setup-choice" data-tradition-choice="${t[0]}"><span><strong>${esc(t[1])}</strong><small>${esc(t[2])}</small></span><b aria-hidden="true">○</b></button>`).join('')}</div></section>
-      <section class="setup-page" data-page="3" hidden><span class="setup-kicker">03 · YOUR LOCATION</span><h1>Where do you pray?</h1><p>Choose a city for local prayer timings, or use your device location.</p><label class="v404-label" for="setupCitySearch">Find your city</label><input id="setupCitySearch" class="v404-input" type="search" autocomplete="off" placeholder="Search available cities"><select id="setupCity" class="v404-input" aria-label="Prayer city"></select><button type="button" id="setupGps" class="v404-secondary setup-gps">◎ &nbsp; Use device location</button><p id="setupLocationStatus" class="setup-note" role="status" aria-live="polite">Your location is only used to calculate local prayer times.</p></section>
-      <section class="setup-page" data-page="4" hidden><span class="setup-kicker">04 · APPEARANCE</span><h1>Set the atmosphere.</h1><p>Choose how Naseem should look. You can change this any time.</p><div class="setup-theme-list"><button type="button" class="setup-theme selected" data-theme-choice="dark"><span class="theme-swatch theme-dark"><i></i></span><strong>Dark</strong><small>Quiet · focused</small></button><button type="button" class="setup-theme" data-theme-choice="light"><span class="theme-swatch theme-light"><i></i></span><strong>Light</strong><small>Clear · bright</small></button><button type="button" class="setup-theme" data-theme-choice="system"><span class="theme-swatch theme-system"><i></i></span><strong>System</strong><small>Follow device</small></button></div><div class="setup-preview" id="setupPreview"><span>YOUR NASEEM</span><b>السَّلَامُ عَلَيْكُمْ</b><small>A moment of calm.</small></div></section>
-      <section class="setup-page" data-page="5" hidden><span class="setup-kicker">05 · REMINDERS</span><h1>Stay close to prayer times.</h1><p>Allow notifications if you want Adhan and Jamaat reminders. You can configure each prayer, sound and Jamaat schedule later in Settings.</p><div class="setup-notification-card"><strong>Prayer notifications</strong><span id="setupNotificationStatus" role="status" aria-live="polite">Not requested. Nothing will be enabled unless you choose it.</span><button type="button" class="v404-secondary" id="setupEnableNotifications">Enable notifications</button></div><p class="setup-note">You can also skip this and enable reminders later in Settings.</p></section>
-      <section class="setup-page" data-page="6" hidden><span class="setup-kicker">06 · READY</span><div class="setup-ready-mark">✓</div><h1>Your space is ready.</h1><p>Your choices will be saved on this device. Prayer location, reminders and appearance can be changed later in Settings.</p><div class="setup-summary" id="setupSummary"></div></section>
-      <div class="v404-onboard-actions"><button type="button" id="setupSkip" class="v404-secondary">Skip setup</button><div class="setup-nav"><button type="button" id="setupBack" class="v404-secondary" disabled>Back</button><button type="button" id="setupFinish" class="v404-primary">Continue</button></div></div>
+      <section class="setup-page active" data-page="0">
+        <div class="setup-emblem" aria-hidden="true"><span>ن</span><i></i></div>
+        <span class="setup-kicker">A MOMENT OF STILLNESS</span><h1>Make room for what matters.</h1>
+        <p>Naseem brings your daily prayers, remembrance and reflection into one quiet space.</p>
+        <blockquote class="setup-hadith"><strong>Which deed is dearest to Allah?</strong><span>To offer the prayers at their stated times.</span><small>Sahih al-Bukhari 527</small></blockquote>
+      </section>
+      <section class="setup-page" data-page="1" hidden>
+        <span class="setup-kicker">01 · ASR PREFERENCE</span><h1>Choose your Asr time.</h1>
+        <p>Select the earlier or later Asr start followed by your local mosque or trusted guidance. You can change this later.</p>
+        <div class="setup-choice-list setup-asr-list" id="setupAsrChoices">
+          <button type="button" class="setup-choice" data-asr-choice="standard"><span><strong>Earlier Asr time</strong><small>Earlier start convention</small></span><b aria-hidden="true">○</b></button>
+          <button type="button" class="setup-choice" data-asr-choice="hanafi"><span><strong>Later Asr time</strong><small>Later start convention</small></span><b aria-hidden="true">○</b></button>
+        </div>
+      </section>
+      <section class="setup-page" data-page="2" hidden>
+        <span class="setup-kicker">02 · PRAYER CALCULATION</span><h1>Calculation method.</h1>
+        <p>Choose a regional calculation method. Auto detect selects a sensible regional default from your saved location; confirm timings with your local mosque.</p>
+        <div class="setup-method-list" id="setupMethodChoices">
+          <button type="button" class="setup-choice" data-method-choice="auto"><span><strong>Auto detect</strong><small>Use a regional default based on location</small></span><b aria-hidden="true">○</b></button>
+          ${Object.entries(salah.METHODS).map(([id,m])=>`<button type="button" class="setup-choice" data-method-choice="${esc(id)}"><span><strong>${esc(m.name)}</strong><small>${id==='karachi'?'Fajr 18° · Isha 18°':id==='mwl'?'Fajr 18° · Isha 17°':id==='isna'?'Fajr 15° · Isha 15°':id==='egypt'?'Fajr 19.5° · Isha 17.5°':id==='makkah'?'Umm al-Qura · Isha interval':'Published Ja‘fari convention'}</small></span><b aria-hidden="true">○</b></button>`).join('')}
+        </div>
+      </section>
+      <section class="setup-page" data-page="3" hidden>
+        <span class="setup-kicker">03 · REMINDERS</span><h1>Stay close to prayer times.</h1>
+        <p>Allow notifications for prayer reminders. You can choose Adhan sounds and set your Jamaat times later in Settings.</p>
+        <div class="setup-notification-card"><div class="setup-notification-art" aria-hidden="true">☾</div><strong>Prayer notifications</strong><span id="setupNotificationStatus" role="status" aria-live="polite">Not requested. Nothing will be enabled unless you choose it.</span><button type="button" class="v404-secondary" id="setupEnableNotifications">Allow notifications</button></div>
+        <p class="setup-note">You can skip this and enable notifications later.</p>
+      </section>
+      <section class="setup-page" data-page="4" hidden>
+        <span class="setup-kicker">04 · PERSONALISATION</span><h1>Make Naseem yours.</h1>
+        <p>This optional preference stays on your device and can be left blank.</p>
+        <div class="setup-choice-list" id="setupGenderChoices">
+          <button type="button" class="setup-choice" data-gender-choice="male"><span><strong>Male</strong><small>Optional profile preference</small></span><b aria-hidden="true">○</b></button>
+          <button type="button" class="setup-choice" data-gender-choice="female"><span><strong>Female</strong><small>Optional profile preference</small></span><b aria-hidden="true">○</b></button>
+          <button type="button" class="setup-choice" data-gender-choice="unspecified"><span><strong>Prefer not to say</strong><small>Continue without a profile preference</small></span><b aria-hidden="true">○</b></button>
+        </div>
+      </section>
+      <section class="setup-page" data-page="5" hidden>
+        <span class="setup-kicker">05 · YOUR LOCATION</span><h1>Where do you pray?</h1>
+        <p>Use device location or choose a city manually. Your selection updates prayer times and Qibla calculations.</p>
+        <div class="setup-location-actions"><button type="button" class="setup-location-option" id="setupGps"><span class="setup-location-icon">⌖</span><span><strong>Allow location</strong><small>Use this device's location</small></span></button><button type="button" class="setup-location-option" id="setupManual"><span class="setup-location-icon">⌕</span><span><strong>Manual location</strong><small>Search and select a city</small></span></button></div>
+        <div class="setup-city-panel" id="setupCityPanel" hidden><label class="v404-label" for="setupCitySearch">Search city</label><input id="setupCitySearch" class="v404-input" type="search" autocomplete="off" placeholder="Search city or region"><div class="setup-city-results" id="setupCityResults" role="listbox" aria-label="Available cities"></div></div>
+        <p id="setupLocationStatus" class="setup-note" role="status" aria-live="polite">Choose automatic or manual location.</p>
+      </section>
+      <section class="setup-page" data-page="6" hidden>
+        <span class="setup-kicker">06 · YOUR DAY, IN A GLANCE</span><h1>Visualise Salah times.</h1>
+        <p>The sky in Naseem follows your local prayer schedule, shifting from first light to daylight, sunset and night.</p>
+        <div class="setup-sky-preview" aria-hidden="true"><i class="preview-star one"></i><i class="preview-star two"></i><i class="preview-moon"></i><i class="preview-sun"></i><span class="preview-horizon"></span></div>
+        <div class="setup-time-preview"><span><i class="dawn"></i>Fajr</span><span><i class="day"></i>Dhuhr</span><span><i class="dusk"></i>Maghrib</span><span><i class="night"></i>Isha</span></div>
+        <p class="setup-note">Your choices are saved on this device. You can change them later in Settings.</p>
+      </section>
+      <div class="v404-onboard-actions"><button type="button" id="setupSkip" class="v404-secondary">Skip</button><div class="setup-nav"><button type="button" id="setupBack" class="v404-secondary" disabled>Back</button><button type="button" id="setupFinish" class="v404-primary">Next</button></div></div>
       <small class="setup-privacy">No account required. Your preferences stay on this device.</small>
     </div>`;
     document.body.appendChild(overlay);
-    let profile={name:'',photo:''};try{profile=Object.assign(profile,JSON.parse(localStorage.getItem('noorProfileV1')||'{}'));}catch(_){}
-    const pages=[...overlay.querySelectorAll('.setup-page')],nameInput=overlay.querySelector('#setupName'),citySelect=overlay.querySelector('#setupCity');
-    const salah=window.NoorSalah,citySearch=overlay.querySelector('#setupCitySearch');
-    const initialLoc=salah?.get?.().loc;
-    const draft={name:String(profile.name||'').slice(0,40),tradition:data.tradition||salah?.get?.().school||'',city:'',gps:null,theme:window.NaseemTheme?.get?.()||'system'};
-    nameInput.value=draft.name;
-    const cityOptions=[...(salah?.CITIES||[])];
-    const renderCityOptions=(query='')=>{const q=query.trim().toLowerCase(),filtered=cityOptions.filter(c=>!q||c.name.toLowerCase().includes(q));citySelect.innerHTML='<option value="">Keep current location</option>'+filtered.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');};
-    renderCityOptions();
-    citySearch.addEventListener('input',()=>{const selected=citySelect.value;renderCityOptions(citySearch.value);if([...citySelect.options].some(o=>o.value===selected))citySelect.value=selected;});
-    if(initialLoc?.source==='manual'&&initialLoc.id)citySelect.value=initialLoc.id;
-    else if(initialLoc?.source==='default'&&initialLoc.id)citySelect.value=initialLoc.id;
-    draft.city=citySelect.value;
-    const setSelected=(selector,attr,value)=>overlay.querySelectorAll(selector).forEach(el=>{const active=el.getAttribute(attr)===value;el.classList.toggle('selected',active);el.setAttribute('aria-pressed',String(active));});
+
+    const pages=[...overlay.querySelectorAll('.setup-page')];
+    const notificationStatus=overlay.querySelector('#setupNotificationStatus');
+    const citySearch=overlay.querySelector('#setupCitySearch');
+    const cityResults=overlay.querySelector('#setupCityResults');
+    const cityPanel=overlay.querySelector('#setupCityPanel');
+    const cityOptions=[...(salah.CITIES||[])];
+    const savedProfile=(()=>{try{return JSON.parse(localStorage.getItem('noorProfileV1')||'{}');}catch(_){return {};}})();
+    const draft={asr:st.asr==='standard'?'standard':'hanafi',method:'auto',gender:savedProfile.gender||'unspecified',location:null,locationMode:'keep'};
+    const asrChoices=overlay.querySelector('#setupAsrChoices');
+    const methodChoices=overlay.querySelector('#setupMethodChoices');
+    const genderChoices=overlay.querySelector('#setupGenderChoices');
+    let current=0;
+    const selectGroup=(container,attr,value)=>container.querySelectorAll(`[${attr}]`).forEach(btn=>{const active=btn.getAttribute(attr)===value;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',String(active));});
+    const renderCities=(query='')=>{
+      const q=query.trim().toLocaleLowerCase();
+      const rows=cityOptions.filter(c=>!q||`${c.name} ${c.id}`.toLocaleLowerCase().includes(q));
+      cityResults.innerHTML=rows.length?rows.map(c=>`<button type="button" class="setup-city-result" role="option" aria-selected="${draft.location?.id===c.id}" data-city-id="${esc(c.id)}"><span class="setup-city-pin">⌖</span><span><strong>${esc(c.name.split(',')[0])}</strong><small>${esc(c.name.includes(',')?c.name.slice(c.name.indexOf(',')+1).trim():'')}</small></span><b>${draft.location?.id===c.id?'✓':'›'}</b></button>`).join(''):'<p class="setup-no-cities">No saved city matches. Try another spelling or use device location.</p>';
+    };
     const setPage=index=>{
       pages.forEach((page,i)=>{page.hidden=i!==index;page.classList.toggle('active',i===index);});
       overlay.querySelector('#setupCount').textContent=`${String(index+1).padStart(2,'0')} / 07`;
       overlay.querySelector('#setupProgress').style.width=`${((index+1)/7)*100}%`;
+      overlay.querySelector('.naseem-onboard-panel').classList.toggle('setup-welcome',index===0);
+      overlay.querySelector('#setupBack').hidden=index===0;
       overlay.querySelector('#setupBack').disabled=index===0;
-      overlay.querySelector('#setupSkip').hidden=index===6;
-      overlay.querySelector('#setupFinish').textContent=index===6?'Enter Naseem':'Continue';
-      if(index===5){const n=window.NoorNative?.notifications;if(n){n.permission().then(permission=>{if(!overlay.isConnected)return;if(permission==='granted'){notificationStatus.textContent='Android notification permission is already granted. Configure Adhan and Jamaat reminders in Settings.';overlay.querySelector('#setupEnableNotifications').textContent='Permission granted';}else if(permission==='denied'){notificationStatus.textContent='Android notifications are currently blocked. You can change this in Android Settings.';overlay.querySelector('#setupEnableNotifications').textContent='Permission blocked';}}).catch(()=>{});}}
-      if(index===6){const school=traditions.find(t=>t[0]===draft.tradition)?.[1]||'Choose later';const city=(salah?.CITIES||[]).find(c=>c.id===draft.city)?.name||(draft.gps?'Device location':initialLoc?.name||'Keep current location');overlay.querySelector('#setupSummary').innerHTML=`<span>${esc(draft.name||'Personal profile')}</span><span>${esc(school)}</span><span>${esc(city)}</span><span>${esc(draft.theme[0].toUpperCase()+draft.theme.slice(1))} appearance</span>`;}
+      overlay.querySelector('#setupSkip').hidden=index===0||index===6;
+      overlay.querySelector('#setupFinish').textContent=index===0?'Get started':index===6?'Enter Naseem':'Next';
+      if(index===3){const n=window.NoorNative?.notifications;if(n){n.permission().then(permission=>{if(!overlay.isConnected)return;if(permission==='granted'){notificationStatus.textContent='Notification permission is already granted. Configure Adhan and Jamaat reminders in Settings.';overlay.querySelector('#setupEnableNotifications').textContent='Permission granted';}else if(permission==='denied'){notificationStatus.textContent='Notifications are blocked in Android settings. You can enable them later.';overlay.querySelector('#setupEnableNotifications').textContent='Permission blocked';}}).catch(()=>{});}}
+      if(index===5){citySearch.value='';renderCities();}
       overlay.querySelector('#setupFinish').focus({preventScroll:true});
     };
-    setSelected('[data-tradition-choice]','data-tradition-choice',draft.tradition);
-    setSelected('[data-theme-choice]','data-theme-choice',draft.theme);
-    overlay.querySelector('#setupTraditionChoices').addEventListener('click',e=>{const btn=e.target.closest('[data-tradition-choice]');if(!btn)return;draft.tradition=btn.dataset.traditionChoice;setSelected('[data-tradition-choice]','data-tradition-choice',draft.tradition);});
-    citySelect.addEventListener('change',()=>{draft.city=citySelect.value;draft.gps=null;overlay.querySelector('#setupLocationStatus').textContent=draft.city?'City selected. It will be saved when you finish.':'Your current prayer location will be kept.';});
-    overlay.querySelector('#setupGps').addEventListener('click',()=>{const status=overlay.querySelector('#setupLocationStatus');if(!navigator.geolocation){status.textContent='Location is unavailable. Choose a city instead.';return;}status.textContent='Requesting device location…';navigator.geolocation.getCurrentPosition(pos=>{draft.gps={id:'gps',name:`My location (${pos.coords.latitude.toFixed(3)}°, ${pos.coords.longitude.toFixed(3)}°)`,lat:pos.coords.latitude,lng:pos.coords.longitude,tz:Intl.DateTimeFormat().resolvedOptions().timeZone,source:'gps'};draft.city='';citySelect.value='';status.textContent='Device location found. It will be saved when you finish.';},()=>{status.textContent='Location was not available. You can choose a city instead.';},{enableHighAccuracy:false,timeout:12000,maximumAge:600000});});
-    overlay.querySelectorAll('[data-theme-choice]').forEach(btn=>btn.addEventListener('click',()=>{draft.theme=btn.dataset.themeChoice;setSelected('[data-theme-choice]','data-theme-choice',draft.theme);overlay.querySelector('#setupPreview').dataset.theme=draft.theme;}));
-    nameInput.addEventListener('input',()=>{draft.name=nameInput.value.trim().slice(0,40);});
+    selectGroup(asrChoices,'data-asr-choice',draft.asr);
+    selectGroup(methodChoices,'data-method-choice',draft.method);
+    selectGroup(genderChoices,'data-gender-choice',draft.gender);
+    asrChoices.addEventListener('click',e=>{const btn=e.target.closest('[data-asr-choice]');if(!btn)return;draft.asr=btn.dataset.asrChoice;selectGroup(asrChoices,'data-asr-choice',draft.asr);});
+    methodChoices.addEventListener('click',e=>{const btn=e.target.closest('[data-method-choice]');if(!btn)return;draft.method=btn.dataset.methodChoice;selectGroup(methodChoices,'data-method-choice',draft.method);});
+    genderChoices.addEventListener('click',e=>{const btn=e.target.closest('[data-gender-choice]');if(!btn)return;draft.gender=btn.dataset.genderChoice;selectGroup(genderChoices,'data-gender-choice',draft.gender);});
+    overlay.querySelector('#setupManual').addEventListener('click',()=>{cityPanel.hidden=false;citySearch.focus();overlay.querySelector('#setupManual').classList.add('selected');overlay.querySelector('#setupGps').classList.remove('selected');overlay.querySelector('#setupLocationStatus').textContent='Search for a city, then tap a result to use it.';});
+    citySearch.addEventListener('input',()=>renderCities(citySearch.value));
+    cityResults.addEventListener('click',e=>{const btn=e.target.closest('[data-city-id]');if(!btn)return;const city=cityOptions.find(c=>c.id===btn.dataset.cityId);if(!city)return;draft.location={id:city.id,name:city.name,lat:city.lat,lng:city.lng,tz:city.tz,source:city.id==='srinagar'?'default':'manual'};draft.locationMode='manual';renderCities(citySearch.value);overlay.querySelector('#setupLocationStatus').textContent=`${city.name} selected. Prayer times will use this city.`;overlay.querySelector('#setupManual').classList.add('selected');overlay.querySelector('#setupGps').classList.remove('selected');});
+    overlay.querySelector('#setupGps').addEventListener('click',()=>{const status=overlay.querySelector('#setupLocationStatus');if(!navigator.geolocation){status.textContent='Device location is unavailable. Use Manual location to choose a city.';cityPanel.hidden=false;return;}status.textContent='Requesting device location…';navigator.geolocation.getCurrentPosition(pos=>{draft.location={id:'gps',name:'Your device location',lat:Number(pos.coords.latitude),lng:Number(pos.coords.longitude),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,source:'gps'};draft.locationMode='gps';cityPanel.hidden=true;overlay.querySelector('#setupGps').classList.add('selected');overlay.querySelector('#setupManual').classList.remove('selected');status.textContent=`Location found (±${Math.round(pos.coords.accuracy||0)} m). It will be saved when you finish.`;},err=>{const reason=err&&err.code===1?'Location permission was declined.':'Your device location could not be found.';status.textContent=reason+' You can still choose a city manually.';cityPanel.hidden=false;citySearch.focus();},{enableHighAccuracy:false,timeout:15000,maximumAge:600000});});
+    overlay.querySelector('#setupEnableNotifications').addEventListener('click',async()=>{const button=overlay.querySelector('#setupEnableNotifications'),n=window.NoorNative?.notifications;if(!n){notificationStatus.textContent='Notifications are available in the installed Android app. You can enable them later in Settings.';return;}button.disabled=true;notificationStatus.textContent='Checking notification permission…';try{let permission=await n.permission();if(permission!=='granted'&&permission!=='denied')permission=await n.request();if(permission==='granted'){await n.ensureChannels();try{localStorage.setItem('naseem-notification-permission-requested-v1','1');}catch(_){}notificationStatus.textContent='Permission granted. Configure Adhan and Jamaat reminders in Settings.';button.textContent='Permission granted';}else{notificationStatus.textContent=permission==='denied'?'Notifications are blocked. Enable them in Android Settings → Apps → Naseem → Notifications.':'Permission was not granted. You can enable it later.';button.textContent=permission==='denied'?'Permission blocked':'Not enabled';}}catch(_){notificationStatus.textContent='Could not check permission. You can configure notifications later.';button.textContent='Try again';}finally{button.disabled=false;}});
     const finish=(skipped=false)=>{
       if(!skipped){
-        draft.name=nameInput.value.trim().slice(0,40);
-        draft.city=citySelect.value;
-        profile.name=draft.name;
-        try{localStorage.setItem('noorProfileV1',JSON.stringify(profile));}catch(_){}
-        if(draft.tradition)applySchool(draft.tradition);
-        if(draft.gps)salah?.setLocation?.(draft.gps);
-        else if(draft.city){
-          const chosen=(salah?.CITIES||[]).find(c=>c.id===draft.city);
-          if(chosen)salah?.setLocation?.({id:chosen.id,name:chosen.name,lat:chosen.lat,lng:chosen.lng,tz:chosen.tz,source:chosen.id==='srinagar'?'default':'manual'});
-        }
-        window.NaseemTheme?.set?.(draft.theme);
+        if(draft.location)salah.setLocation(draft.location);
+        const loc=salah.get().loc;
+        if(draft.method==='auto')salah.set({method:salah.detectMethod(loc),methodAuto:true});
+        else salah.set({method:draft.method,methodAuto:false});
+        salah.set({asr:draft.asr});
+        savedProfile.gender=draft.gender;
+        try{localStorage.setItem('noorProfileV1',JSON.stringify(savedProfile));}catch(_){}
       }
-      data.setupComplete=true;
-      data.setupCompletedAt=Date.now();
-      save();
+      data.setupComplete=true;data.setupCompletedAt=Date.now();delete data.tradition;save();
       try{localStorage.setItem('naseem-onboarding-complete-v1','1');}catch(_){}
-      // Close setup immediately. Reminder scheduling remains user-configured in Settings.
       overlay.remove();
-      renderTraditions();
-      syncTraditionNote();
-      document.dispatchEvent(new CustomEvent('naseem:tradition-changed'));
-      notify((skipped?'Setup skipped. ':'Your preferences are saved. ')+'You can enable reminders later in Settings.');
-      document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{name:skipped?profile.name:draft.name}}));
+      notify((skipped?'Setup skipped. ':'Your prayer preferences and location are saved. ')+'You can change them later in Settings.');
+      document.dispatchEvent(new CustomEvent('naseem:profile-updated',{detail:{gender:skipped?savedProfile.gender:draft.gender}}));
+      document.dispatchEvent(new CustomEvent('noor:schedule'));
     };
-    const notificationStatus=overlay.querySelector('#setupNotificationStatus');
-    overlay.querySelector('#setupEnableNotifications').addEventListener('click',async()=>{const button=overlay.querySelector('#setupEnableNotifications'),n=window.NoorNative?.notifications;if(!n){notificationStatus.textContent='Notifications are available in the installed Android app. You can configure them later in Settings.';return;}button.disabled=true;notificationStatus.textContent='Checking Android notification permission…';try{let permission=await n.permission();if(permission!=='granted'&&permission!=='denied')permission=await n.request();if(permission==='granted'){await n.ensureChannels();try{localStorage.setItem('naseem-notification-permission-requested-v1','1');}catch(_){}notificationStatus.textContent='Permission granted. Choose your Adhan and Jamaat schedule in Settings → Notifications.';button.textContent='Permission granted';}else{notificationStatus.textContent=permission==='denied'?'Android has blocked notifications. Enable them in Android Settings → Apps → Naseem → Notifications.':'Permission was not granted. You can enable it later in Naseem Settings.';button.textContent=permission==='denied'?'Permission blocked':'Not enabled';}}catch(_){notificationStatus.textContent='Could not check notification permission. You can configure it later in Settings.';button.textContent='Try again';}finally{button.disabled=false;}});
-    let current=0;
     overlay.querySelector('#setupBack').addEventListener('click',()=>{if(current>0){current--;setPage(current);}});
-    overlay.querySelector('#setupFinish').addEventListener('click',()=>{if(current<6){current++;setPage(current);}else finish(false);});
+    overlay.querySelector('#setupFinish').addEventListener('click',()=>{if(current<6){if(current===5&&!draft.location){const currentLocation=salah.get().loc;if(currentLocation)draft.location={...currentLocation};}current++;setPage(current);}else finish(false);});
     overlay.querySelector('#setupSkip').addEventListener('click',()=>finish(true));
     setPage(0);
   }
   window.setTimeout(()=>startSetup(),2200);
   // Android back-button navigation: return to More from feature detail screens.
   document.addEventListener('naseem:back',e=>{const active=document.querySelector('.screen.active');if(!active||active.id==='homeScreen')return;e.preventDefault();if(active.id==='duaScreen'){open('salahScreen');return;}if(active.id==='glanceScreen'){open('homeScreen');return;}if(Object.values(routes).includes(active.id)||['qiblaScreen','zakatScreen'].includes(active.id))open('featuresScreen');else open('homeScreen');});
-  window.NaseemV404={hijriParts,hijriNumeric,hijriToGregorian,hijriMonthLength,duas,traditions,refreshGlance};
+  window.NaseemV404={hijriParts,hijriNumeric,hijriToGregorian,hijriMonthLength,duas,refreshGlance};
 })();

@@ -39,7 +39,7 @@ jobs:
           node scripts/patch-icons.mjs
           node scripts/patch-android.mjs
       - name: Run full verification suite
-        run: bash tests/run.sh
+        run: REQUIRE_BROWSER_TESTS=1 bash tests/run.sh
       - name: Decode existing protected signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.NASEEM_KEYSTORE_BASE64 }}

@@ -4,6 +4,14 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+for js in www/*.js scripts/*.mjs tests/*.js tests/*.mjs; do node --check "$js"; done
+echo 'JavaScript syntax checks: passed'
+if [[ "${SKIP_ESLINT:-0}" != "1" ]]; then
+  npx --yes eslint@8.57.1 --no-eslintrc --env browser,es2021 --parser-options '{"ecmaVersion":2022,"sourceType":"script"}' --rule '{"no-undef":"error"}' --global switchScreen --global toast --global state --global module --global exports --global require --global process www/*.js
+  echo 'ESLint no-undef checks: passed'
+else
+  echo 'ESLint no-undef checks: explicitly skipped (local dependency unavailable).'
+fi
 node tests/test_new_tools.js
 node tests/test_v404_source.js
 node tests/test_v407_scope.js
@@ -27,7 +35,11 @@ run_py_test() {
   local test="$1"
   if { [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"/com.termux/"* ]]; } &&
      grep -Eq 'sync_playwright|from playwright' "$ROOT/$test"; then
-    echo "SKIP (Termux only): $test requires Playwright browser runtime."
+    if [[ "${REQUIRE_BROWSER_TESTS:-0}" == "1" ]]; then
+      echo "ERROR: required browser test cannot be skipped: $test" >&2
+      return 1
+    fi
+    echo "SKIP (Termux only): $test requires Playwright browser runtime; this is NOT a full validation run."
     return 0
   fi
   python3 "$ROOT/$test"

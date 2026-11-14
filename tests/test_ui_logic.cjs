@@ -68,49 +68,54 @@ let passed = 0; const ok = (c, m) => { assert.ok(c, m); passed++; console.log(' 
   ok(/2025/.test(rev.ok) && /March/.test(rev.ok), `converter: 1 Ramadan 1446 -> ${rev.ok}`);
   ok(/Enter a valid/.test(rev.bad) && !/Enter a valid/.test(rev.far), 'converter works for far years and rejects day 31');
 
-  console.log('School vs calculation method');
-  const sch = await page.evaluate(() => {
-    const S = window.NoorSalah, out = {}; S.set({ method: 'mwl' });
-    S.setSchool('hanafi'); out.h = { asr: S.get().asr, method: S.get().method };
-    S.setSchool('shafii'); out.s = { asr: S.get().asr, method: S.get().method };
-    S.setSchool('jafari'); out.j = { asr: S.get().asr, method: S.get().method };
-    S.setSchool('maliki'); out.back = { asr: S.get().asr, method: S.get().method };
-    out.invalid = S.setSchool('nonsense'); out.school = S.get().school;
-    S.setSchool('hanafi'); const hanafi = S.timesFor(new Date()).asr; S.setSchool('hanbali'); const std = S.timesFor(new Date()).asr;
-    out.asrShift = S.toMin(hanafi) - S.toMin(std);
-    S.set({ method: 'karachi' }); out.methodIndep = S.get().asr;
+  console.log('Asr preference vs calculation method');
+  const asrCheck = await page.evaluate(() => {
+    const S = window.NoorSalah, out = {};
+    S.set({ method: 'mwl', asr: 'standard' });
+    const early = S.timesFor(new Date()).asr;
+    S.set({ asr: 'hanafi' });
+    const later = S.timesFor(new Date()).asr;
+    out.laterThanEarlier = S.toMin(later) - S.toMin(early);
+    S.set({ method: 'karachi' }); out.methodIndependent = S.get().asr === 'hanafi';
+    out.hasPublicSchoolSelector = !!document.querySelector('#setupTradition,[data-tradition-choice],#ssSchool');
     return out;
   });
-  ok(sch.h.asr === 'hanafi' && sch.h.method === 'mwl', 'Hanafi: double shadow, method untouched');
-  ok(sch.s.asr === 'standard' && sch.s.method === 'mwl', "Shafi'i: single shadow, method untouched");
-  ok(sch.j.asr === 'standard' && sch.j.method === 'jafari', "Ja'fari: own method, not Hanafi or generic Sunni");
-  ok(sch.back.method === 'mwl', "leaving Ja'fari restores the previous method");
-  ok(sch.invalid === false && sch.school === 'maliki', 'unknown school rejected without changing settings');
-  ok(sch.asrShift > 20, `Hanafi Asr is later than single-shadow Asr (+${sch.asrShift} min)`);
-  ok(sch.methodIndep === 'standard', 'changing the method does not change the school Asr rule');
+  ok(asrCheck.laterThanEarlier > 20, `Later Asr follows the double-shadow preference (+${asrCheck.laterThanEarlier} min)`);
+  ok(asrCheck.methodIndependent, 'changing the calculation method does not overwrite the Asr preference');
+  ok(!asrCheck.hasPublicSchoolSelector, 'the old school-selection menu is absent from the interface');
 
   console.log('Setup entry and onboarding persistence');
   const entry = await page.evaluate(() => ({ button: !!document.querySelector('.v404-reopen-setup'), text: document.body.innerText.includes('Edit setup preferences') }));
   ok(!entry.button && !entry.text, 'no separate "Edit setup preferences" entry');
   await page.waitForTimeout(2400);
   ok(await page.locator('.v404-onboarding').count() === 1, 'onboarding shows on first launch');
-  await page.evaluate(() => { document.getElementById('setupName').value = 'Test'; document.getElementById('setupTradition').value = 'shafii'; document.getElementById('setupTradition').dispatchEvent(new Event('change')); });
+  await page.click('#setupFinish');
+  await page.locator('[data-asr-choice="standard"]').click();
+  await page.click('#setupFinish');
+  await page.locator('[data-method-choice="mwl"]').click();
+  await page.click('#setupFinish');
+  await page.click('#setupFinish');
+  await page.locator('[data-gender-choice="unspecified"]').click();
+  await page.click('#setupFinish');
+  await page.click('#setupManual');
+  await page.fill('#setupCitySearch','Srinagar');
+  await page.locator('[data-city-id="srinagar"]').click();
+  await page.click('#setupFinish');
   await page.evaluate(() => { window.__notifAsked = false; if (window.Notification) { const o = Notification.requestPermission; Notification.requestPermission = (...a) => { window.__notifAsked = true; return o.apply(Notification, a); }; } });
-  for (let i = 0; i < 5; i++) { await page.click('#setupFinish'); await page.waitForTimeout(80); }
   await page.click('#setupFinish'); await page.waitForTimeout(300);
   ok(await page.locator('.v404-onboarding').count() === 0, 'onboarding closes after finishing');
   ok(!(await page.evaluate(() => window.__notifAsked)), 'finishing onboarding does not request notification permission');
   await page.reload(); await page.waitForTimeout(3200);
   ok(await page.locator('.v404-onboarding').count() === 0, 'onboarding does not reopen on the next launch');
-  const saved = await page.evaluate(() => ({ school: window.NoorSalah.get().school, asr: window.NoorSalah.get().asr, name: JSON.parse(localStorage.getItem('noorProfileV1')).name }));
-  ok(saved.school === 'shafii' && saved.asr === 'standard' && saved.name === 'Test', 'name and school persisted across launches');
+  const saved = await page.evaluate(() => ({ asr: window.NoorSalah.get().asr, method: window.NoorSalah.get().method, loc: window.NoorSalah.get().loc.id }));
+  ok(saved.asr === 'standard' && saved.method === 'mwl' && saved.loc === 'srinagar', 'Asr preference, calculation method and city persist across launches');
 
-  console.log('Migration: existing settings are not overwritten');
+  console.log('Migration: existing prayer preferences are not overwritten');
   const ctx2 = await browser.newContext(); const p2 = await ctx2.newPage();
   await p2.addInitScript(() => { if (!localStorage.getItem('seeded')) { localStorage.setItem('seeded', '1'); localStorage.setItem('noorSalahV1', JSON.stringify({ method: 'egypt', asr: 'standard' })); localStorage.setItem('naseem-v404-settings', JSON.stringify({ tradition: 'hanafi', setupComplete: true })); } });
   await p2.goto(URL); await p2.waitForTimeout(800);
   const mig = await p2.evaluate(() => ({ s: window.NoorSalah.get().school, m: window.NoorSalah.get().method, a: window.NoorSalah.get().asr }));
-  ok(mig.s === 'hanafi' && mig.m === 'egypt' && mig.a === 'standard', 'old profile adopted as school; saved method and Asr untouched');
+  ok(mig.m === 'egypt' && mig.a === 'standard', 'saved calculation method and Asr preference remain intact');
   await ctx2.close();
 
   ok(errors.filter(e => !/streaks|to12/.test(e)).length === 0, 'no unexpected page errors (' + errors.length + ' environment-related ignored)');

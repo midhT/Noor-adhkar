@@ -64,7 +64,7 @@ jobs:
           python -m pip install --disable-pip-version-check --retries 5 --timeout 120 playwright
           python -m playwright install --with-deps chromium
       - name: Run full verification suite
-        run: bash tests/run.sh
+        run: REQUIRE_BROWSER_TESTS=1 bash tests/run.sh
       - name: Decode protected release key
         env:
           KEYSTORE_BASE64: ${{ secrets.NASEEM_KEYSTORE_BASE64 }}
@@ -97,6 +97,7 @@ jobs:
           tag_name: v${{ steps.meta.outputs.version }}
           name: Naseem v${{ steps.meta.outputs.version }}
           generate_release_notes: true
+          overwrite_files: true
           files: |
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/release/app-release.apk.sha256
@@ -118,7 +119,11 @@ jobs:
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const version=process.env.VERSION;
-          const release={version,releaseUrl:`https://github.com/midhT/Naseem-public/releases/tag/v${version}`,downloadUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk`,checksumUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk.sha256`,sha256:process.env.APK_SHA256,notesSummary:'Naseem public release. See release notes for verified changes and known limitations.',publishedAt:new Date().toISOString()};
+          const sourceIndex=fs.readFileSync('www/index.html','utf8');
+          const buildMatch=sourceIndex.match(/<meta\s+name=["']naseem-version-code["']\s+content=["'](\d+)["'][^>]*>/i);
+          if(!buildMatch) throw new Error('naseem-version-code missing from www/index.html');
+          const androidVersionCode=Number(buildMatch[1]);
+          const release={version,androidVersionCode,releaseUrl:`https://github.com/midhT/Naseem-public/releases/tag/v${version}`,downloadUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk`,checksumUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk.sha256`,sha256:process.env.APK_SHA256,notesSummary:'Naseem public release. See release notes for verified changes and known limitations.',publishedAt:new Date().toISOString()};
           fs.writeFileSync('public-feed/release.json',JSON.stringify(release,null,2)+'\n');
           NODE
           cd public-feed

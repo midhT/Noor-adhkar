@@ -141,7 +141,7 @@
   function defaults() {
     var j = {}; PRAYERS.forEach(function (p) { j[p] = { mode: 'offset', offset: DEFAULT_JAMAAT[p], fixed: '' }; });
     var adj = {}; PRAYERS.forEach(function (p) { adj[p] = 0; }); adj.sunrise = 0;
-    return { loc: { id: 'srinagar', name: 'Srinagar, Kashmir', lat: 34.0837, lng: 74.7973, tz: 'Asia/Kolkata', source: 'default' }, method: 'karachi', asr: 'hanafi', adj: adj, mode: 'calculated', jamaat: j };
+    return { loc: { id: 'srinagar', name: 'Srinagar, Kashmir', lat: 34.0837, lng: 74.7973, tz: 'Asia/Kolkata', source: 'default' }, method: 'karachi', methodAuto: false, asr: 'hanafi', adj: adj, mode: 'calculated', jamaat: j };
   }
   var manual = function () { try { return JSON.parse(localStorage.getItem(MANUAL_KEY) || '{}'); } catch (e) { return {}; } };
   var settings;
@@ -154,6 +154,7 @@
       settings.jamaat = Object.assign(defaults().jamaat, raw.jamaat || {});
       settings.loc = Object.assign(defaults().loc, raw.loc || {});
       if (settings.asr !== 'hanafi' && settings.asr !== 'standard') settings.asr = 'hanafi';
+      settings.methodAuto = settings.methodAuto === true;
       if (settings.school && !SCHOOLS[settings.school]) delete settings.school;   // unknown value: forget it, keep every other saved setting
     } else {
       settings = d;
@@ -185,8 +186,21 @@
     });
     return out;
   }
+  function detectMethod(loc) {
+    var tz = String(loc && loc.tz || '').toLowerCase(), id = String(loc && loc.id || '').toLowerCase();
+    // Offline regional defaults: South Asia uses Karachi; the two holy cities use Umm al-Qura;
+    // other regions use MWL. Users can always choose a named method manually.
+    if (/srinagar|anantnag|baramulla|kupwara|sopore|jammu|leh|delhi|mumbai|kolkata|hyderabad|bengaluru|lucknow|karachi|lahore|dhaka/.test(id) || /asia\/(kolkata|karachi|dhaka)/.test(tz)) return 'karachi';
+    if (/makkah|madinah/.test(id) || /asia\/riyadh/.test(tz) && /makkah|madinah/.test(String(loc && loc.name || '').toLowerCase())) return 'makkah';
+    return 'mwl';
+  }
   api.get = function () { return settings; };
-  api.set = function (patch) { if (Object.prototype.hasOwnProperty.call(patch, 'asr')) settings.asrPreferenceChosen = true; Object.assign(settings, patch); persist(); };
+  api.detectMethod = detectMethod;
+  api.set = function (patch) {
+    if (Object.prototype.hasOwnProperty.call(patch, 'asr')) settings.asrPreferenceChosen = true;
+    if (Object.prototype.hasOwnProperty.call(patch, 'method') && !Object.prototype.hasOwnProperty.call(patch, 'methodAuto')) settings.methodAuto = false;
+    Object.assign(settings, patch); persist();
+  };
   /** Select a school. Sunni schools set the Asr rule and leave the calculation method alone. Ja'fari switches to the Ja'fari method
    *  (remembering the previous one); leaving Ja'fari restores that method. apply=false only records the school (used for migration). */
   api.setSchool = function (id, apply) {
@@ -204,7 +218,7 @@
   api.resetAdj = function () { Object.keys(settings.adj).forEach(function (k) { settings.adj[k] = 0; }); persist(); };
   api.setJamaat = function (k, patch) { settings.jamaat[k] = Object.assign({}, settings.jamaat[k], patch); persist(); };
   api.resetJamaat = function () { settings.jamaat = defaults().jamaat; persist(); };
-  api.setLocation = function (loc) { settings.loc = Object.assign({}, loc); persist(); };
+  api.setLocation = function (loc) { settings.loc = Object.assign({}, loc); if (settings.methodAuto) settings.method = detectMethod(settings.loc); persist(); };
   api.timesFor = timesFor; api.calcFor = calcFor; api.jamaatFor = jamaatFor; api.defaults = defaults; api.KEY = KEY;
   root.NoorSalah = api;
 })(typeof window !== 'undefined' ? window : globalThis);

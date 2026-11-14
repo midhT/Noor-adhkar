@@ -11,20 +11,24 @@ ids = re.findall(r'id="([^"]+)"', html)
 assert len(ids) == len(set(ids)), 'Duplicate HTML ids'
 assert pkg['version'] == '4.1.0'
 assert 'data-open-v404="hijri"' in html and "glance:'glanceScreen'" in js
-assert 'widgetStudioScreen' in js and 'glanceScreen' in js and 'traditionScreen' in js
+assert 'widgetStudioScreen' in js and 'glanceScreen' in js and 'traditionScreen' not in js
 assert 'naseem-onboarding-complete-v1' in js and 'naseem:open-onboarding' not in js
 setup_start = js.index('const finish=(skipped=false)=>{')
 setup_finish = js[setup_start:js.index('data.setupComplete=true;', setup_start)]
 assert 'n.request()' not in setup_finish, 'first-run completion must not block on notification permission'
-assert 'You can enable reminders later in Settings.' in js
+assert 'You can skip this and enable notifications later.' in js
 assert 'data-theme="system"' in html and 'prefers-color-scheme' in app and 'prefers-color-scheme' in intro
 assert 'BUILTIN_GLANCE' in js and 'glanceRefresh' in js and 'data-quiz-answer' in js
 assert 'HIJRI_MONTHS' in js and 'Dhul-Hijjah' in js
-assert 'SCHOOL_GUIDANCE' in js and 'sistani.org/english/book/48' in js
+assert 'data-asr-choice' in js and 'Earlier Asr time' in js and 'Later Asr time' in js
 assert 'before_sleep' in (ROOT / 'www/adhkar-data.js').read_text()
 assert 'setHijriDate' in (ROOT / 'www/native.js').read_text()
 assert 'HijriWidgetProvider' in (ROOT / 'scripts/patch-android.mjs').read_text()
-assert 'noor-adhkar-cache-v4083' in (ROOT / 'www/sw.js').read_text()
+assert 'noor-adhkar-cache-v4084' in (ROOT / 'www/sw.js').read_text()
+assert 'salah-experience.js' in (ROOT / 'www/sw.js').read_text()
+assert 'naseem-version-code' in html and '40104' in html
+assert 'methodAuto' in (ROOT / 'www/salah.js').read_text()
+assert 'Later Asr time' in (ROOT / 'www/salah-settings.js').read_text() and 'Earlier Asr time' in (ROOT / 'www/salah-settings.js').read_text()
 assert 'naseem-onboarding-complete-v1' in settings
 assert 'accentPalette' in html and 'accentCustom' in html
 assert 'Credits &amp; Acknowledgements' in html
@@ -41,9 +45,9 @@ assert 'data-accent="forest"' in html and 'data-accent="blue"' in html
 assert 'quran-playing' in (ROOT / 'www/features-v404.css').read_text()
 assert 'setupEnableNotifications' in js and 'n.request()' in js
 assert 'traditionSelect' not in js and 'themeSelect' not in js
-assert 'data-tradition-choice' in js and 'data-theme-choice' in js
-assert 'data-page=\"5\"' in js and 'setupProgress' in js
-assert "window.NaseemTheme?.set?.(draft.theme)" in js
+assert 'data-tradition-choice' not in js and 'data-theme-choice' not in js
+assert 'data-page=\"6\"' in js and 'setupProgress' in js and 'setupCitySearch' in js
+assert 'Visualise Salah times.' in js and 'setupGps' in js and 'setupManual' in js
 print('V4.1.0 scoped feature static checks: all passed')
 
 assert 'refreshHijriReference' in js

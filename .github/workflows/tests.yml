@@ -36,7 +36,7 @@ jobs:
           python -m pip install --disable-pip-version-check --retries 5 --timeout 120 playwright
           python -m playwright install --with-deps chromium
       - name: Run full source and browser verification suite
-        run: bash tests/run.sh
+        run: REQUIRE_BROWSER_TESTS=1 bash tests/run.sh
       - name: Check JavaScript syntax and whitespace
         run: |
           for f in www/*.js scripts/*.mjs tests/*.js tests/*.mjs; do node --check "$f"; done

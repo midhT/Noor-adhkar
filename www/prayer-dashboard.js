@@ -11,9 +11,9 @@
     { id: 'maghrib', label: 'Maghrib', ar: 'المغرب' },
     { id: 'isha', label: 'Isha', ar: 'العشاء' }
   ];
-  const salahScreen = document.getElementById('salahScreen');
-  const heading = salahScreen?.querySelector('.screen-heading');
-  if (!heading || document.getElementById('prayerDashboard') || !S) return;
+  const homeScreen = document.getElementById('homeScreen');
+  const greeting = homeScreen?.querySelector('.greeting');
+  if (!greeting || document.getElementById('prayerDashboard') || !S) return;
   const fmt = v => T.to12(v);
 
   const dashboard = document.createElement('section');
@@ -48,9 +48,10 @@
       </div>
     </div>
     <div class="pd-date card-surface"><div><span class="pd-kicker" id="pdPlace">TODAY</span><strong id="pdDate"></strong><small id="pdSource"></small></div><div class="pd-actions"><button type="button" id="pdQibla" class="pd-edit">Qibla</button><button type="button" id="pdSettings" class="pd-edit">Prayer settings</button></div></div>`;
-  heading.insertAdjacentElement('afterend', dashboard);
+  greeting.insertAdjacentElement('afterend', dashboard);
   const $ = id => dashboard.querySelector(`#${id}`);
   $('pdSettings').addEventListener('click', () => { switchScreen('settingsScreen'); setTimeout(() => { const g = document.getElementById('stSalah'); if (g) { g.open = true; g.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 300); });
+  $('pdQibla').addEventListener('click', () => { if (typeof switchScreen === 'function') switchScreen('qiblaScreen'); });
 
   const render = () => {
     const now = new Date();
@@ -79,7 +80,7 @@
     const st = S.get();
     $('pdDate').textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
     $('pdPlace').textContent = st.mode === 'manual' ? 'YOUR OWN TIMES' : st.loc.name.toUpperCase();
-    $('pdSource').textContent = st.mode === 'manual' ? 'Entered by you in Settings' : `${S.METHODS[st.method].name} · ${st.asr === 'hanafi' ? 'Hanafi' : 'Standard'} Asr`;
+    $('pdSource').textContent = st.mode === 'manual' ? 'Entered by you in Settings' : `${S.METHODS[st.method].name} · ${st.asr === 'hanafi' ? 'Later' : 'Earlier'} Asr` ;
   };
   render();
   window.addEventListener('noor:schedule', render);

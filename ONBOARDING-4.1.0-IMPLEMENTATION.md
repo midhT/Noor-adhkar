@@ -1,30 +1,30 @@
-# Naseem 4.1.0 onboarding implementation
+# Naseem 4.1.0 onboarding implementation — build 40104
 
-This change replaces the former single-screen first-launch setup with a six-page animated flow:
+The previous onboarding is replaced by a seven-step, responsive setup flow, adapted from the supplied Prayerly references and styled to match Naseem's dark, restrained green identity:
 
-1. Welcome
-2. Optional name
-3. Learning tradition
-4. Prayer city search / device location
-5. Dark, Light, or System appearance preview
-6. Completion summary
+1. Welcome and introductory reminder
+2. Earlier Asr time / Later Asr time preference
+3. Prayer calculation method, with Auto detect and named regional methods
+4. Optional notification permission request
+5. Optional profile preference
+6. Device location or searchable manual city selection
+7. Live Salah-sky explanation and completion
 
-Selections are held in a local draft while navigating. The selected profile, school, location, and theme are committed on completion. Skip remains available and marks first-run setup complete without applying the draft. The completion flag remains `naseem-onboarding-complete-v1`, preserving the existing one-time setup contract.
+The visible Madhhab/Sunni/Hanafi selector is removed. Internal legacy calculation values are retained so existing saved settings and calculation behavior remain compatible. Manual city selection saves the chosen city's coordinates/time zone; GPS denial opens the manual fallback. The one-time setup completion key remains `naseem-onboarding-complete-v1`.
 
-The public app version remains 4.1.0. Android internal `versionCode` advances from 40100 to 40101 so this build can install over the currently installed 4.1.0 APK without changing its displayed version. The package ID, update checker, release feed, Android signing configuration, and startup animation were not intentionally changed.
+The onboarding and app screens use the same minimal green-accent theme. The home screen retains its original remembrance-first content; prayer timings are restored to Home without replacing it with the Salah tab. Salah is a separate habit-tracking view with a time-responsive sky, five daily prayer completion controls, a seven-day summary, next-prayer countdown and an approximate optional Tahajjud window. The existing prayer-learning guide remains available through its compact disclosure toggle.
 
-## Validation
+The Qibla visual treatment is inspired by Prayerly's compact compass presentation, but the app retains its own existing Qibla calculation and sensor logic. No new regional moon-sighting feed is claimed; the device Hijri calendar and local correction remain in place.
 
-Passed: JavaScript syntax check; V4.1.0 static scope checks; V4.1.0 source integration; V4.0.9 scoped feature checks; public update checker tests; new tools; Adhkar core; custom routines; custom widget; Hadith; Quran reader; release configuration; Salah engine comparison.
+## Release identity
 
-Not completed in this environment: `npm run build` because `esbuild` could not be installed (`npm ci` timed out); Playwright browser interaction tests because the browser runtime is not available here. GitHub Actions should run the complete CI/build pipeline after this source is pushed.
+- Display version: `4.1.0`
+- Android `versionCode`: `40104` (must increase for each later APK)
+- Application ID: `com.noor.adhkar` (unchanged)
+- Existing signing keystore, alias and GitHub secrets must be reused exactly. Never generate or rotate the signing key for an in-place update.
 
+## Local validation status
 
-## Responsive stabilisation patch — 13 November 2026
-- The onboarding overlay now owns vertical scrolling, rather than relying on a nested full-height panel. This is safer for short Android displays, landscape orientation, system bars and the on-screen keyboard.
-- The action area reflows on narrow screens so Skip, Back and Continue cannot exceed the available width. Learning-tradition options have larger touch targets and wrap long labels.
-- Onboarding completion is synchronous and closes the overlay before any optional notification flow. Notification permission is left to the user's explicit reminder action.
-- `www/responsive.css` loads after the existing stylesheets and provides shared compact-phone, tablet, safe-area and reduced-motion rules.
-- `tests/test_responsive_foundation.py` guards the layout contract; `tests/test_onboarding_responsive.py` exercises the visible learning-tradition card across compact-phone, tablet and landscape viewports.
+Source integration and static checks passed, including 9,840 prayer-time calculations with a worst difference of 0.55 minutes. JavaScript syntax, Android patch/version-code, update-checker, signing-configuration, navigation and responsive-foundation checks also passed.
 
-Browser interaction tests still need to run in CI and on physical Android devices. The source-only environment used for this patch did not permit Chromium navigation to local files or loopback URLs, so no physical-device compatibility claim is made.
+The full browser suite and Android APK build could not be completed in this execution environment: Chromium blocks local loopback navigation (`ERR_BLOCKED_BY_ADMINISTRATOR`) and npm dependency installation timed out, leaving `esbuild` unavailable. GitHub Actions must run the full browser suite, ESLint `no-undef`, web bundle and Android Gradle build before the APK is treated as release-ready.

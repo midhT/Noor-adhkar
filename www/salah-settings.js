@@ -44,14 +44,13 @@
     const st = S.get(), now = new Date(), calc = S.calcFor(now), eff = S.timesFor(now), jam = S.jamaatFor(now);
     const cityOptions = S.CITIES.map(c => `<option value="${c.id}" ${st.loc.id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('') +
       (st.loc.source === 'gps' ? `<option value="gps" selected>${esc(st.loc.name)}</option>` : '');
-    const methodOptions = Object.entries(S.METHODS).map(([id, m]) => `<option value="${id}" ${st.method === id ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
+    const methodOptions = `<option value="auto" ${st.methodAuto ? 'selected' : ''}>Auto detect for my location</option>` + Object.entries(S.METHODS).map(([id, m]) => `<option value="${id}" ${!st.methodAuto && st.method === id ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
     const times6 = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
     body.innerHTML = `
       <div class="setting-row"><div><strong>Location</strong><p>${esc(st.loc.name)}${st.loc.source === 'default' ? ' · default' : st.loc.source === 'gps' ? ' · from GPS' : ''}</p></div><button class="st-btn" type="button" data-a="gps">Use my location</button></div>
       <div class="setting-row"><div><strong>City</strong><p>Location is optional. Choose a city instead.</p></div><select class="st-select" id="ssCity" aria-label="City">${cityOptions}</select></div>
-      <div class="setting-row"><div><strong>Calculation method</strong><p>Default for Kashmir: Karachi (Fajr 18°, Isha 18°)</p></div><select class="st-select" id="ssMethod" aria-label="Calculation method">${methodOptions}</select></div>
-      <div class="setting-row"><div><strong>School (madhab)</strong><p>${st.school === 'jafari' ? 'Ja‘fari uses its own calculation method (Fajr 16°, Isha 14°, Maghrib 4° after sunset) and the standard Asr shadow. Combining prayers is not modelled. Please confirm the angles with your marja‘ or local Ja‘fari authority.' : 'Sets the Asr shadow rule (Hanafi: double shadow; Shafi‘i, Maliki, Hanbali: single shadow). Independent of the calculation method. Other school differences are covered only in the Salah learning notes.'}</p></div><select class="st-select" id="ssSchool" aria-label="School"><option value="" ${st.school ? '' : 'selected'} disabled>Not selected</option>${Object.entries(S.SCHOOLS).map(([id, sc]) => `<option value="${id}" ${st.school === id ? 'selected' : ''}>${esc(sc.name)}</option>`).join('')}</select></div>
-      <div class="setting-row"><div><strong>Asr calculation</strong><p>${st.school && S.SCHOOLS[st.school] && S.SCHOOLS[st.school].asr !== st.asr ? 'Overridden: your school uses ' + (S.SCHOOLS[st.school].asr === 'hanafi' ? 'the Hanafi rule' : 'the standard rule') + '. ' : ''}Separate from the Fajr/Isha method. Change it only to match your local mosque.</p></div><select class="st-select" id="ssAsr" aria-label="Asr calculation"><option value="hanafi" ${st.asr === 'hanafi' ? 'selected' : ''}>Hanafi (shadow factor 2)</option><option value="standard" ${st.asr === 'standard' ? 'selected' : ''}>Standard (shadow factor 1)</option></select></div>
+      <div class="setting-row"><div><strong>Calculation method</strong><p>Auto detect or choose a regional method (Kashmir default: Karachi)</p></div><select class="st-select" id="ssMethod" aria-label="Calculation method">${methodOptions}</select></div>
+      <div class="setting-row"><div><strong>Asr timing</strong><p>Choose the earlier or later Asr start used by the mosque or guidance you follow. This preference is separate from the Fajr and Isha calculation method.</p></div><select class="st-select" id="ssAsr" aria-label="Asr timing preference"><option value="standard" ${st.asr === 'standard' ? 'selected' : ''}>Earlier Asr time</option><option value="hanafi" ${st.asr === 'hanafi' ? 'selected' : ''}>Later Asr time</option></select></div>
       <div class="setting-row"><div><strong>Prayer times</strong><p>Calculated for your location, or enter your mosque's times</p></div>
         <div class="st-seg" role="group" aria-label="Prayer time source"><button type="button" data-a="mode" data-v="calculated" aria-pressed="${st.mode === 'calculated'}">Calculated</button><button type="button" data-a="mode" data-v="manual" aria-pressed="${st.mode === 'manual'}">My own</button></div></div>
       ${st.mode === 'calculated' ? `
@@ -69,7 +68,7 @@
       <div class="rm-actions"><button type="button" data-a="resetJamaat">Reset Jamaat defaults</button></div>
       <p class="tiny-note">Jamaat starts at common defaults (Fajr +20, Dhuhr +15, Asr +15, Maghrib +5, Isha +15 minutes after Adhan). These are not any particular mosque's schedule. Set your own mosque's times above.</p>
       <p class="tiny-note">Calculated times work offline and follow the seasons and daylight saving. They are an aid: your local mosque timetable can differ by a few minutes, so adjust to match it.</p>
-      <div class="v404-card"><strong>Monthly online reference check</strong><p class="tiny-note" id="ssOnlineReference" role="status" aria-live="polite">${esc(referenceStatus)}</p><button type="button" class="st-btn" data-a="checkOnline">Check prayer times online</button><p class="tiny-note">Compares this device’s calculation with AlAdhan for your coordinates, calculation method and Asr school. It never overwrites your prayer times. Local mosque timetables remain authoritative.</p></div>
+      <div class="v404-card"><strong>Monthly online reference check</strong><p class="tiny-note" id="ssOnlineReference" role="status" aria-live="polite">${esc(referenceStatus)}</p><button type="button" class="st-btn" data-a="checkOnline">Check prayer times online</button><p class="tiny-note">Compares this device’s calculation with AlAdhan for your coordinates, calculation method and Asr timing preference. It never overwrites your prayer times. Local mosque timetables remain authoritative.</p></div>
       <p class="tiny-note ${note.startsWith('!') ? 'st-error' : ''}" role="status" aria-live="polite">${esc(note.replace(/^!/, ''))}</p>`;
     T.bind(body);
     if (st.mode === 'manual') { const m = manual(); times6.forEach(k => { const el = body.querySelector('#ssm-' + k); if (el) el.value = T.valid(m[k]) ? m[k] : eff[k]; }); }
@@ -86,9 +85,8 @@
     if (t.id === 'ssCity') {
       const c = S.CITIES.find(x => x.id === t.value); if (!c) return;
       S.setLocation({ id: c.id, name: c.name, lat: c.lat, lng: c.lng, tz: c.tz, source: c.id === 'srinagar' ? 'default' : 'manual' }); note = '';
-    } else if (t.id === 'ssMethod') S.set({ method: t.value });
+    } else if (t.id === 'ssMethod') { if (t.value === 'auto') S.set({ method: S.detectMethod(S.get().loc), methodAuto: true }); else S.set({ method: t.value, methodAuto: false }); }
     else if (t.id === 'ssAsr') S.set({ asr: t.value });
-    else if (t.id === 'ssSchool') { if (!S.SCHOOLS[t.value]) return; S.setSchool(t.value); document.dispatchEvent(new CustomEvent('naseem:tradition-changed')); say(t.value === 'jafari' ? 'Ja‘fari school saved. Calculation method set to Ja‘fari.' : 'School saved. Asr rule updated; calculation method unchanged.'); }
     else if (t.dataset.a === 'jmode') S.setJamaat(t.dataset.k, { mode: t.value });
   });
   body.addEventListener('click', e => {
@@ -122,8 +120,6 @@
     }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 });
   }
   window.addEventListener('noor:schedule', render);
-  window.addEventListener('naseem:tradition-changed', render);
-  document.addEventListener('naseem:tradition-changed', render);
   render();
   checkOnline(false);
   window.addEventListener('online',()=>checkOnline(false));

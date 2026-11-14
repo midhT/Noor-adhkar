@@ -1,4 +1,4 @@
-"""First-run onboarding regression across compact, tablet and landscape viewports."""
+"""Prayerly-inspired, Naseem-themed onboarding regression across viewports."""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from playwright.sync_api import sync_playwright
@@ -19,7 +19,7 @@ def check(label, condition, detail=''):
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH'), args=['--no-sandbox'])
     for width, height in VIEWPORTS:
-        context = browser.new_context(viewport={'width': width, 'height': height}, device_scale_factor=1, is_mobile=True, has_touch=True)
+        context = browser.new_context(viewport={'width': width, 'height': height}, device_scale_factor=1, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata')
         page = context.new_page()
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
@@ -40,35 +40,51 @@ with sync_playwright() as p:
         check(f'{width}x{height}: no horizontal overflow', not state['overflow'])
         check(f'{width}x{height}: setup actions do not overlap', not state['overlap'])
 
+        # Welcome -> Asr preference. The first page intentionally has one clear primary action.
+        page.click('#setupFinish')
         if width == 320:
             page.click('#setupSkip')
-            check('Skip closes setup immediately', page.locator('.v404-onboarding').count() == 0)
+            check('Skip closes setup from the preference flow', page.locator('.v404-onboarding').count() == 0)
             page.evaluate('localStorage.clear()')
             page.reload()
             page.wait_for_timeout(2350)
+            page.click('#setupFinish')
+        check(f'{width}x{height}: Asr preference page is reachable', page.locator('[data-asr-choice="standard"]').is_visible())
+        page.locator('[data-asr-choice="standard"]').click()
+        check(f'{width}x{height}: Earlier Asr choice responds', page.locator('[data-asr-choice="standard"]').get_attribute('aria-pressed') == 'true')
+        page.click('#setupFinish')
 
+        # Calculation method
+        check(f'{width}x{height}: auto calculation option is available', page.locator('[data-method-choice="auto"]').is_visible())
+        page.locator('[data-method-choice="mwl"]').click()
+        check(f'{width}x{height}: named method responds', page.locator('[data-method-choice="mwl"]').get_attribute('aria-pressed') == 'true')
         page.click('#setupFinish')
-        page.fill('#setupName', 'Responsive test')
-        page.click('#setupFinish')
-        page.locator('[data-tradition-choice="shafii"]').click()
-        check(f'{width}x{height}: school option responds to a tap', page.locator('[data-tradition-choice="shafii"]').get_attribute('aria-pressed') == 'true')
-        check(f'{width}x{height}: no duplicate learning-path dropdown', page.locator('#setupTradition').count() == 0)
-        state = layout_state()
-        check(f'{width}x{height}: tradition page fits', not state['overflow'] and not state['overlap'])
 
-        page.click('#setupFinish')
-        page.click('#setupFinish')
-        page.locator('[data-theme-choice="light"]').click()
-        check(f'{width}x{height}: theme option responds to a tap', page.locator('[data-theme-choice="light"]').get_attribute('aria-pressed') == 'true')
-        page.click('#setupFinish')
+        # Notification opt-in is optional
         page.locator('#setupNotificationStatus').wait_for()
         check(f'{width}x{height}: notification opt-in page is reachable', page.locator('#setupEnableNotifications').is_visible())
-        page.click('#setupFinish')   # notifications page -> summary page
-        check(f'{width}x{height}: summary page offers Enter Naseem', page.locator('#setupFinish').inner_text() == 'Enter Naseem')
-        page.click('#setupFinish')   # Enter Naseem
-        page.wait_for_timeout(100)
+        page.click('#setupFinish')
+
+        # Optional profile choice
+        page.locator('[data-gender-choice="unspecified"]').click()
+        check(f'{width}x{height}: optional profile choice responds', page.locator('[data-gender-choice="unspecified"]').get_attribute('aria-pressed') == 'true')
+        page.click('#setupFinish')
+
+        # Manual city selection must actually save coordinates
+        page.click('#setupManual')
+        page.fill('#setupCitySearch', 'Srinagar')
+        page.locator('[data-city-id="srinagar"]').click()
+        check(f'{width}x{height}: manual city selection is saved in draft', 'Srinagar' in page.locator('#setupLocationStatus').inner_text())
+        page.click('#setupFinish')
+
+        check(f'{width}x{height}: visualise Salah times page is reachable', page.get_by_text('Visualise Salah times.').is_visible())
+        page.click('#setupFinish')
+        page.wait_for_timeout(150)
         check(f'{width}x{height}: setup completes', page.locator('.v404-onboarding').count() == 0)
         check(f'{width}x{height}: completion persists', page.evaluate("localStorage.getItem('naseem-onboarding-complete-v1')") == '1')
+        saved = page.evaluate("({s:JSON.parse(localStorage.getItem('noorSalahV1')||'{}'),p:JSON.parse(localStorage.getItem('noorProfileV1')||'{}')})")
+        check(f'{width}x{height}: Asr and calculation choices persist', saved['s'].get('asr') == 'standard' and saved['s'].get('method') == 'mwl')
+        check(f'{width}x{height}: manual city coordinates persist', saved['s'].get('loc',{}).get('id') == 'srinagar' and abs(saved['s'].get('loc',{}).get('lat',0)-34.0837)<0.001)
         check(f'{width}x{height}: no JavaScript errors', not errors, str(errors))
         context.close()
     browser.close()

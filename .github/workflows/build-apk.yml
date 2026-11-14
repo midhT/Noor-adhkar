@@ -36,7 +36,7 @@ jobs:
           python -m pip install --disable-pip-version-check --retries 5 --timeout 120 playwright
           python -m playwright install --with-deps chromium
       - name: Run source and browser verification
-        run: bash tests/run.sh
+        run: REQUIRE_BROWSER_TESTS=1 bash tests/run.sh
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
       - name: Install Android SDK components

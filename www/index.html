@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#080d0c">
   <meta name="description" content="Naseem — an offline-first Islamic daily companion for Dhikr, Salah, Duas, Zakat and reflection.">
   <meta name="naseem-version" content="4.1.0">
+  <meta name="naseem-version-code" content="40104">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css">
@@ -151,9 +152,9 @@
             <span class="qibla-notch" aria-hidden="true"></span>
             <div class="qibla-rose" id="qiblaRose"><span class="qibla-mark" id="qiblaMark" aria-hidden="true"><b></b></span><span class="qdir q-n">N</span><span class="qdir q-e">E</span><span class="qdir q-s">S</span><span class="qdir q-w">W</span><span class="qibla-tick tick-1"></span><span class="qibla-tick tick-2"></span><span class="qibla-tick tick-3"></span><span class="qibla-tick tick-4"></span></div>
             <div class="qibla-needle" id="qiblaNeedle"><span class="needle-head"></span><span class="needle-tail"></span></div>
-            <div class="qibla-centre">⌂</div>
+            <div class="qibla-centre"><strong id="qiblaBearing">—°</strong><small>QIBLA</small></div>
           </div></div>
-          <div class="qibla-reading"><strong id="qiblaBearing">—°</strong><span id="qiblaCardinal">Waiting for location</span></div>
+          <div class="qibla-reading"><span id="qiblaCardinal">Waiting for location</span></div>
           <div class="qibla-alignment" id="qiblaAlignment">Enable the compass to align the direction.</div>
         </div>
         <div class="qibla-info-grid"><div class="qibla-info card-surface"><span class="eyebrow">YOUR LOCATION</span><strong id="qiblaPlace">Prayer location</strong><small id="qiblaCoords">Approximate saved city coordinates</small></div><div class="qibla-info card-surface"><span class="eyebrow">DISTANCE TO MAKKAH</span><strong id="qiblaDistance">— km</strong><small>Approximate great-circle distance</small></div></div>
@@ -240,7 +241,7 @@
           <div class="st-body"><div class="setting-row"><div><strong>Back up my data</strong><p>Saves all progress, presets, prayer times and settings to a file</p></div><button class="st-btn" type="button" id="stExport">Export</button></div><div class="setting-row"><div><strong>Restore from backup</strong><p>Checks the file first and asks before replacing anything</p></div><label class="st-btn st-file">Choose file<input type="file" id="stRestoreFile" accept="application/json,.json" hidden></label></div><div class="setting-row" id="stUndoRow" hidden><div><strong>Undo last restore or reset</strong><p id="stUndoInfo"></p></div><button class="st-btn" type="button" id="stUndo">Undo</button></div><div class="setting-row"><div><strong>Reset progress</strong><p>Clears counts, sessions and streaks. Settings and prayer times stay.</p></div><button class="st-btn st-danger" type="button" id="stResetProgress">Reset</button></div><div class="setting-row"><div><strong>Erase everything</strong><p>Removes all Naseem data from this device</p></div><button class="st-btn st-danger" type="button" id="stEraseAll">Erase</button></div><p class="tiny-note" id="stDataNote">Your data stays on this device. Back it up before uninstalling Naseem or switching to a differently signed build.</p></div>
         </details>
         <details class="st-group" id="stAbout"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 11v5.2"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></svg></span><span class="st-title"><strong>About Naseem</strong><small>Version, credits and creator</small></span><span class="st-chev" aria-hidden="true"></span></summary>
-          <div class="st-body"><div class="setting-row"><div><strong>Version</strong><p><span id="stVersion"></span></p></div></div><div class="setting-row"><div><strong>Software updates</strong><p id="naseemUpdateStatus" role="status" aria-live="polite">Checks the official Naseem GitHub release feed.</p></div><button class="st-btn" type="button" id="naseemCheckUpdates">Check for updates</button></div><div class="setting-row"><div><strong>Credits &amp; Acknowledgements</strong><p><strong>Creator and developer:</strong> Mir Midhat ul Ahad · <a href="https://www.instagram.com/mir.filmy/" target="_blank" rel="noopener noreferrer">@mir.filmy</a><br><strong>Adhan recording:</strong> Omar Hisham Al Arabi<br><strong>Quran text service:</strong> <a href="https://alquran.cloud" target="_blank" rel="noopener noreferrer">AlQuran Cloud</a>; contributors include <a href="https://globalquran.com" target="_blank" rel="noopener noreferrer">GlobalQuran.com</a>, <a href="https://tanzil.net" target="_blank" rel="noopener noreferrer">Tanzil.net</a> and Quran Academy<br><strong>English Quran translation:</strong> Marmaduke Pickthall<br><strong>Hadith library:</strong> <a href="https://hadeethenc.com" target="_blank" rel="noopener noreferrer">HadeethEnc.com</a></p></div></div><p class="tiny-note">Your selected learning profile guides the Salah section. Some notes remain general or Hanafi-specific; school-specific content needs qualified review before public release.</p></div>
+          <div class="st-body"><div class="setting-row"><div><strong>Version</strong><p><span id="stVersion"></span></p></div></div><div class="setting-row"><div><strong>Software updates</strong><p id="naseemUpdateStatus" role="status" aria-live="polite">Checks the official Naseem GitHub release feed.</p></div><button class="st-btn" type="button" id="naseemCheckUpdates">Check for updates</button></div><div class="setting-row"><div><strong>Credits &amp; Acknowledgements</strong><p><strong>Creator and developer:</strong> Mir Midhat ul Ahad · <a href="https://www.instagram.com/mir.filmy/" target="_blank" rel="noopener noreferrer">@mir.filmy</a><br><strong>Adhan recording:</strong> Omar Hisham Al Arabi<br><strong>Quran text service:</strong> <a href="https://alquran.cloud" target="_blank" rel="noopener noreferrer">AlQuran Cloud</a>; contributors include <a href="https://globalquran.com" target="_blank" rel="noopener noreferrer">GlobalQuran.com</a>, <a href="https://tanzil.net" target="_blank" rel="noopener noreferrer">Tanzil.net</a> and Quran Academy<br><strong>English Quran translation:</strong> Marmaduke Pickthall<br><strong>Hadith library:</strong> <a href="https://hadeethenc.com" target="_blank" rel="noopener noreferrer">HadeethEnc.com</a></p></div></div><p class="tiny-note">The prayer guide is a general learning aid. For detailed practice, follow trusted local teaching.</p></div>
         </details>
         <div class="about-card"><div class="brand-mark">ن</div><h2>Naseem · نسيم</h2><p class="muted">A gentle breeze · An Islamic daily companion.</p><span class="eyebrow">OFFLINE-FIRST · PRIVATE BY DESIGN</span></div>
       </section>
@@ -268,6 +269,7 @@
   <script src="time12.js"></script>
   <script src="salah.js"></script>
   <script src="prayer-dashboard.js"></script>
+  <script src="salah-experience.js"></script>
   <script src="salah-settings.js"></script>
   <script src="reminders.js"></script>
   <script src="profile.js"></script>

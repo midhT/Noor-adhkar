@@ -8,12 +8,14 @@ const androidMain = join(root, 'android', 'app', 'src', 'main');
 const manifestPath = join(androidMain, 'AndroidManifest.xml');
 const gradlePath = join(root, 'android', 'app', 'build.gradle');
 const packageInfo = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-const versionParts = String(packageInfo.version || '4.0.1').split('.').map(v => Number.parseInt(v, 10) || 0);
-// Keep the public versionName unchanged while incrementing Android's internal
-// versionCode for 4.1.0 installable builds: 40100 = first build, 40101 = onboarding hotfix,
-// 40102 = Quran reader update, 40103 = final onboarding/Salah/More stabilisation package.
-// Always increase this for every installable update; the public version label stays 4.1.0.
-const versionCode = versionParts[0] * 10000 + versionParts[1] * 100 + versionParts[2] + 3;
+const sourceIndexPath = join(root, 'www', 'index.html');
+const sourceIndex = readFileSync(sourceIndexPath, 'utf8');
+const buildMatch = sourceIndex.match(/<meta\s+name=["']naseem-version-code["']\s+content=["'](\d+)["'][^>]*>/i);
+if (!buildMatch) throw new Error('www/index.html must declare the naseem-version-code meta tag.');
+const versionCode = Number(buildMatch[1]);
+if (!Number.isSafeInteger(versionCode) || versionCode <= 0) throw new Error('Invalid Naseem Android version code.');
+// The public versionName remains 4.1.0; increase this meta value for each new installable APK.
+// 40100-40103 are prior 4.1.0 builds; 40104 is the current in-place update candidate.
 if (existsSync(gradlePath)) {
   let gradle = readFileSync(gradlePath, 'utf8');
   if (/versionCode\s+\d+/.test(gradle)) gradle = gradle.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`);
@@ -22,6 +24,8 @@ if (existsSync(gradlePath)) {
   else gradle = gradle.replace(/versionCode\s+\d+/, match => `${match}\n        versionName "${packageInfo.version}"`);
   writeFileSync(gradlePath, gradle);
 }
+const bundledIndexPath = join(androidMain, 'assets', 'public', 'index.html');
+if (existsSync(bundledIndexPath)) writeFileSync(bundledIndexPath, sourceIndex);
 if (!existsSync(manifestPath)) {
   console.error('android/ platform not found. Run `npx cap add android` first.');
   process.exit(1);
