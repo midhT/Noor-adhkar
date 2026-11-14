@@ -89,7 +89,7 @@
     // Keep the mini dial stationary. Rotate the north marker and Qibla pointer
     // independently so the pointer's own angle is the live phone-relative bearing.
     const miniNorth=miniDial?.querySelector('span');
-    if(miniNorth)miniNorth.style.transform=`translateX(-50%) rotate(${-spin}deg)`;
+    if(miniNorth)miniNorth.style.transform=`translateX(-50%) rotate(${-heading}deg)`;
     if(miniDial){miniDial.style.transform='';miniDial.classList.toggle('aligned',aligned);}
     if(miniArrow)miniArrow.style.setProperty('--home-qibla-angle',`${sensor?bearing-spin:bearing}deg`);
     const rose=$('qiblaRose'), needle=$('qiblaNeedle'), mark=$('qiblaMark');
