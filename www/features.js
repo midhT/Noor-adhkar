@@ -86,10 +86,10 @@
     const miniArrow=$('homeQiblaArrow'), miniDial=miniArrow?.parentElement, miniBearing=$('homeQiblaMiniBearing'), miniDirection=$('homeQiblaMiniDirection');
     if(miniBearing)miniBearing.textContent=sensor?`${Math.round(heading)}°`:`${Math.round(bearing)}°`;
     if(miniDirection)miniDirection.textContent=!sensor?`${cardinal(bearing)} · compass off`:(aligned?'Facing the Qibla ✓':turn);
-    // Keep the mini dial stationary. Rotate the north marker and Qibla pointer
-    // independently so the pointer's own angle is the live phone-relative bearing.
+    // Keep the mini dial stationary with "N" fixed upright at the top (above the pointer).
+    // Only the Qibla pointer turns: its angle is the live phone-relative bearing.
     const miniNorth=miniDial?.querySelector('span');
-    if(miniNorth)miniNorth.style.transform=`translateX(-50%) rotate(${-heading}deg)`;
+    if(miniNorth)miniNorth.style.transform='translateX(-50%)';
     if(miniDial){miniDial.style.transform='';miniDial.classList.toggle('aligned',aligned);}
     if(miniArrow)miniArrow.style.setProperty('--home-qibla-angle',`${sensor?bearing-spin:bearing}deg`);
     const rose=$('qiblaRose'), needle=$('qiblaNeedle'), mark=$('qiblaMark');

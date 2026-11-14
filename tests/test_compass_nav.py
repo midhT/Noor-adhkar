@@ -50,8 +50,10 @@ with sync_playwright() as p:
     pg.evaluate("switchScreen('homeScreen')"); pg.wait_for_timeout(300); fire(77)
     ok('Home compass number is the live heading', pg.inner_text('#homeQiblaMiniBearing') == '77°', pg.inner_text('#homeQiblaMiniBearing'))
     fire(bearing); ok('Home compass says Facing the Qibla ✓ when aligned', 'Facing the Qibla' in pg.inner_text('#homeQiblaMiniDirection') and ev("document.querySelector('.home-qibla-dial').classList.contains('aligned')"))
-    _mr = float(re.search(r'rotate\((-?[\d.]+)deg', ev("document.querySelector('.home-qibla-dial > span').style.transform")).group(1))
-    ok('Home mini compass rotates its north marker with handset heading', abs(((_mr + bearing + 180) % 360) - 180) < 1, ev("document.querySelector('.home-qibla-dial > span').style.transform"))
+    ok('Home mini compass keeps N fixed upright at the top', ev("document.querySelector('.home-qibla-dial > span').style.transform") == 'translateX(-50%)', ev("document.querySelector('.home-qibla-dial > span').style.transform"))
+    fire(bearing + 30)
+    _pa = float(ev("parseFloat(document.getElementById('homeQiblaArrow').style.getPropertyValue('--home-qibla-angle'))"))
+    ok('Home mini pointer turns by Qibla bearing minus heading', abs(((_pa + 30 + 180) % 360) - 180) < 1, str(_pa))
     # ================= nav press-and-drag =================
     cur = lambda: ev("document.querySelector('.screen.active').id")
     rects = lambda: ev("[...document.querySelectorAll('.bottom-nav .nav-item')].map(e=>{const r=e.getBoundingClientRect();return [e.dataset.screen,r.left+r.width/2,r.top+r.height/2]})")
