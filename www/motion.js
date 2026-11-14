@@ -49,7 +49,7 @@
   doc.addEventListener('touchstart', e => {
     if (e.touches.length !== 1) { track = false; return; }
     const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); tgt = e.target;
-    track = TABS.includes(window.curScreen || (typeof curScreen !== 'undefined' ? curScreen : '')) && sx > EDGE && sx < innerWidth - EDGE && !blocked(tgt);
+    track = TABS.includes(window.curScreen || 'homeScreen') && sx > EDGE && sx < innerWidth - EDGE && !blocked(tgt);
   }, { passive: true });
   doc.addEventListener('touchend', e => {
     if (!track) return; track = false;
@@ -58,7 +58,7 @@
     go(dx < 0 ? 1 : -1);
   }, { passive: true });
   function go(step) {
-    const cur = typeof curScreen !== 'undefined' ? curScreen : 'homeScreen';
+    const cur = window.curScreen || 'homeScreen';
     const dir = step > 0 ? 'next' : 'prev';
     if (cur === 'dhikrScreen') {
       const lib = doc.getElementById('libraryScreen');
@@ -92,7 +92,7 @@
       const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
       nav.addEventListener('click', stop, { capture: true, once: true });
       setTimeout(() => nav.removeEventListener('click', stop, true), 400);
-      const id = target && target.dataset.screen, cur = typeof curScreen !== 'undefined' ? curScreen : '';
+      const id = target && target.dataset.screen, cur = window.curScreen || ''; 
       if (commit && id && id !== cur) {
         const list = items(), from = list.findIndex(i => i.dataset.screen === cur);
         switchScreen(id, { dir: list.indexOf(target) > from ? 'next' : 'prev' });

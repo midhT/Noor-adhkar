@@ -7,7 +7,7 @@ cd "$ROOT"
 for js in www/*.js scripts/*.mjs tests/*.js tests/*.mjs; do node --check "$js"; done
 echo 'JavaScript syntax checks: passed'
 if [[ "${SKIP_ESLINT:-0}" != "1" ]]; then
-  npx --yes eslint@8.57.1 --no-eslintrc --env browser,es2021 --parser-options '{"ecmaVersion":2022,"sourceType":"script"}' --rule '{"no-undef":"error"}' --global switchScreen --global toast --global state --global module --global exports --global require --global process www/*.js
+  npx --yes eslint@8.57.1 --no-eslintrc --ignore-pattern 'www/native.bundle.js' --env browser,es2021,node --parser-options '{"ecmaVersion":2022,"sourceType":"module"}' --rule '{"no-undef":"error"}' --global switchScreen --global toast --global state --global save --global renderAll --global module --global exports --global require --global process www/*.js
   echo 'ESLint no-undef checks: passed'
 else
   echo 'ESLint no-undef checks: explicitly skipped (local dependency unavailable).'

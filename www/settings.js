@@ -103,7 +103,7 @@
       for (const [n, v] of Object.entries(p.counts || {})) if (!Number.isFinite(v) || v < 0) return fail(`Progress data is damaged (count for ${n}).`);
     }
     const sch = parsed['noorPrayerScheduleV1'];
-    if (sch) for (const [k, v] of Object.entries(sch)) if (!SCHEDULE_FIELDS.includes(k) || (v !== '' && !NoorTime.valid(v))) return fail('Saved prayer times are damaged.');
+    if (sch) for (const [k, v] of Object.entries(sch)) if (!SCHEDULE_FIELDS.includes(k) || (v !== '' && !window.NoorTime.valid(v))) return fail('Saved prayer times are damaged.');
     const rem = parsed['noorRemindersV1'];
     if (rem) {
       for (const f of ['pre', 'offset']) if (f in rem && ![0, 5, 10, 15, 30].includes(rem[f])) return fail('Reminder settings are damaged.');
@@ -120,7 +120,7 @@
       if ('asr' in sal && !['hanafi', 'standard'].includes(sal.asr)) return fail('Saved Asr setting is not recognised.');
       if ('mode' in sal && !['calculated', 'manual'].includes(sal.mode)) return fail('Saved prayer-time mode is not recognised.');
       for (const v of Object.values(sal.adj || {})) if (!Number.isInteger(v) || Math.abs(v) > 60) return fail('Saved prayer adjustments are damaged.');
-      for (const j of Object.values(sal.jamaat || {})) if (!isObj(j) || !(j.offset >= 0 && j.offset <= 120) || (j.fixed && !NoorTime.valid(j.fixed))) return fail('Saved Jamaat settings are damaged.');
+      for (const j of Object.values(sal.jamaat || {})) if (!isObj(j) || !(j.offset >= 0 && j.offset <= 120) || (j.fixed && !window.NoorTime.valid(j.fixed))) return fail('Saved Jamaat settings are damaged.');
     }
     const prof = parsed['noorProfileV1'];
     if (prof) {
