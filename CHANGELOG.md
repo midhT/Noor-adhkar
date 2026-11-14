@@ -1,5 +1,14 @@
 # Naseem Changelog
 
+## 4.1.0 — Salah tracker and release-readiness patch · 14 November 2026
+- Added per-prayer check-ins for on-time, not-early and very-late Salah, with the female-only Periods option.
+- Periods entries are excluded from daily completion denominators and weekly prayer totals; they are not treated as missed Salah.
+- Added a seven-day improvement summary so users can review timing patterns prayer by prayer.
+- Preserved the selected gender in the local profile across profile refreshes and edits.
+- Kept prayer-time gating for prayer completion; Periods can be recorded independently of a prayer time.
+- Included regression checks for gender-specific options, profile persistence and Periods statistics.
+
+
 ## 4.1.0 — responsive UI stabilisation patch · 13 November 2026
 - Reworked the first-run overlay to use a single scrollable viewport, safe-area insets and dynamic viewport sizing for short, tall and landscape displays.
 - Prevented onboarding action buttons from overflowing or colliding on narrow phones; enlarged learning-tradition touch targets and preserved selection state.
@@ -51,3 +60,11 @@ The user-authored native widget builder, full custom Adhkar routine manager, ful
 - Reduced and separated the Dua Library shortcut from the final Salam recitation.
 - Removed the duplicate school-profile shortcut from More; the preference remains editable in Settings → Salah.
 - Advanced Android versionCode to 40103 and invalidated the previous service-worker cache.
+
+
+## 4.1.0 · Android build 40106 (candidate)
+
+- Added an optional menstrual cycle tracker for female profiles, with period start history, configurable typical cycle interval and duration, and an approximate next-start estimate.
+- Cycle information is stored locally, can be cleared from Settings, and is included in user-requested backups.
+- Cycle estimates are informational only and are not medical advice or contraception guidance.
+- Preserved the existing per-prayer Salah tracker and excluded Periods entries from missed-prayer consistency totals.

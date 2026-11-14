@@ -15,7 +15,7 @@ if (!buildMatch) throw new Error('www/index.html must declare the naseem-version
 const versionCode = Number(buildMatch[1]);
 if (!Number.isSafeInteger(versionCode) || versionCode <= 0) throw new Error('Invalid Naseem Android version code.');
 // The public versionName remains 4.1.0; increase this meta value for each new installable APK.
-// 40100-40103 are prior 4.1.0 builds; 40104 is the current in-place update candidate.
+// 40100-40105 are prior 4.1.0 builds; 40106 is the next in-place update candidate.
 if (existsSync(gradlePath)) {
   let gradle = readFileSync(gradlePath, 'utf8');
   if (/versionCode\s+\d+/.test(gradle)) gradle = gradle.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`);

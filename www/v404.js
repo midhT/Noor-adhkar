@@ -256,7 +256,7 @@
   syncStudioWidgets();
 
   // Glance uses the public content endpoint internally; the endpoint is not displayed as a setting.
-  const GLANCE_FEED_URL='https://raw.githubusercontent.com/midhT/Naseem-public/main/content/glance.json';
+  const GLANCE_FEED_URL=window.NASEEM_GLANCE_FEED||'https://raw.githubusercontent.com/midhT/Naseem-public/main/content/glance.json';
   const BUILTIN_GLANCE=[
     {type:'Quranic reminder',title:'A moment of reflection',body:'Indeed, with hardship comes ease.',reference:'Qur’an 94:5–6'},
     {type:'Daily lesson',title:'Learn the meaning of Tasbeeh',body:'SubhanAllah means that Allah is free from every imperfection. Alhamdulillah is praise and gratitude to Allah.',reference:'Daily learning · Dhikr'},

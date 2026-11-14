@@ -1,6 +1,8 @@
-# Naseem 4.1.0 — build 40104 source delivery
+# Naseem 4.1.0 — build 40106 source delivery
 
 ## Implemented in this source update
+
+- Added an optional private cycle tracker for female profiles. It records period start dates, shows the number of recorded cycles, saves typical cycle and period duration, and estimates the next period date. Cycle history stays on-device and is included in user-requested backups. Estimates are informational only.
 
 - Restored the existing Home-first layout and identity. The original remembrance, streak, Hijri and Dhikr content remains on Home; the prayer dashboard and the prayer timings that previously lived there are restored below the Home greeting rather than replacing Home with the Salah screen.
 - Reworked first-run setup into a seven-step flow inspired by the supplied Prayerly references, restyled to Naseem's restrained dark/green theme: Welcome, Earlier/Later Asr, calculation method with Auto detect, optional notification permission, optional profile preference, GPS/manual city selection, and the live Salah-sky introduction.
@@ -9,13 +11,13 @@
 - Added a Salah habit tracker for the five daily prayers, local daily history, seven-day consistency, next-prayer countdown, live sky phase and moving sun based on local prayer times, plus a separately marked optional Tahajjud estimate based on the last third of the night.
 - Kept the existing step-by-step Salah learning/recitation guide behind its existing compact details toggle; it remains available below the tracker rather than taking over the Salah screen.
 - Restyled the Qibla compass with a dark radial dial, green directional marker and central live-degree readout, taking interaction/layout inspiration from Prayerly. Existing Qibla bearing calculations, sensor filtering, left/right guidance and alignment hysteresis are retained.
-- Improved update detection to compare Android version codes as well as the public version name. The displayed app version remains `4.1.0`; the Android build code is `40104`, higher than previous 4.1.0 builds. The release workflow replaces assets on the existing `v4.1.0` release tag and publishes `androidVersionCode` in the public feed.
+- Improved update detection to compare Android version codes as well as the public version name. The displayed app version remains `4.1.0`; the Android build code is `40106`, higher than previous 4.1.0 builds. The release workflow replaces assets on the existing `v4.1.0` release tag and publishes `androidVersionCode` in the public feed.
 - Added JavaScript syntax checks for edited/source JS and an ESLint `no-undef` check to the CI test runner. Required browser tests fail the CI run if they would otherwise be skipped.
 
 ## Compatibility and preserved identity
 
 - Display version: `4.1.0`
-- Android versionCode: `40104`
+- Android versionCode: `40106`
 - Application ID: `com.noor.adhkar` (unchanged)
 - Public app name: `Naseem`
 - Internal source/project identity and data keys remain compatible.

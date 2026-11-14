@@ -131,8 +131,9 @@
   }
   var toMin = function (v) { return /^\d{2}:\d{2}$/.test(v || '') ? Number(v.slice(0, 2)) * 60 + Number(v.slice(3)) : null; };
   var fromMin = function (n) { n = ((n % 1440) + 1440) % 1440; return pad(Math.floor(n / 60)) + ':' + pad(n % 60); };
+  function isPrayerTimeReached(hhmm, now) { var scheduled = toMin(hhmm); if (scheduled === null) return false; var d = now instanceof Date ? now : new Date(); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60 >= scheduled; }
 
-  var api = { SCHOOLS: SCHOOLS, METHODS: METHODS, CITIES: CITIES, PRAYERS: PRAYERS, LABELS: LABELS, calculate: calculate, computeHours: computeHours, tzOffsetHours: tzOffsetHours, toMin: toMin, fromMin: fromMin };
+  var api = { SCHOOLS: SCHOOLS, METHODS: METHODS, CITIES: CITIES, PRAYERS: PRAYERS, LABELS: LABELS, calculate: calculate, computeHours: computeHours, tzOffsetHours: tzOffsetHours, toMin: toMin, fromMin: fromMin, isPrayerTimeReached: isPrayerTimeReached };
   if (typeof module !== 'undefined' && module.exports) { module.exports = api; return; }
 
   /* ---------- settings store (browser only) ---------- */

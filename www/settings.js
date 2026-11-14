@@ -3,7 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const VERSION = '4.1.0';
-  const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1', 'noorSalahV1', 'noorProfileV1', 'noorAccentV1', 'naseem-v404-settings'];
+  const APP_KEYS = ['noor-adhkar-v1', 'noor-v3-preferences', 'noorPrayerScheduleV1', 'noorRemindersV1', 'noorSalahV1', 'noorProfileV1', 'noorAccentV1', 'naseem-v404-settings', 'naseemCycleTrackerV1'];
   const SAFETY = 'noorSafetyBackupV1';
   const MAX_BYTES = 5 * 1024 * 1024;
   const SCHEDULE_FIELDS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'sunrise'];
@@ -127,6 +127,11 @@
       if (typeof prof.name !== 'string' || prof.name.length > 60) return fail('Saved profile name is damaged.');
       if (prof.photo && (typeof prof.photo !== 'string' || !prof.photo.startsWith('data:image/') || prof.photo.length > 400000)) return fail('Saved profile picture is damaged.');
     }
+    const cycle = parsed['naseemCycleTrackerV1'];
+    if (cycle) {
+      if (!Array.isArray(cycle.starts) || cycle.starts.length > 500 || !Number.isInteger(cycle.cycleLength) || cycle.cycleLength < 21 || cycle.cycleLength > 45 || !Number.isInteger(cycle.periodLength) || cycle.periodLength < 2 || cycle.periodLength > 10) return fail('Cycle tracker data is damaged.');
+      if (cycle.starts.some(d => { if (typeof d !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return true; const date = new Date(`${d}T00:00:00Z`); return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== d; })) return fail('Cycle tracker dates are damaged.');
+    }
     const sum = {
       days: Object.keys((p && p.days) || {}).length,
       sessions: p && Array.isArray(p.sessions) ? p.sessions.length : 0,
@@ -177,6 +182,38 @@
     try { applyData(r.backup.data); } catch (_) { note('Restore failed while writing. Use Undo to return to your previous data.', true); renderUndo(); return; }
     afterReload('Backup restored');
   });
+
+  // ---------- Optional, on-device menstrual cycle tracker ----------
+  const CYCLE_KEY = 'naseemCycleTrackerV1';
+  const cyclePanel = $('stCycle');
+  const cycleDate = $('cycleStartDate');
+  const cycleLength = $('cycleLength');
+  const cyclePeriodLength = $('cyclePeriodLength');
+  const cycleSummary = $('cycleSummary');
+  const cycleHistory = $('cycleHistory');
+  const localDateKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const parseCycleDate = value => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || ''); if (!m) return null; const d = new Date(Date.UTC(+m[1], +m[2]-1, +m[3])); return d.getUTCFullYear()===+m[1] && d.getUTCMonth()===+m[2]-1 && d.getUTCDate()===+m[3] ? d : null; };
+  const readCycle = () => { try { const v=JSON.parse(localStorage.getItem(CYCLE_KEY)||'null'); if(v&&Array.isArray(v.starts)) return {starts:[...new Set(v.starts.filter(x=>parseCycleDate(x)))].sort(),cycleLength:Number.isInteger(v.cycleLength)&&v.cycleLength>=21&&v.cycleLength<=45?v.cycleLength:28,periodLength:Number.isInteger(v.periodLength)&&v.periodLength>=2&&v.periodLength<=10?v.periodLength:5}; } catch (_) {} return {starts:[],cycleLength:28,periodLength:5}; };
+  let cycleData = readCycle();
+  const saveCycle = () => { try { localStorage.setItem(CYCLE_KEY,JSON.stringify(cycleData)); } catch (_) { say('Could not save cycle data on this device.'); } };
+  const cycleDisplayDate = key => parseCycleDate(key)?.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}) || key;
+  const cycleEstimate = () => { if(!cycleData.starts.length) return null; const starts=cycleData.starts.map(parseCycleDate); let length=cycleData.cycleLength; if(starts.length>=2){const gaps=[];for(let i=Math.max(1,starts.length-6);i<starts.length;i++)gaps.push((starts[i]-starts[i-1])/86400000);const plausible=gaps.filter(n=>n>=15&&n<=60);if(plausible.length)length=Math.round(plausible.reduce((a,b)=>a+b,0)/plausible.length);} const next=new Date(starts[starts.length-1]);next.setUTCDate(next.getUTCDate()+length);return {date:next.toISOString().slice(0,10),length}; };
+  function renderCycle() {
+    if(!cyclePanel)return;
+    let gender='unspecified';try{gender=JSON.parse(localStorage.getItem('noorProfileV1')||'{}').gender||'unspecified';}catch(_){}
+    cyclePanel.hidden=gender!=='female';
+    if(gender!=='female')return;
+    cycleLength.value=String(cycleData.cycleLength);cyclePeriodLength.value=String(cycleData.periodLength);
+    const estimate=cycleEstimate();
+    if(!cycleData.starts.length){cycleSummary.innerHTML='<strong>No cycle dates recorded yet</strong><p>Add the first day of your most recent period to begin.</p>';}
+    else {const today=new Date();today.setHours(0,0,0,0);const target=parseCycleDate(estimate.date);const days=Math.round((target-new Date(Date.UTC(today.getFullYear(),today.getMonth(),today.getDate())))/86400000);const estimateText=days===0?'Estimated around today':days>0?`Estimated in about ${days} day${days===1?'':'s'}`:`Estimated date was ${Math.abs(days)} day${Math.abs(days)===1?'':'s'} ago`;cycleSummary.innerHTML=`<div class="cycle-summary-grid"><span><small>Cycles recorded</small><b>${cycleData.starts.length}</b></span><span><small>Typical interval</small><b>${estimate.length} days</b></span></div><strong>Last period started · ${cycleDisplayDate(cycleData.starts[cycleData.starts.length-1])}</strong><p>Next period estimated · ${cycleDisplayDate(estimate.date)}. ${estimateText}. This is an estimate based on the dates saved. Typical bleeding duration saved: ${cycleData.periodLength} days.</p>`;}
+    cycleHistory.innerHTML=cycleData.starts.length?`<strong>Recorded period starts</strong><ul>${cycleData.starts.slice().reverse().slice(0,8).map(d=>`<li>${cycleDisplayDate(d)}</li>`).join('')}</ul>`:'';
+    const todayKey=localDateKey(new Date());cycleDate.max=todayKey;if(!cycleDate.value)cycleDate.value=cycleData.starts[cycleData.starts.length-1]||todayKey;
+  }
+  $('cycleSaveStart')?.addEventListener('click',()=>{const d=parseCycleDate(cycleDate.value),today=parseCycleDate(localDateKey(new Date()));const cl=Number(cycleLength.value),pl=Number(cyclePeriodLength.value);if(!d||d>today){say('Choose a valid period start date, not a future date.');return;}if(!Number.isInteger(cl)||cl<21||cl>45){say('Cycle length must be between 21 and 45 days.');return;}if(!Number.isInteger(pl)||pl<2||pl>10){say('Period duration must be between 2 and 10 days.');return;}cycleData.cycleLength=cl;cycleData.periodLength=pl;cycleData.starts=[...new Set([...cycleData.starts,cycleDate.value])].sort().slice(-500);saveCycle();cycleDate.value='';renderCycle();say('Period start saved privately on this device.');});
+  $('cycleClearData')?.addEventListener('click',()=>{if(!confirm('Clear all saved cycle dates and cycle settings from this device?'))return;cycleData={starts:[],cycleLength:28,periodLength:5};localStorage.removeItem(CYCLE_KEY);cycleDate.value='';renderCycle();say('Cycle data cleared.');});
+  document.addEventListener('naseem:profile-updated',renderCycle);
+  renderCycle();
 
   function renderUndo() {
     let snap = null; try { snap = JSON.parse(localStorage.getItem(SAFETY) || 'null'); } catch (_) {}

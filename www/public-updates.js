@@ -45,10 +45,15 @@
     }
     status('Checking GitHub for a newer version…');
     try {
-      const response = await fetch(FEED, { cache: 'no-store', headers: { Accept: 'application/json' } });
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 12000);
+      let response;
+      try { response = await fetch(FEED, { cache: 'no-store', headers: { Accept: 'application/json' }, signal: controller.signal }); }
+      finally { window.clearTimeout(timeout); }
       if (!response.ok) throw new Error(`GitHub returned ${response.status}`);
       const release = await response.json();
       if (!release || typeof release.version !== 'string' || !/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(release.version)) throw new Error('The public release feed is invalid.');
+      if (release.androidVersionCode != null && (!Number.isSafeInteger(Number(release.androidVersionCode)) || Number(release.androidVersionCode) < 1)) throw new Error('The public release build number is invalid.');
       const available = updateAvailable(release);
       state.checkedAt = Date.now(); state.latest = release.version; state.latestBuild = buildOf(release); state.release = release;
       writeState(state);

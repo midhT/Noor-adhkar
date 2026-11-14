@@ -4,8 +4,8 @@
   const $ = id => document.getElementById(id);
   const KEY = 'noorProfileV1';
   const MAX_PHOTO_CHARS = 300000;
-  let profile = { name: '', photo: '' };
-  try { const v = JSON.parse(localStorage.getItem(KEY) || '{}'); if (v && typeof v === 'object') profile = { name: String(v.name || '').slice(0, 40), photo: typeof v.photo === 'string' && v.photo.startsWith('data:image/') && v.photo.length < MAX_PHOTO_CHARS ? v.photo : '' }; } catch (_) {}
+  let profile = { name: '', photo: '', gender: 'unspecified' };
+  try { const v = JSON.parse(localStorage.getItem(KEY) || '{}'); if (v && typeof v === 'object') profile = { name: String(v.name || '').slice(0, 40), photo: typeof v.photo === 'string' && v.photo.startsWith('data:image/') && v.photo.length < MAX_PHOTO_CHARS ? v.photo : '', gender: ['male','female','unspecified'].includes(v.gender) ? v.gender : 'unspecified' }; } catch (_) {}
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(profile)); return true; } catch (_) { return false; } };
   const say = m => { try { toast(m); } catch (_) {} };
 
@@ -51,6 +51,6 @@
     } catch (_) { $('acNote').textContent = 'That picture could not be read. Try a different image.'; }
   });
   window.NaseemProfile = { get: () => ({ ...profile }) };
-  document.addEventListener('naseem:profile-updated', () => { try { const v=JSON.parse(localStorage.getItem(KEY)||'{}'); profile.name=String(v.name||'').slice(0,40); paint(); } catch (_) {} });
+  document.addEventListener('naseem:profile-updated', () => { try { const v=JSON.parse(localStorage.getItem(KEY)||'{}'); profile.name=String(v.name||'').slice(0,40); profile.gender=['male','female','unspecified'].includes(v.gender)?v.gender:'unspecified'; paint(); } catch (_) {} });
   paint();
 })();

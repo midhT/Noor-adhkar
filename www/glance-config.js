@@ -1,2 +1,2 @@
-/* Glance feed endpoint. Set this to the public GitHub Pages JSON URL when the feed repository is created. */
-window.NASEEM_GLANCE_FEED = '';
+/* Public, read-only Naseem Glance feed. No GitHub token is embedded in the app. */
+window.NASEEM_GLANCE_FEED = 'https://raw.githubusercontent.com/midhT/Naseem-public/main/content/glance.json';

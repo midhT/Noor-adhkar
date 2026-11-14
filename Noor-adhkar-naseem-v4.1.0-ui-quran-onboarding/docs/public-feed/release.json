@@ -1,9 +1,0 @@
-{
-  "version": "4.1.0",
-  "releaseUrl": "https://github.com/midhT/Naseem-public/releases/tag/v4.1.0",
-  "downloadUrl": "https://github.com/midhT/Naseem-public/releases/download/v4.1.0/app-release.apk",
-  "notesSummary": "Naseem 4.1.0: redesigned opening animation and refined launch experience. Publish only after the signed APK is built with the original release keystore.",
-  "publishedAt": null,
-  "checksumUrl": null,
-  "sha256": null
-}

@@ -25,6 +25,10 @@ node tests/test_quran_reader.js
 node tests/test_quran_memory.js
 node tests/test_release_config.mjs
 node tests/test_public_updates.cjs
+node tests/test_salah_tracker_time.js
+node tests/test_salah_gender_tracking.cjs
+node tests/test_cycle_tracker.cjs
+node tests/test_public_release_requirements.cjs
 rm -rf tests/.build && mkdir -p tests/.build && cp -r www tests/.build/wwwtest
 node "$ROOT/tests/build_native_bundle.cjs"
 python3 tests/test_v404_static.py

@@ -83,10 +83,13 @@
     const turn=`Turn ${rel>0?'right':'left'} ${Math.round(off)}°`;
     // Continuous (unwrapped) angles keep the dial from spinning the long way round at 359°→0°.
     const spin=sensor?unwrapped:0;
-    const miniArrow=$('homeQiblaArrow'), miniBearing=$('homeQiblaMiniBearing'), miniDirection=$('homeQiblaMiniDirection');
+    const miniArrow=$('homeQiblaArrow'), miniDial=miniArrow?.parentElement, miniBearing=$('homeQiblaMiniBearing'), miniDirection=$('homeQiblaMiniDirection');
     if(miniBearing)miniBearing.textContent=sensor?`${Math.round(heading)}°`:`${Math.round(bearing)}°`;
     if(miniDirection)miniDirection.textContent=!sensor?`${cardinal(bearing)} · compass off`:(aligned?'Facing the Qibla ✓':turn);
-    if(miniArrow){miniArrow.style.setProperty('--home-qibla-angle',`${bearing-spin}deg`);miniArrow.parentElement.classList.toggle('aligned',aligned);}
+    // The mini dial is a real compass rose: rotate its N marker with the handset, while
+    // keeping the Qibla pointer at the fixed geographic bearing on that rotating rose.
+    if(miniDial)miniDial.style.transform=`rotate(${-spin}deg)`;
+    if(miniArrow){miniArrow.style.setProperty('--home-qibla-angle',`${bearing}deg`);miniDial?.classList.toggle('aligned',aligned);}
     const rose=$('qiblaRose'), needle=$('qiblaNeedle'), mark=$('qiblaMark');
     rose.style.transform=`rotate(${-spin}deg)`;
     needle.style.transform=`translate(-50%,-50%) rotate(${bearing-spin}deg)`;

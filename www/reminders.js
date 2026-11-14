@@ -81,7 +81,7 @@
       PRAYERS.forEach((p, i) => {
         const base = (d + 1) * 1000 + i * 10, adhanAt = startOf(date, t[p]), quiet = cfg.sound[p] === 'silent' ? 'silent' : 'tone';
         if (cfg.on[p]) {
-          if (adhanAt > nowMs) out.push({ id: base, at: adhanAt, channel: cfg.sound[p], title: `Time for ${LABEL[p]}`, body: `${LABEL[p]} · ${T.to12(t[p])}. Jamaat at ${T.to12(j[p])}.` });
+          if (adhanAt > nowMs) out.push({ id: base, at: adhanAt, channel: cfg.sound[p], title: `Time for ${LABEL[p]}`, body: `Make wudu 💧 · Jamaat at ${T.to12(j[p])}.` });
           const pre = adhanAt - cfg.pre * 60000;
           if (cfg.pre && pre > nowMs) out.push({ id: base + 1, at: pre, channel: quiet, title: `${LABEL[p]} in ${cfg.pre} minutes`, body: `Adhan at ${T.to12(t[p])}.` });
         }

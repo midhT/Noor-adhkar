@@ -1,4 +1,4 @@
-# Naseem 4.1.0 onboarding implementation — build 40104
+# Naseem 4.1.0 onboarding implementation — build 40106
 
 The previous onboarding is replaced by a seven-step, responsive setup flow, adapted from the supplied Prayerly references and styled to match Naseem's dark, restrained green identity:
 
@@ -19,7 +19,7 @@ The Qibla visual treatment is inspired by Prayerly's compact compass presentatio
 ## Release identity
 
 - Display version: `4.1.0`
-- Android `versionCode`: `40104` (must increase for each later APK)
+- Android `versionCode`: `40106` (must increase for each later APK)
 - Application ID: `com.noor.adhkar` (unchanged)
 - Existing signing keystore, alias and GitHub secrets must be reused exactly. Never generate or rotate the signing key for an in-place update.
 
