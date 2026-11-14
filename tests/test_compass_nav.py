@@ -50,7 +50,8 @@ with sync_playwright() as p:
     pg.evaluate("switchScreen('homeScreen')"); pg.wait_for_timeout(300); fire(77)
     ok('Home compass number is the live heading', pg.inner_text('#homeQiblaMiniBearing') == '77°', pg.inner_text('#homeQiblaMiniBearing'))
     fire(bearing); ok('Home compass says Facing the Qibla ✓ when aligned', 'Facing the Qibla' in pg.inner_text('#homeQiblaMiniDirection') and ev("document.querySelector('.home-qibla-dial').classList.contains('aligned')"))
-    ok('Home mini compass rotates its north marker with handset heading', abs(float(re.search(r'rotate\((-?[\d.]+)deg', ev("document.querySelector('.home-qibla-dial > span').style.transform")).group(1)) + bearing) < 1, ev("document.querySelector('.home-qibla-dial > span').style.transform"))
+    _mr = float(re.search(r'rotate\((-?[\d.]+)deg', ev("document.querySelector('.home-qibla-dial > span').style.transform")).group(1))
+    ok('Home mini compass rotates its north marker with handset heading', abs(((_mr + bearing + 180) % 360) - 180) < 1, ev("document.querySelector('.home-qibla-dial > span').style.transform"))
     # ================= nav press-and-drag =================
     cur = lambda: ev("document.querySelector('.screen.active').id")
     rects = lambda: ev("[...document.querySelectorAll('.bottom-nav .nav-item')].map(e=>{const r=e.getBoundingClientRect();return [e.dataset.screen,r.left+r.width/2,r.top+r.height/2]})")
