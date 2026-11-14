@@ -17,7 +17,7 @@ assert.match(index, /<script src=\"glance-config\.js\"><\/script>/);
 assert.match(tracker, /isPrayerTimeReached/);
 assert.match(tracker, /isPrayerTimeReached/);
 assert.match(tracker, /data-status-for/);
-assert.match(qibla, /miniNorth\.style\.transform=`translateX\(-50%\) rotate\(\$\{-spin\}deg\)`/);
+assert.match(qibla, /miniNorth\.style\.transform=`translateX\(-50%\) rotate\(\$\{-heading\}deg\)`/);
 assert.match(qibla, /sensor\?bearing-spin:bearing/, 'mini Qibla arrow uses the live phone-relative bearing');
 assert.match(reminders, /Make wudu 💧/);
 assert.match(glance, /raw\.githubusercontent\.com\/midhT\/Naseem-public\/main\/content\/glance\.json/);
