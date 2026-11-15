@@ -1,53 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tw_root"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/noor_widget_bg"
-    android:orientation="vertical"
-    android:padding="14dp">
-
-    <TextView
-        android:id="@+id/tw_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:text="Tasbeeh"
-        android:textColor="#FF8E8E95"
-        android:textSize="11sp" />
-
-    <LinearLayout
-        android:id="@+id/tw_count_area"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/tw_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textColor="#FFF3F1EC"
-            android:textSize="42sp" />
-
-        <TextView
-            android:id="@+id/tw_target"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="of 100 · tap to count"
-            android:textColor="#FF8E8E95"
-            android:textSize="10sp" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tw_root" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:id="@+id/tw_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/noor_widget_bg" android:importantForAccessibility="no" />
+    <LinearLayout android:id="@+id/tw_content" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:padding="16dp">
+        <TextView android:id="@+id/tw_name" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:ellipsize="end" android:fontFamily="sans-serif-medium" android:maxLines="1"
+            android:text="Tasbeeh" android:textColor="#FFF4F7F2" android:textSize="13sp" />
+        <TextView android:id="@+id/tw_arabic" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:ellipsize="end" android:maxLines="1" android:text="" android:textColor="#FF9BA59F" android:textSize="12sp" />
+        <LinearLayout android:id="@+id/tw_count_area" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+            android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/tw_count" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light" android:text="0" android:textColor="#FFF4F7F2" android:textSize="46sp" />
+            <TextView android:id="@+id/tw_target" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="of 100 · tap to count" android:textColor="#FF9BA59F" android:textSize="10sp" />
+        </LinearLayout>
+        <ImageView android:id="@+id/tw_bar" android:layout_width="match_parent" android:layout_height="6dp"
+            android:scaleType="fitXY" android:importantForAccessibility="no" />
     </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/tw_progress"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:max="1000"
-        android:progress="0"
-        android:progressDrawable="@drawable/noor_widget_progress" />
-</LinearLayout>
+</FrameLayout>

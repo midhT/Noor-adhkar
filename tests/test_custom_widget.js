@@ -7,5 +7,5 @@ const patch=fs.readFileSync('scripts/patch-android.mjs','utf8');
 for(const token of ['CUSTOM_WIDGET_BLOCKS','CUSTOM_WIDGET_LAYOUT','CUSTOM_WIDGET_DUA','CUSTOM_WIDGET_ACTION']) assert(java.includes(token)||plugin.includes(token),`missing ${token}`);
 for(const token of ['cw_prayer','cw_tasbeeh','cw_hijri','cw_dua','ACTION_COUNT']) assert(java.includes(token),`missing native widget feature ${token}`);
 for(const token of ['setCustomWidget','studio-widget-block','studioCustomSave','studioWidgetAction','studioWidgetDua']) assert(ui.includes(token)||native.includes(token),`missing UI bridge ${token}`);
-assert(patch.includes('.CustomWidgetProvider'));
+assert(patch.includes('CustomWidgetProvider')&&patch.includes('CustomWidgetConfigActivity'));
 console.log('Custom Widget composition source checks passed.');

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rw_root" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:id="@+id/rw_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/noor_widget_bg" android:importantForAccessibility="no" />
+    <LinearLayout android:id="@+id/rw_content" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:padding="18dp">
+        <TextView android:id="@+id/rw_kicker" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:letterSpacing="0.18" android:text="DAILY REFLECTION" android:textColor="#FF63D6A0" android:textSize="9sp" />
+        <TextView android:id="@+id/rw_text" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+            android:layout_marginTop="8dp" android:fontFamily="sans-serif-light" android:lineSpacingMultiplier="1.1"
+            android:text="Open Naseem to load today’s reflection." android:textColor="#FFF4F7F2" android:textSize="14sp" />
+        <TextView android:id="@+id/rw_source" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:ellipsize="end" android:maxLines="1" android:text="" android:textColor="#FF9BA59F" android:textSize="11sp" />
+    </LinearLayout>
+</FrameLayout>

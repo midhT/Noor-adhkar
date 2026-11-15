@@ -8,7 +8,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-/** Bridge between the Noor web app and its Android home-screen widgets. */
+/** Bridge between the Naseem web app and its Android home-screen widgets. */
 @CapacitorPlugin(name = "NoorWidgets")
 public class NoorWidgetsPlugin extends Plugin {
 
@@ -19,18 +19,21 @@ public class NoorWidgetsPlugin extends Plugin {
             NoorWidgetStore.prefs(getContext()).edit().putString(NoorWidgetStore.PRAYER_JSON, json).apply();
         }
         PrayerWidgetProvider.refreshAll(getContext());
-        CustomWidgetProvider.refreshAll(getContext());
         call.resolve();
     }
 
     @PluginMethod
     public void setTasbeeh(PluginCall call) {
         String name = call.getString("name", "Tasbeeh");
+        String arabic = call.getString("arabic", "");
         int count = call.getInt("count", 0);
         int target = call.getInt("target", 100);
+        if (arabic == null) arabic = "";
+        if (arabic.length() > 60) arabic = arabic.substring(0, 60);
         synchronized (NoorWidgetStore.LOCK) {
             SharedPreferences.Editor e = NoorWidgetStore.prefs(getContext()).edit();
             e.putString(NoorWidgetStore.TASBEEH_NAME, name);
+            e.putString(NoorWidgetStore.TASBEEH_ARABIC, arabic);
             e.putInt(NoorWidgetStore.TASBEEH_COUNT, Math.max(0, count));
             e.putInt(NoorWidgetStore.TASBEEH_TARGET, Math.max(1, target));
             e.apply();
@@ -40,15 +43,36 @@ public class NoorWidgetsPlugin extends Plugin {
         call.resolve();
     }
 
-
     @PluginMethod
     public void setHijriDate(PluginCall call) {
         String date = call.getString("date", "");
         synchronized (NoorWidgetStore.LOCK) {
-            NoorWidgetStore.prefs(getContext()).edit().putString(NoorWidgetStore.HIJRI_DATE, date).apply();
+            NoorWidgetStore.prefs(getContext()).edit()
+                .putString(NoorWidgetStore.HIJRI_DATE, date)
+                .putString(NoorWidgetStore.HIJRI_SYNC_DAY, NoorWidgetStore.todayKey()).apply();
         }
         HijriWidgetProvider.refreshAll(getContext());
         CustomWidgetProvider.refreshAll(getContext());
+        call.resolve();
+    }
+
+    /** Daily reflection text taken from the app's Glance content; trimmed so a malformed feed cannot bloat storage. */
+    @PluginMethod
+    public void setReflection(PluginCall call) {
+        String text = call.getString("text", "");
+        String source = call.getString("source", "");
+        if (text == null) text = "";
+        if (source == null) source = "";
+        text = text.trim();
+        source = source.trim();
+        if (text.length() > 400) text = text.substring(0, 400);
+        if (source.length() > 80) source = source.substring(0, 80);
+        synchronized (NoorWidgetStore.LOCK) {
+            NoorWidgetStore.prefs(getContext()).edit()
+                .putString(NoorWidgetStore.REFLECTION_TEXT, text)
+                .putString(NoorWidgetStore.REFLECTION_SOURCE, source).apply();
+        }
+        ReflectionWidgetProvider.refreshAll(getContext());
         call.resolve();
     }
 
@@ -66,14 +90,11 @@ public class NoorWidgetsPlugin extends Plugin {
                 .putString(NoorWidgetStore.WIDGET_ACCENT, accent)
                 .putString(NoorWidgetStore.WIDGET_DENSITY, density).apply();
         }
-        PrayerWidgetProvider.refreshAll(getContext());
-        TasbeehWidgetProvider.refreshAll(getContext());
-        HijriWidgetProvider.refreshAll(getContext());
-        CustomWidgetProvider.refreshAll(getContext());
+        NoorWidgetStore.refreshEverything(getContext());
         call.resolve();
     }
 
-
+    /** Saves the app-wide defaults for the Custom widget; placed instances keep their own settings once configured. */
     @PluginMethod
     public void setCustomWidget(PluginCall call) {
         String requestedBlocks = call.getString("blocks", "prayer,tasbeeh,hijri");

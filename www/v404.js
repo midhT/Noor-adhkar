@@ -280,6 +280,8 @@
   }
   function renderGlanceItem(content){
     const quiz=content.quiz&&Array.isArray(content.quiz.options)?`<div class="glance-quiz"><div class="v404-list">${content.quiz.options.map((o,i)=>`<button type="button" class="v404-option" data-quiz-answer="${i}">${esc(o)}</button>`).join('')}</div><p id="glanceQuizResult" class="v404-note" aria-live="polite"></p></div>`:'';
+    // Feed the Daily Reflection home-screen widget with the same reviewed text (quizzes are not shown there).
+    if(!quiz&&content.body)window.NoorNative?.widgets?.setReflection?.({text:content.body,source:content.reference||content.title||''});
     $('glanceCard').innerHTML=`<small>${esc(content.type||'Naseem reflection')}</small><h2>${esc(content.title)}</h2><p>${esc(content.body)}</p><strong>${esc(content.reference||'')}</strong>${quiz}`;
     if(quiz){$('glanceCard').querySelectorAll('[data-quiz-answer]').forEach(b=>b.addEventListener('click',()=>{const correct=Number(b.dataset.quizAnswer)===Number(content.quiz.answer);$('glanceQuizResult').textContent=(correct?'Correct. ':'Not quite. ')+String(content.quiz.explanation||'Review the reference above.');$('glanceCard').querySelectorAll('[data-quiz-answer]').forEach(x=>x.disabled=true);}));}
     renderHomeGlance(content);

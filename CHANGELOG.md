@@ -62,6 +62,15 @@ The user-authored native widget builder, full custom Adhkar routine manager, ful
 - Advanced Android versionCode to 40103 and invalidated the previous service-worker cache.
 
 
+## 4.1.0 · Android build 40107 (candidate)
+
+- Rebuilt the home-screen widgets with a new charcoal-glass and deep-emerald design, drawn natively (card, glow, tick-ring dial and progress bars).
+- Added two widgets: **Salah Countdown** (dial with live countdown and progress to the next prayer) and **Daily Reflection** (shows the text Glance already holds; no religious text is bundled natively).
+- Redesigned Prayer Times (wide and small layouts chosen from the placed size, progress to next prayer, passed prayers dimmed), Tasbeeh (Arabic name, target bar) and Hijri (large day, Gregorian date, honest "open Naseem to update" when the synced date is from an earlier day).
+- Custom widget: each placed instance now keeps its own content, spacing, tap action and personal reminder through a configure screen (also reachable from the launcher's reconfigure action). Widget Studio values remain the defaults for older instances.
+- Widgets repaint after reboot, time change, time-zone change and date change, and at least every 15 minutes; Custom widget taps now also update Tasbeeh widgets.
+- Not verified: Gradle compilation, launcher resizing and refresh timing need the GitHub Actions build and a physical-device test. Android versionCode advanced to 40107; the public release feed is unchanged until a release is published.
+
 ## 4.1.0 · Android build 40106 (candidate)
 
 - Added an optional menstrual cycle tracker for female profiles, with period start history, configurable typical cycle interval and duration, and an approximate next-start estimate.

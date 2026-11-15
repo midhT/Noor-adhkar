@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="noor_prayer_widget_label">Naseem · Prayer times</string>
-    <string name="noor_prayer_widget_desc">Next prayer with a live countdown and today\'s five times.</string>
+    <string name="noor_prayer_widget_desc">Next prayer with a live countdown, progress and today\'s five times.</string>
+    <string name="noor_countdown_widget_label">Naseem · Salah countdown</string>
+    <string name="noor_countdown_widget_desc">A dial that counts down to the next prayer.</string>
     <string name="noor_tasbeeh_widget_label">Naseem · Tasbeeh</string>
     <string name="noor_tasbeeh_widget_desc">Tap to count your dhikr straight from the home screen.</string>
     <string name="noor_hijri_widget_label">Naseem · Hijri date</string>
-    <string name="noor_hijri_widget_desc">Shows today’s complete Islamic date.</string>
+    <string name="noor_hijri_widget_desc">Today’s Islamic date alongside the Gregorian date.</string>
+    <string name="noor_reflection_widget_label">Naseem · Daily reflection</string>
+    <string name="noor_reflection_widget_desc">Today’s reflection from Naseem Glance.</string>
     <string name="noor_custom_widget_label">Naseem · Custom widget</string>
-    <string name="noor_custom_widget_desc">A widget you compose in Naseem Widget Studio.</string>
+    <string name="noor_custom_widget_desc">Compose your own widget; each one keeps its own settings.</string>
 </resources>

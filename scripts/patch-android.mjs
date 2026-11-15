@@ -15,7 +15,7 @@ if (!buildMatch) throw new Error('www/index.html must declare the naseem-version
 const versionCode = Number(buildMatch[1]);
 if (!Number.isSafeInteger(versionCode) || versionCode <= 0) throw new Error('Invalid Naseem Android version code.');
 // The public versionName remains 4.1.0; increase this meta value for each new installable APK.
-// 40100-40105 are prior 4.1.0 builds; 40106 is the next in-place update candidate.
+// 40100-40106 are prior 4.1.0 builds; 40107 is the next in-place update candidate (widget redesign).
 if (existsSync(gradlePath)) {
   let gradle = readFileSync(gradlePath, 'utf8');
   if (/versionCode\s+\d+/.test(gradle)) gradle = gradle.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`);
@@ -56,27 +56,38 @@ for (const line of permissions) {
   if (!manifest.includes(name)) manifest = manifest.replace('</manifest>', `    ${line}\n</manifest>`);
 }
 
-const receivers = `
-        <receiver android:name=".PrayerWidgetProvider" android:exported="true" android:label="@string/noor_prayer_widget_label">
-            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/prayer_widget_info" />
-        </receiver>
-        <receiver android:name=".TasbeehWidgetProvider" android:exported="true" android:label="@string/noor_tasbeeh_widget_label">
-            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/tasbeeh_widget_info" />
-        </receiver>
-        <receiver android:name=".HijriWidgetProvider" android:exported="true" android:label="@string/noor_hijri_widget_label">
-            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/hijri_widget_info" />
-        </receiver>
-        <receiver android:name=".CustomWidgetProvider" android:exported="true" android:label="@string/noor_custom_widget_label">
-            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/custom_widget_info" />
+// Home-screen widgets. Each entry is added only when its receiver is not already in the manifest.
+const widgetReceivers = [
+  { cls: 'PrayerWidgetProvider', label: 'noor_prayer_widget_label', info: 'prayer_widget_info',
+    // Shared refresh/boot/time-change entry point for the Prayer, Salah Countdown and Custom widgets.
+    extraActions: ['android.intent.action.BOOT_COMPLETED', 'android.intent.action.TIME_SET', 'android.intent.action.TIMEZONE_CHANGED', 'android.intent.action.DATE_CHANGED', 'com.noor.adhkar.PRAYER_REFRESH'] },
+  { cls: 'CountdownWidgetProvider', label: 'noor_countdown_widget_label', info: 'countdown_widget_info' },
+  { cls: 'TasbeehWidgetProvider', label: 'noor_tasbeeh_widget_label', info: 'tasbeeh_widget_info' },
+  { cls: 'HijriWidgetProvider', label: 'noor_hijri_widget_label', info: 'hijri_widget_info' },
+  { cls: 'ReflectionWidgetProvider', label: 'noor_reflection_widget_label', info: 'reflection_widget_info' },
+  { cls: 'CustomWidgetProvider', label: 'noor_custom_widget_label', info: 'custom_widget_info' }
+];
+for (const w of widgetReceivers) {
+  if (manifest.includes(`.${w.cls}"`)) continue;
+  const actions = ['android.appwidget.action.APPWIDGET_UPDATE', ...(w.extraActions || [])]
+    .map(a => `<action android:name="${a}" />`).join('');
+  const receiver = `
+        <receiver android:name=".${w.cls}" android:exported="true" android:label="@string/${w.label}">
+            <intent-filter>${actions}</intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/${w.info}" />
         </receiver>
 `;
-if (!manifest.includes('.PrayerWidgetProvider')) manifest = manifest.replace('</application>', `${receivers}    </application>`);
-if (!manifest.includes('.HijriWidgetProvider')) manifest = manifest.replace('</application>', `        <receiver android:name=".HijriWidgetProvider" android:exported="true" android:label="@string/noor_hijri_widget_label"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/hijri_widget_info" /></receiver>\n    </application>`);
-if (!manifest.includes('.CustomWidgetProvider')) manifest = manifest.replace('</application>', `        <receiver android:name=".CustomWidgetProvider" android:exported="true" android:label="@string/noor_custom_widget_label"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/custom_widget_info" /></receiver>\n    </application>`);
+  manifest = manifest.replace('</application>', `${receiver}    </application>`);
+}
+// Per-instance settings screen for the Custom widget (launchers open it when the widget is added or reconfigured).
+if (!manifest.includes('.CustomWidgetConfigActivity')) {
+  const configure = `
+        <activity android:name=".CustomWidgetConfigActivity" android:exported="true" android:label="@string/noor_custom_widget_label" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" /></intent-filter>
+        </activity>
+`;
+  manifest = manifest.replace('</application>', `${configure}    </application>`);
+}
 
 writeFileSync(manifestPath, manifest);
 console.log('Noor native Android files and manifest entries are in place for', pkg);

@@ -24,9 +24,9 @@ assert 'data-asr-choice' in js and 'Earlier Asr time' in js and 'Later Asr time'
 assert 'before_sleep' in (ROOT / 'www/adhkar-data.js').read_text()
 assert 'setHijriDate' in (ROOT / 'www/native.js').read_text()
 assert 'HijriWidgetProvider' in (ROOT / 'scripts/patch-android.mjs').read_text()
-assert 'noor-adhkar-cache-v4106' in (ROOT / 'www/sw.js').read_text()
+assert 'noor-adhkar-cache-v4107' in (ROOT / 'www/sw.js').read_text()
 assert 'salah-experience.js' in (ROOT / 'www/sw.js').read_text()
-assert 'naseem-version-code' in html and '40106' in html
+assert 'naseem-version-code' in html and '40107' in html
 assert 'methodAuto' in (ROOT / 'www/salah.js').read_text()
 assert 'Later Asr time' in (ROOT / 'www/salah-settings.js').read_text() and 'Earlier Asr time' in (ROOT / 'www/salah-settings.js').read_text()
 assert 'naseem-onboarding-complete-v1' in settings

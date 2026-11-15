@@ -12,3 +12,22 @@
 
 ## Still outstanding
 See `RELEASE-BLOCKERS.md`. Physical-device QA, GitHub-hosted browser/Android CI results, signing/publication, Quran audio redistribution rights and qualified religious-content review remain release gates. The Custom Widget does not yet support independent per-instance compositions or drag-and-drop positioning.
+
+## Home-screen widgets (build 40107)
+
+Implemented in source, **not compiled or device-tested**:
+
+| Widget | Provider | Notes |
+| --- | --- | --- |
+| Prayer Times | `PrayerWidgetProvider` | Wide (`widget_prayer`) or small (`widget_prayer_small`) layout chosen from the placed size; live Chronometer countdown; progress bar; passed prayers dimmed. |
+| Salah Countdown | `CountdownWidgetProvider` | Tick-ring dial drawn by `WidgetArt`; dial progress = time since previous prayer / gap to next. |
+| Tasbeeh | `TasbeehWidgetProvider` | Tap-to-count; pending taps merge into the app on next open (`takePending`). Shows Arabic name when synced. |
+| Hijri date | `HijriWidgetProvider` | Shows "Open Naseem to update" when the synced date is from an earlier day. |
+| Daily Reflection | `ReflectionWidgetProvider` | Text comes only from the app's Glance content via `setReflection`; no text is bundled natively. |
+| Custom | `CustomWidgetProvider` + `CustomWidgetConfigActivity` | Per-instance settings keyed by appWidgetId (`cw_<id>_*`); Widget Studio values are defaults for instances without their own. |
+
+Shared code: `WidgetArt` (card/dial/bar bitmaps, size-capped), `PrayerMath` (prayer lookups, 15-minute/next-prayer repaint alarm), `NoorWidgetStore` (preferences, sizing, density).
+
+Known limits: backgrounds are static bitmaps (no live blur); sizes come from launcher option bundles, so aspect/corner radius can differ slightly between launchers; the repaint alarm is inexact and non-waking, so the dial and next-prayer switch may lag while the phone is asleep (the countdown text itself is system-drawn); arbitrary drag positioning is not possible with Android widgets; preview images in the picker are mock renders, not screenshots.
+
+Verification still required: Gradle compile, `npm run` test suite with esbuild, launcher resize/refresh on a Samsung device, reboot and time-zone behaviour, in-place upgrade over the previous build.

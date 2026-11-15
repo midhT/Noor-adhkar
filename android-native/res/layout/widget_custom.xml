@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/cw_root" android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="@drawable/noor_widget_bg" android:orientation="vertical" android:padding="14dp">
-    <TextView android:id="@+id/cw_title" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:text="NASEEM · YOUR WIDGET" android:textColor="#FF8FD2AA" android:textSize="10sp" android:textStyle="bold" />
-    <TextView android:id="@+id/cw_prayer" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" android:text="Prayer times" android:textColor="#FFF3F6F2" android:textSize="13sp" />
-    <TextView android:id="@+id/cw_tasbeeh" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" android:text="Tasbeeh" android:textColor="#FFF3F6F2" android:textSize="13sp" />
-    <TextView android:id="@+id/cw_hijri" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" android:text="Hijri date" android:textColor="#FFF3F6F2" android:textSize="13sp" />
-    <TextView android:id="@+id/cw_dua" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" android:text="Daily dua" android:textColor="#FFF3F6F2" android:textSize="13sp" />
-    <TextView android:id="@+id/cw_footer" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" android:text="Open Naseem" android:textColor="#FF8E8E95" android:textSize="10sp" />
-</LinearLayout>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cw_root" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:id="@+id/cw_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/noor_widget_bg" android:importantForAccessibility="no" />
+    <LinearLayout android:id="@+id/cw_content" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:padding="16dp">
+        <TextView android:id="@+id/cw_title" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:letterSpacing="0.18" android:text="NASEEM" android:textColor="#FF63D6A0" android:textSize="9sp" />
+        <TextView android:id="@+id/cw_prayer" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:fontFamily="sans-serif-medium" android:maxLines="1" android:text="Prayer times" android:textColor="#FFF4F7F2" android:textSize="14sp" />
+        <TextView android:id="@+id/cw_tasbeeh" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:maxLines="1" android:text="Tasbeeh" android:textColor="#FFF4F7F2" android:textSize="14sp" />
+        <TextView android:id="@+id/cw_hijri" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:maxLines="1" android:text="Hijri date" android:textColor="#FFF4F7F2" android:textSize="14sp" />
+        <TextView android:id="@+id/cw_dua" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+            android:layout_marginTop="8dp" android:fontFamily="sans-serif-light" android:text="Reminder" android:textColor="#FFF4F7F2" android:textSize="14sp" />
+        <TextView android:id="@+id/cw_footer" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="6dp" android:maxLines="1" android:text="Tap to open Naseem" android:textColor="#FF9BA59F" android:textSize="10sp" />
+    </LinearLayout>
+</FrameLayout>

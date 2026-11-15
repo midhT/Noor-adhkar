@@ -16,6 +16,7 @@ node tests/test_new_tools.js
 node tests/test_v404_source.js
 node tests/test_v407_scope.js
 node tests/test_android_patch.mjs
+node tests/test_widget_native_sources.mjs
 node tests/test_adhkar_core.js
 node tests/test_custom_routines.js
 node tests/test_custom_widget.js
