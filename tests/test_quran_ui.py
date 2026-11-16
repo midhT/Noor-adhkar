@@ -113,7 +113,11 @@ with sync_playwright() as p:
     pg.tap('#quranExpandPlayer'); pg.wait_for_timeout(150)
     ok('full-screen player shows the active Qari', 'Alafasy' in pg.inner_text('#quranFullReciter'))
     pg.tap('#quranFullClose'); pg.tap('#quranStop')
-    pg.tap('#quranSettingsBtn'); pg.tap('#quranQariToggle'); pg.tap('[data-qari-id="muhammad-al-luhaidan"]'); pg.wait_for_timeout(150)
+    if pg.evaluate("document.getElementById('quranSettings').hidden"):
+        pg.tap('#quranSettingsBtn')
+    pg.tap('#quranQariToggle')
+    pg.tap('[data-qari-id="muhammad-al-luhaidan"]')
+    pg.wait_for_timeout(150)
     pg.tap('#quranSettingsBtn')
     # follow switch off
     pg.tap('#quranSettingsBtn'); pg.tap('#quranFollow'); pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(200)
