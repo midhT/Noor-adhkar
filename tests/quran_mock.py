@@ -98,4 +98,19 @@ def install(page, seconds=1.2):
         return route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps(data))
     page.route('https://api.alquran.cloud/**', api)
     page.route('https://cdn.jsdelivr.net/gh/its3li/quran-word-timings@v1.0.0/**', timing)
-    page.route('https://cdn.islamic.network/mock/**', lambda r: r.fulfill(status=200, content_type='audio/wav', headers={'Access-Control-Allow-Origin': '*'}, body=tone_wav(40.0)))
+    long_wav = tone_wav(40.0)
+
+    def audio(route):
+        """Serve the mock audio with HTTP Range support so Chromium can seek (currentTime) like a real CDN."""
+        total = len(long_wav)
+        hdr = {'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes', 'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges'}
+        m = re.match(r'bytes=(\d*)-(\d*)', route.request.headers.get('range', ''))
+        if m and (m.group(1) or m.group(2)):
+            if m.group(1):
+                a = int(m.group(1)); b = min(int(m.group(2)), total - 1) if m.group(2) else total - 1
+            else:
+                a = max(0, total - int(m.group(2))); b = total - 1
+            hdr['Content-Range'] = f'bytes {a}-{b}/{total}'
+            return route.fulfill(status=206, content_type='audio/wav', headers=hdr, body=long_wav[a:b + 1])
+        return route.fulfill(status=200, content_type='audio/wav', headers=hdr, body=long_wav)
+    page.route('https://cdn.islamic.network/mock/**', audio)
