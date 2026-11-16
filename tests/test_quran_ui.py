@@ -77,7 +77,11 @@ with sync_playwright() as p:
     pg.evaluate("window.dispatchEvent(new Event('touchstart'))"); pg.evaluate("window.scrollBy(0,700)"); pg.wait_for_timeout(700)
     y = pg.evaluate("window.scrollY"); pg.wait_for_timeout(1500)
     ok('auto-follow pauses while the reader scrolls manually', abs(pg.evaluate("window.scrollY") - y) < 3, f'{y} -> {pg.evaluate("window.scrollY")}')
-    pg.tap('#quranLocate'); pg.wait_for_timeout(900)
+    pg.tap('#quranLocate')
+    try:  # smooth scroll can lag on CI while the ayah keeps advancing; wait for it to settle on the active ayah
+        pg.wait_for_function("()=>{const a=document.querySelector('#quranVerses .quran-ayah.quran-playing');if(!a)return false;const bar=document.getElementById('quranReaderBar').getBoundingClientRect().bottom,pl=document.getElementById('quranPlayer').getBoundingClientRect().top,r=a.getBoundingClientRect();return Math.abs((r.top+r.height/2)-(bar+(pl-bar)/2))<14}", timeout=4000)
+    except Exception:
+        pass
     c = pg.evaluate(CENTRE_JS)
     ok('locate button re-centres the active ayah', c and abs(c['off']) < 14, str(c))
     # pause / resume / next / prev
@@ -192,6 +196,8 @@ with sync_playwright() as p:
     open_quran(pg); pg.tap('#quranDownloadOffline'); pg.wait_for_function("document.getElementById('quranOfflineStatus').textContent.startsWith('Complete')", timeout=60000)
     ok('offline download completes', 'Complete Quran text' in pg.inner_text('#quranOfflineStatus'))
     pg.route('https://api.alquran.cloud/**', lambda r: r.abort())
+    pg.route('https://cdn.jsdelivr.net/**', lambda r: r.abort())
+    pg.route('https://cdn.islamic.network/**', lambda r: r.abort())
     pg.tap('[data-open-surah="3"]'); pg.wait_for_timeout(1300)
     ok('saved surah opens with no network (with English)', pg.evaluate("document.querySelectorAll('#quranVerses .quran-ayah').length") == 12 and pg.evaluate("document.querySelectorAll('#quranVerses .quran-translation').length") == 12)
     ok('offline recitation fails gracefully, text stays', True)
