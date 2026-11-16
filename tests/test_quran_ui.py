@@ -60,7 +60,8 @@ with sync_playwright() as p:
     pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(500)
 
     # ---- recitation highlight + alignment ----
-    pg.tap('[data-play-ayah="3"]'); pg.wait_for_timeout(1000)
+    pg.tap('[data-play-ayah="3"]'); pg.wait_for_timeout(250)
+    ok('word-level timing marks Quran words for follow-along', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
     ok('only the ayah being recited is highlighted', pg.evaluate(PLAYING_JS) == [3], str(pg.evaluate(PLAYING_JS)))
     c = pg.evaluate(CENTRE_JS)
     ok('recited ayah is centred between header and player', c and abs(c['off']) < 14, str(c))

@@ -1,5 +1,21 @@
 # Naseem Changelog
 
+## 4.1.0 · Android build 40109 (candidate)
+
+- Added a Qari selection menu in Quran reading settings. The supported Muhammad Al-Luhaidan reciter displays a clear “Word by word” capability label directly beneath the reciter name.
+- Increased Android `versionCode` to 40109 while retaining public version 4.1.0, the existing application ID and the original signing configuration.
+- Not verified: signed APK build and physical-device visual testing.
+
+## 4.1.0 · Android build 40108 (candidate)
+
+- Added a dedicated full-screen Quran recitation player, separate from the Quran reader, with accent-responsive ambience and synced transport/seek controls.
+- The compact player remains available while browsing other Naseem screens.
+- The app-wide background ambience now follows the selected accent colour in dark and light themes.
+- Hardened public update checks with cache-busting, a GitHub Contents API fallback, and same-version build-code comparison on every launch.
+- Android `versionCode` advanced to 40108 while the public version remains 4.1.0. The existing application ID and protected signing configuration are preserved.
+- Not verified: signed APK build, in-place installation over the currently installed app, and physical-device playback/UI testing.
+
+
 ## 4.1.0 — Salah tracker and release-readiness patch · 14 November 2026
 - Added per-prayer check-ins for on-time, not-early and very-late Salah, with the female-only Periods option.
 - Periods entries are excluded from daily completion denominators and weekly prayer totals; they are not treated as missed Salah.

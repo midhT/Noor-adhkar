@@ -43,7 +43,7 @@ try {
   assert.ok(existsSync(join(main,'res/drawable-nodpi/widget_preview_custom.png')));
   assert.ok(existsSync(join(main,'res/drawable-nodpi/widget_preview_prayer.png')));
   assert.match(readFileSync(join(main,'res/xml/prayer_widget_info.xml'),'utf8'),/previewImage/);
-  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40107/);
-  assert.match(readFileSync(join(main,'assets/public/index.html'),'utf8'),/naseem-version-code\" content=\"40107/);
+  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40109/);
+  assert.match(readFileSync(join(main,'assets/public/index.html'),'utf8'),/naseem-version-code\" content=\"40109/);
   console.log('Android native integration patch: all assertions passed.');
 } finally { rmSync(root,{recursive:true,force:true}); }

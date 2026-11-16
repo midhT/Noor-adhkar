@@ -10,7 +10,7 @@ assert.match(release, /softprops\/action-gh-release/);
 assert.match(release, /midhT\/Naseem-public/);
 assert.ok(!existsSync('signing/naseem.keystore'), 'legacy embedded keystore removed');
 assert.match(readFileSync('.gitignore', 'utf8'), /\*\.keystore/);
-assert.match(readFileSync('www/sw.js', 'utf8'), /noor-adhkar-cache-v4107/);
+assert.match(readFileSync('www/sw.js', 'utf8'), /noor-adhkar-cache-v4109/);
 console.log('V4.1.0 release configuration checks passed.');
 
 assert.match(release, /app-release\.apk\.sha256/);

@@ -30,3 +30,8 @@ Public version label stays **4.1.0**; package ID `com.noor.adhkar` and the signi
 ## Tests
 New: `test_quran_memory.js`, `test_quran_ui.py`, `test_glance.py`, `test_layout_overlap.py` (+ `quran_mock.py` test fixtures).
 `test_compass_nav.py` now expects the real seven-tab order. Run `bash tests/run.sh`.
+
+
+## Word-by-word recitation update (build 40108)
+
+See `docs/QURAN_WORD_SYNC.md`. The reader now uses the exact paired Al-Luhaidan full-surah recording and CC0 word-timing data; word and ayah highlighting follow playback and seeking.

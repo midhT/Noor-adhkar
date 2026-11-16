@@ -76,14 +76,26 @@ def install(page, seconds=1.2):
         if m:
             eds = surah_editions(int(m.group(1)))
             return ok(eds if 'pickthall' in m.group(2) else eds[:1])
-        m = re.match(r'^/surah/(\d+)/ar\.alafasy$', path)
-        if m:
-            n = int(m.group(1)); meta = surah_list()[n - 1]
-            return ok(dict(meta, edition={'identifier': 'ar.alafasy'}, ayahs=[{'number': a, 'numberInSurah': a, 'text': 'x', 'audio': f'https://cdn.islamic.network/mock/{n}/{a}.wav'} for a in range(1, count(n) + 1)]))
         m = re.match(r'^/juz/(\d+)/quran-uthmani$', path)
         if m: return ok({'ayahs': [{'numberInSurah': 3, 'juz': int(m.group(1)), 'surah': {'number': 2, 'englishName': 'Test Surah 2'}}]})
         m = re.match(r'^/page/(\d+)/quran-uthmani$', path)
         if m: return ok({'ayahs': [{'numberInSurah': 2, 'juz': 1, 'surah': {'number': 3, 'englishName': 'Test Surah 3'}}]})
         route.fulfill(status=404, body='{}')
+    def timing(route):
+        m = re.search(r'/quran-com/(\d{3})\.json$', route.request.url)
+        if not m:
+            return route.fulfill(status=404, body='{}')
+        n = int(m.group(1)); editions = surah_editions(n); ayahs = editions[0]['ayahs']
+        verse_timings = []
+        for a in ayahs:
+            parts = a['text'].split()
+            if n not in (1, 9) and a['numberInSurah'] == 1 and len(parts) > 4:
+                parts = parts[4:]
+            start = (a['numberInSurah'] - 1) * 1000
+            segments = [[i + 1, start + i * max(1, 1000 // max(1, len(parts))), start + (i + 1) * max(1, 1000 // max(1, len(parts)))] for i, _ in enumerate(parts)]
+            verse_timings.append({'verse_key': f'{n}:{a["numberInSurah"]}', 'timestamp_from': start, 'timestamp_to': start + 1000, 'segments': segments})
+        data = {'surah': n, 'audio_url': f'https://cdn.islamic.network/mock/{n}/full.wav', 'verse_timings': verse_timings}
+        return route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps(data))
     page.route('https://api.alquran.cloud/**', api)
-    page.route('https://cdn.islamic.network/mock/**', lambda r: r.fulfill(status=200, content_type='audio/wav', headers={'Access-Control-Allow-Origin': '*'}, body=wav))
+    page.route('https://cdn.jsdelivr.net/gh/its3li/quran-word-timings@v1.0.0/**', timing)
+    page.route('https://cdn.islamic.network/mock/**', lambda r: r.fulfill(status=200, content_type='audio/wav', headers={'Access-Control-Allow-Origin': '*'}, body=tone_wav(40.0)))

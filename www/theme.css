@@ -37,6 +37,9 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 html,body{background:var(--bg);color:var(--text)}
 body{font-family:var(--sans);background:var(--bg);overscroll-behavior-y:none;-webkit-font-smoothing:antialiased}
 body.light{background:var(--bg)}
+/* A restrained, app-wide ambient wash follows the selected accent colour. */
+body{background:radial-gradient(ellipse at 8% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 43%),radial-gradient(ellipse at 96% 58%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 42%),var(--bg);background-attachment:fixed}
+body.light{background:radial-gradient(ellipse at 8% 0%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 43%),radial-gradient(ellipse at 96% 58%,color-mix(in srgb,var(--accent) 4%,transparent),transparent 42%),var(--bg);background-attachment:fixed}
 button{font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 button:active{transition:transform .12s}
 /* Calm, flat backdrop: no stars or drifting planet. */

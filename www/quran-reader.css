@@ -132,3 +132,43 @@ body.qr-immersive .topbar{display:none}
 @media(min-width:420px){.qrv-progress{margin-left:-20px;margin-right:-20px}}
 @media(max-width:370px){.qrv-progress{margin-left:-13px;margin-right:-13px}.qr-bar{padding-left:8px;padding-right:8px}#quranReaderScreen .quran-hero{grid-template-columns:minmax(0,1fr) auto}.quran-hero-mark{display:none}.qr-player-main{padding-left:10px}.qr-pbtn{width:34px}}
 @media(prefers-reduced-motion:reduce){.qr-switch i,#quranVerses .quran-ayah,.qrv-progress i{transition:none}}
+
+/* ---- immersive recitation player: dedicated from the reader, tinted by the global accent ---- */
+.qr-player-main .qr-player-info{display:grid;gap:3px;min-width:0;flex:1;padding:4px 0;border:0;background:transparent;color:var(--text);text-align:left;font:inherit}
+.qr-player-main .qr-player-info strong,.qr-player-main .qr-player-info small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qr-player-main .qr-player-info strong{font-size:13px;font-weight:650}
+.qr-player-main .qr-player-info small{font-size:11px;color:var(--muted)}
+.qr-full-player{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;overflow:auto;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top,0px) + 10px) 22px calc(env(safe-area-inset-bottom,0px) + 26px);background:var(--bg);color:var(--text);isolation:isolate}
+.qr-full-player[hidden]{display:none!important}
+.qr-full-player-open{overflow:hidden}
+.qr-full-ambient{position:absolute;inset:-12%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 24%,color-mix(in srgb,var(--accent) 27%,transparent),transparent 46%),radial-gradient(ellipse at 50% 82%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 50%);filter:blur(28px);opacity:.9}
+.qr-full-top{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;max-width:520px;margin:0 auto}
+.qr-full-top>div{display:grid;gap:3px;text-align:center}.qr-full-top small{font-size:9px;letter-spacing:.2em;color:var(--muted)}.qr-full-top strong{font-size:13px;font-weight:600}
+.qr-full-icon{display:grid;place-items:center;width:44px;height:44px;border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:50%;background:color-mix(in srgb,var(--panel) 65%,transparent);color:var(--text)}.qr-full-icon svg{width:20px;height:20px}
+.qr-full-content{display:flex;flex:1;flex-direction:column;justify-content:center;gap:24px;width:100%;max-width:440px;margin:0 auto;padding:16px 0 8px}
+.qr-full-art{position:relative;display:grid;place-items:center;align-self:center;width:min(68vw,270px);aspect-ratio:1;margin:2px auto 8px;border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:50%;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--accent) 22%,var(--panel)),color-mix(in srgb,var(--panel) 94%,transparent) 66%);box-shadow:0 24px 80px color-mix(in srgb,var(--accent) 18%,transparent),inset 0 0 50px color-mix(in srgb,var(--accent) 12%,transparent)}
+.qr-art-orbit{position:absolute;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:50%}.qr-art-orbit-one{inset:10%}.qr-art-orbit-two{inset:19%;border-style:dashed;opacity:.55}.qr-art-crescent{font-family:Georgia,serif;font-size:clamp(82px,25vw,112px);line-height:1;color:color-mix(in srgb,var(--accent) 72%,var(--text));text-shadow:0 0 36px color-mix(in srgb,var(--accent) 35%,transparent);transform:translateY(-3px)}.qr-art-star{position:absolute;right:25%;top:22%;font-size:22px;color:var(--accent);text-shadow:0 0 20px var(--accent)}
+.qr-full-track{text-align:center}.qr-full-track .eyebrow{color:var(--accent);font-size:9px;letter-spacing:.22em}.qr-full-track h2{margin:7px 0 4px;font-size:clamp(23px,6vw,29px);font-weight:550;letter-spacing:-.035em}.qr-full-track p{margin:0;color:var(--muted);font-size:12px}
+.qr-full-ayah{padding:16px 15px 14px;border:1px solid color-mix(in srgb,var(--accent) 23%,var(--line));border-radius:18px;background:color-mix(in srgb,var(--panel) 68%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);text-align:center}.qr-full-ayah small{display:block;color:var(--accent);font-size:9px;letter-spacing:.15em;font-weight:700}.qr-full-ayah p{margin:12px 0 10px;font-family:var(--arabic);font-size:clamp(25px,7vw,34px);line-height:1.9;color:var(--text)}.qr-full-ayah span{font-size:11px;color:var(--muted)}
+.qr-full-seek{width:100%;height:24px;margin:0;accent-color:var(--accent)}.qr-full-times{display:flex;justify-content:space-between;margin-top:-22px;color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums;pointer-events:none}
+.qr-full-controls{display:flex;align-items:center;justify-content:center;gap:28px;margin:8px 0 0}.qr-full-secondary,.qr-full-play{display:grid;place-items:center;border:0;border-radius:50%;color:var(--text)}.qr-full-secondary{width:54px;height:54px;background:color-mix(in srgb,var(--panel) 75%,transparent);border:1px solid var(--line)}.qr-full-secondary svg{width:22px;height:22px}.qr-full-play{width:72px;height:72px;background:var(--accent);color:var(--on-accent);box-shadow:0 10px 35px color-mix(in srgb,var(--accent) 28%,transparent)}.qr-full-play svg{width:27px;height:27px}.qr-full-note{margin:0;text-align:center;color:var(--muted);font-size:10px;letter-spacing:.02em}
+@media(min-width:521px){.qr-full-player{padding-left:max(22px,calc((100vw - 440px)/2));padding-right:max(22px,calc((100vw - 440px)/2))}}
+@media(prefers-reduced-motion:no-preference){.qr-full-ambient{animation:qrAmbient 14s ease-in-out infinite alternate}.qr-full-art{transition:transform .45s cubic-bezier(.2,.7,.2,1)}.qr-full-player:not([hidden]) .qr-full-art{animation:qrArtIn .55s cubic-bezier(.2,.75,.2,1) both}}
+@keyframes qrAmbient{from{transform:translate3d(-2%,0,0) scale(.98)}to{transform:translate3d(2%,2%,0) scale(1.04)}}@keyframes qrArtIn{from{opacity:.55;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.qr-full-ambient,.qr-full-art{animation:none!important}}
+
+/* Word-by-word recitation follow-along */
+#quranVerses .qr-word{display:inline;border-radius:5px;padding:0 .035em;transition:background-color .12s ease,color .12s ease;}
+#quranVerses .qr-word.qr-word-active{background:color-mix(in srgb,var(--accent) 28%,transparent);color:var(--text);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 12%,transparent);}
+
+/* Reciter picker: capability sits directly beneath the reciter's name. */
+.qr-qari-setting{align-items:center}
+.qr-qari-toggle{display:inline-flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:var(--panel);color:var(--text);font:inherit;font-size:12px}
+.qr-qari-toggle span{color:var(--accent);font-size:16px;line-height:1}
+.qr-qari-menu{display:grid;gap:7px;margin:0 0 14px;padding:8px;border:1px solid color-mix(in srgb,var(--accent) 24%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--panel) 92%,var(--accent) 8%)}
+.qr-qari-menu[hidden]{display:none!important}
+.qr-qari-option{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:12px;border:1px solid color-mix(in srgb,var(--accent) 38%,var(--line));border-radius:11px;background:color-mix(in srgb,var(--accent) 8%,var(--panel));color:var(--text);text-align:left}
+.qr-qari-copy{display:grid;gap:5px;min-width:0}
+.qr-qari-copy strong{font-size:13px;font-weight:650}
+.qr-qari-capability{width:max-content;padding:3px 7px;border-radius:6px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.025em}
+.qr-qari-selected{flex:0 0 auto;color:var(--accent);font-size:10px;font-weight:650}
