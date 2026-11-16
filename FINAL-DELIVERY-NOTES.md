@@ -1,43 +1,33 @@
-# Naseem 4.1.0 — build 40106 source delivery
+# Naseem 4.1.0 — build 40110 source delivery
 
-## Implemented in this source update
+## Implemented in this source candidate
 
-- Added an optional private cycle tracker for female profiles. It records period start dates, shows the number of recorded cycles, saves typical cycle and period duration, and estimates the next period date. Cycle history stays on-device and is included in user-requested backups. Estimates are informational only.
-
-- Restored the existing Home-first layout and identity. The original remembrance, streak, Hijri and Dhikr content remains on Home; the prayer dashboard and the prayer timings that previously lived there are restored below the Home greeting rather than replacing Home with the Salah screen.
-- Reworked first-run setup into a seven-step flow inspired by the supplied Prayerly references, restyled to Naseem's restrained dark/green theme: Welcome, Earlier/Later Asr, calculation method with Auto detect, optional notification permission, optional profile preference, GPS/manual city selection, and the live Salah-sky introduction.
-- Manual location search now renders selectable city results and saves the selected city's coordinates and time zone. GPS denial/unavailability falls back to manual city selection. The list uses the app's bundled city catalogue; it is not a live global geocoder.
-- Removed the visible Sunni/Hanafi/Madhhab selector. The user-facing preference is now Earlier Asr time / Later Asr time. Internal legacy calculation values remain for existing saved settings and calculation compatibility.
-- Added a Salah habit tracker for the five daily prayers, local daily history, seven-day consistency, next-prayer countdown, live sky phase and moving sun based on local prayer times, plus a separately marked optional Tahajjud estimate based on the last third of the night.
-- Kept the existing step-by-step Salah learning/recitation guide behind its existing compact details toggle; it remains available below the tracker rather than taking over the Salah screen.
-- Restyled the Qibla compass with a dark radial dial, green directional marker and central live-degree readout, taking interaction/layout inspiration from Prayerly. Existing Qibla bearing calculations, sensor filtering, left/right guidance and alignment hysteresis are retained.
-- Improved update detection to compare Android version codes as well as the public version name. The displayed app version remains `4.1.0`; the Android build code is `40106`, higher than previous 4.1.0 builds. The release workflow replaces assets on the existing `v4.1.0` release tag and publishes `androidVersionCode` in the public feed.
-- Added JavaScript syntax checks for edited/source JS and an ESLint `no-undef` check to the CI test runner. Required browser tests fail the CI run if they would otherwise be skipped.
-
-## Compatibility and preserved identity
-
-- Display version: `4.1.0`
-- Android versionCode: `40106`
-- Application ID: `com.noor.adhkar` (unchanged)
-- Public app name: `Naseem`
-- Internal source/project identity and data keys remain compatible.
-- Existing protected GitHub signing secrets and signing configuration were not changed. No keystore or signing secret is included in this ZIP; do not generate or rotate a signing key.
+- Expanded the Quran reciter picker to five Qaris. Muhammad Al-Luhaidan alone carries the **Word by word** capability label because only that recording has matching word-level timing data in this source. The other four use their own per-ayah audio URLs without falsely claiming word synchronisation.
+- Synced the selected reciter name across the mini-player and dedicated full-screen player. Playback continues through app navigation; controls use the same active audio queue.
+- Removed the full-screen player ambience layer and its animated effects. No new ambience feature is included.
+- Optimised word highlighting by indexing rendered word elements once per surah rather than searching the full DOM for every audio time update.
+- Added a native Android updater bridge: official GitHub release APK URL validation, Android DownloadManager download, completion/status recovery, SHA-256 verification against the release feed, and Android's explicit package-installer confirmation. The update checker retains cache-busting and GitHub Contents API fallback.
+- Updated browser fixtures for reciter audio endpoints and HTTP byte-range responses; replaced a timing-sensitive locate assertion with a bounded settle condition; offline tests now block the Quran text, timing and audio hosts.
+- Removed the duplicate Chromium dependency-install step in the release workflow and switched CI/release dependency installation to `npm ci`.
+- Advanced Android `versionCode` to `40110`; public version remains `4.1.0`. The app ID remains `com.noor.adhkar`. The existing protected signing configuration and secrets are not changed; no keystore or passwords are included.
 
 ## Verification performed in this workspace
 
 Passed:
+- All 18 Node source/integration test scripts, including Quran, public updater, Android patch integration, signing configuration, Salah, and release metadata checks.
 - JavaScript syntax checks across `www/*.js`, `scripts/*.mjs`, and test JS/MJS files.
-- Source integration, responsive-foundation, navigation, Android patch/version-code, public update checker, signing configuration, Adhkar, custom routines, custom widgets, Hadith, Quran, release configuration and Salah calculation checks.
-- Salah-engine comparison: 9,840 comparisons; worst difference 0.55 minutes; no comparison exceeded the 1-minute tolerance.
+- Python syntax checks for the test suite.
+- Static responsive foundation, navigation contract and V4.1.0 scoped-feature checks.
+- Android patch integration test confirms updater plugin registration, required install permission, build code propagation and native source inclusion.
 
-Not verified locally:
-- Full `tests/run.sh` stopped at `tests/build_native_bundle.cjs` because `esbuild` was unavailable; npm registry access timed out while attempting to install dependencies.
-- ESLint `no-undef` could not be fetched locally, so that new CI check was explicitly skipped for the local run. GitHub Actions will run it without the skip flag.
-- Chromium browser tests were blocked by the execution environment (`ERR_BLOCKED_BY_ADMINISTRATOR`) when opening the local test server. The complete browser suite must pass in GitHub Actions.
-- Android Gradle APK compilation, signing-certificate comparison, install/update, notifications, widgets and physical-device checks have not been run in this workspace.
+Not verified here:
+- `npm ci` did not complete because package-registry access timed out; therefore `npm run build` and the esbuild bundle step were not run.
+- Playwright Chromium could launch, but this execution environment blocked navigation to the local browser-test server with `ERR_BLOCKED_BY_ADMINISTRATOR`. The full browser suite, including the updated Quran UI tests, was not run.
+- Android Gradle compilation was not run.
+- No GitHub Actions run was triggered or observed, so CI is not confirmed green.
+- The release SHA-256 value is generated by the signed release workflow. The source feed currently has no built APK checksum, so the native updater deliberately refuses to install until a valid checksum is published.
+- No signed APK was produced, no signing-certificate comparison was performed, and no physical-device upgrade from build 40109 was tested.
 
-This is a source ZIP for the repository's CI build, not a prebuilt APK. Run the signed-candidate/release workflow with the existing protected signing secrets and require the full browser suite and APK build to pass before distributing an update.
+## Release gate
 
-## Deliberate limitation
-
-The Hijri calendar's existing device-calendar calculation, monthly reference check and local ±1-day correction are preserved. This source update does not introduce a new verified, per-region moon-sighting authority feed; such a feed should only be added once trusted regional data sources and their update rules are established.
+This is a source candidate, not a signed APK or a verified release. Run the existing GitHub release workflow using the already-configured protected signing secrets. Do not create or replace a keystore. Require the full Chromium test suite, Android Gradle build, checksum publication and a real in-place install over the currently installed app to pass before distributing build 40110.

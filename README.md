@@ -11,7 +11,7 @@ Naseem is the public-facing name of the Noor Project Islamic daily companion. Th
 
 ## Development
 ```sh
-npm install
+npm ci
 npm run build
 node tests/test_new_tools.js
 bash tests/run.sh

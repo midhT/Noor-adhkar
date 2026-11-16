@@ -46,8 +46,35 @@
     const title = document.createElement('strong'); title.textContent = `Naseem ${release.version}${build ? ` · build ${build}` : ''} is available`;
     const note = document.createElement('small'); note.textContent = String(release.notesSummary || 'A new version is ready. Review the release notes before installing.').slice(0, 220);
     copy.append(title, note);
-    const download = document.createElement('button'); download.type = 'button'; download.textContent = 'Download APK';
-    download.addEventListener('click', () => { window.open(safeUrl(release.downloadUrl || DEFAULT_APK), '_system'); });
+    const download = document.createElement('button'); download.type = 'button';
+    const key = releaseKey(release), saved = readState();
+    const nativeUpdater = () => window.Capacitor?.Plugins?.NaseemUpdater;
+    const setInstall = () => { download.textContent = 'Install update'; download.dataset.action = 'install'; };
+    if (saved.downloadedBuild === key && saved.downloadId) setInstall();
+    else download.textContent = 'Download APK';
+    download.addEventListener('click', async () => {
+      download.disabled = true;
+      try {
+        const updater = nativeUpdater();
+        if (!updater?.downloadApk || !updater?.installApk) {
+          window.open(safeUrl(release.downloadUrl || DEFAULT_APK), '_system');
+          status('The APK download page has opened. Download the file, then install it through Android.');
+          return;
+        }
+        if (download.dataset.action === 'install') {
+          const state = readState();
+          const result = await updater.installApk({ downloadId: String(state.downloadId), sha256: release.sha256 || '' });
+          status(result?.needsPermission ? 'Allow Naseem to install unknown apps in Android settings, return here, then tap Install update again.' : 'Android package installer opened. Confirm the update there.');
+        } else {
+          status('Downloading the official Naseem APK…');
+          if (!/^[a-f0-9]{64}$/i.test(String(release.sha256 || ''))) throw new Error('The release feed has no valid APK SHA-256 checksum yet.');
+          const result = await updater.downloadApk({ url: safeUrl(release.downloadUrl || DEFAULT_APK) });
+          const state = readState(); state.downloadId = String(result.downloadId); state.pendingBuild = key; delete state.downloadedBuild; writeState(state);
+          status('Download started. Android will notify you when the APK is ready.');
+        }
+      } catch (error) { status(`Update action failed: ${String(error?.message || error)}`, true); }
+      finally { download.disabled = false; }
+    });
     const notes = document.createElement('button'); notes.type = 'button'; notes.textContent = 'Notes';
     notes.addEventListener('click', () => { window.open(safeUrl(release.releaseUrl || RELEASES), '_system'); });
     const dismiss = document.createElement('button'); dismiss.type = 'button'; dismiss.setAttribute('aria-label', 'Dismiss'); dismiss.textContent = '×';
@@ -93,6 +120,26 @@
   }
   const manual = $('naseemCheckUpdates');
   manual?.addEventListener('click', async () => { manual.disabled = true; manual.textContent = 'Checking…'; try { await check(true); } finally { manual.disabled = false; manual.textContent = 'Check for updates'; } });
+  const updater = window.Capacitor?.Plugins?.NaseemUpdater;
+  updater?.addListener?.('downloadComplete', event => {
+    const state = readState();
+    if (String(event?.downloadId) !== String(state.downloadId)) return;
+    if (event.success) {
+      state.downloadedBuild = state.pendingBuild || state.downloadedBuild; delete state.pendingBuild; writeState(state);
+      status('APK downloaded and verified by Android DownloadManager. Tap Install update, then confirm Android’s installer.');
+      const button = $('naseemUpdateBanner')?.querySelector('button[data-action], button');
+      if (button) { button.textContent = 'Install update'; button.dataset.action = 'install'; }
+    } else { delete state.downloadId; delete state.pendingBuild; delete state.downloadedBuild; writeState(state); status(`APK download failed (Android code ${event.reason ?? 'unknown'}). Try again.`, true); }
+  }).catch?.(() => {});
+  if (updater?.downloadStatus) {
+    const saved = readState();
+    if (saved.downloadId && saved.pendingBuild) updater.downloadStatus({ downloadId: String(saved.downloadId) }).then(result => {
+      const currentState = readState();
+      if (currentState.pendingBuild !== saved.pendingBuild || String(currentState.downloadId) !== String(saved.downloadId)) return;
+      if (result?.complete) { currentState.downloadedBuild = currentState.pendingBuild; delete currentState.pendingBuild; writeState(currentState); const button = $('naseemUpdateBanner')?.querySelector('button[data-action], button'); if (button) { button.textContent = 'Install update'; button.dataset.action = 'install'; } }
+      else if (result?.failed) { delete currentState.downloadId; delete currentState.pendingBuild; writeState(currentState); }
+    }).catch(() => {});
+  }
   window.NaseemUpdates = { check, isNewer: newer, isUpdateAvailable: updateAvailable, currentVersion: CURRENT, currentBuild: CURRENT_BUILD };
   window.addEventListener('online', () => check(true));
   window.setTimeout(() => check(false), 3500);

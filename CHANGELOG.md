@@ -1,16 +1,18 @@
 # Naseem Changelog
 
-## 4.1.0 · Android build 40109 (candidate)
+## 4.1.0 · Android build 40110 (candidate)
 
-- Added a Qari selection menu in Quran reading settings. The supported Muhammad Al-Luhaidan reciter displays a clear “Word by word” capability label directly beneath the reciter name.
-- Increased Android `versionCode` to 40109 while retaining public version 4.1.0, the existing application ID and the original signing configuration.
-- Not verified: signed APK build and physical-device visual testing.
+- Added four additional Qaris with individual ayah audio; word-by-word synchronisation remains limited to Muhammad Al-Luhaidan, whose audio is paired with the timing data.
+- Kept the persistent mini-player and dedicated full-screen player in sync with the selected reciter.
+- Added a native Android update download/install bridge with official GitHub APK URL validation, download status recovery, SHA-256 verification and Android’s explicit install confirmation.
+- Advanced Android `versionCode` to 40110 while preserving public version 4.1.0, package ID `com.noor.adhkar`, and the existing protected signing identity.
+- No new Quran-player ambience layer or animated player effect is included in this update.
+- Not verified: signed GitHub release, Android device installation, and browser/physical-device playback testing.
 
 ## 4.1.0 · Android build 40108 (candidate)
 
-- Added a dedicated full-screen Quran recitation player, separate from the Quran reader, with accent-responsive ambience and synced transport/seek controls.
+- Added a dedicated full-screen Quran recitation player, separate from the Quran reader, with synced transport/seek controls.
 - The compact player remains available while browsing other Naseem screens.
-- The app-wide background ambience now follows the selected accent colour in dark and light themes.
 - Hardened public update checks with cache-busting, a GitHub Contents API fallback, and same-version build-code comparison on every launch.
 - Android `versionCode` advanced to 40108 while the public version remains 4.1.0. The existing application ID and protected signing configuration are preserved.
 - Not verified: signed APK build, in-place installation over the currently installed app, and physical-device playback/UI testing.

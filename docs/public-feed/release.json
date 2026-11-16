@@ -2,9 +2,9 @@
   "version": "4.1.0",
   "releaseUrl": "https://github.com/midhT/Naseem-public/releases/tag/v4.1.0",
   "downloadUrl": "https://github.com/midhT/Naseem-public/releases/download/v4.1.0/app-release.apk",
-  "notesSummary": "Naseem 4.1.0 build 40109: Quran reciter selection now labels word-by-word synchronisation directly beneath supported reciters. Publish only after the signed APK is built with the original release keystore.",
+  "notesSummary": "Naseem 4.1.0 build 40110: multi-reciter Quran playback, persistent mini-player, full-screen controls, and Android in-app update installation. Word-by-word sync is available for Muhammad Al-Luhaidan.",
   "publishedAt": null,
   "checksumUrl": null,
   "sha256": null,
-  "androidVersionCode": 40109
+  "androidVersionCode": 40110
 }

@@ -15,7 +15,7 @@ if (!buildMatch) throw new Error('www/index.html must declare the naseem-version
 const versionCode = Number(buildMatch[1]);
 if (!Number.isSafeInteger(versionCode) || versionCode <= 0) throw new Error('Invalid Naseem Android version code.');
 // The public versionName remains 4.1.0; increase this meta value for each new installable APK.
-// 40100-40108 are prior 4.1.0 builds; 40109 is the next in-place update candidate (Qari capability label in the Quran reciter picker).
+// 40100-40109 are prior 4.1.0 builds; 40110 is the next in-place update candidate.
 if (existsSync(gradlePath)) {
   let gradle = readFileSync(gradlePath, 'utf8');
   if (/versionCode\s+\d+/.test(gradle)) gradle = gradle.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`);
@@ -41,6 +41,7 @@ let manifest = readFileSync(manifestPath, 'utf8');
 
 const permissions = [
   '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />',
+  '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />',
   '<uses-permission android:name="android.permission.VIBRATE" />',
   '<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />',
   '<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />',

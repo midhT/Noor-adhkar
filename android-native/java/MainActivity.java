@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(NoorWidgetsPlugin.class);
+        registerPlugin(NaseemUpdaterPlugin.class);
         super.onCreate(savedInstanceState);
 
         // An older PWA service worker may cache index.html and the very script that would

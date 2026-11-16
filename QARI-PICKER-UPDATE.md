@@ -1,8 +1,8 @@
-# Naseem 4.1.0 · Qari picker capability label · Android build 40109
+# Naseem 4.1.0 · Quran reciters and playback · Android build 40110
 
-- Added a Reciter row to Quran reader settings with an expandable Qari selection menu.
-- The currently supported word-synchronised reciter, Muhammad Al-Luhaidan, is shown as a selectable Qari entry.
-- The capability label **Word by word** appears immediately below the reciter's name, not beside it or as a global label.
-- The label is attached only to the reciter whose recording has matching word-level timing data. Do not show it for reciters without matching timing data.
-- Public version remains 4.1.0; Android versionCode is 40109 for an in-place update. Existing application ID and signing configuration are preserved.
-- Static Quran integration, Android patch, release configuration, public updater, and release requirement tests pass. Physical-device visual testing and signed APK installation remain pending because Chromium is unavailable in this environment.
+- Added five selectable Qaris: Muhammad Al-Luhaidan, Mishary Rashid Alafasy, Abdurrahman Al-Sudais, Mahmoud Khalil Al-Husary and Mohamed Siddiq Al-Minshawi.
+- Muhammad Al-Luhaidan is the only entry labelled **Word by word**, because that is the only recording paired with the timing dataset currently integrated.
+- Other reciters use their own per-ayah audio endpoint; the UI does not claim word-level timing for them.
+- The selected reciter is persisted and shown in both the mini-player and full-screen player.
+- Public version remains 4.1.0; Android versionCode is 40110. Package ID remains `com.noor.adhkar`. The existing protected signing identity is unchanged and no signing material is included.
+- Source/static tests passed. Chromium browser tests, Gradle compilation, signed release, physical-device playback and actual in-place update remain unverified in this workspace.

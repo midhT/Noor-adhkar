@@ -78,10 +78,7 @@ with sync_playwright() as p:
     y = pg.evaluate("window.scrollY"); pg.wait_for_timeout(1500)
     ok('auto-follow pauses while the reader scrolls manually', abs(pg.evaluate("window.scrollY") - y) < 3, f'{y} -> {pg.evaluate("window.scrollY")}')
     pg.tap('#quranLocate')
-    try:  # smooth scroll can lag on CI while the ayah keeps advancing; wait for it to settle on the active ayah
-        pg.wait_for_function("()=>{const a=document.querySelector('#quranVerses .quran-ayah.quran-playing');if(!a)return false;const bar=document.getElementById('quranReaderBar').getBoundingClientRect().bottom,pl=document.getElementById('quranPlayer').getBoundingClientRect().top,r=a.getBoundingClientRect();return Math.abs((r.top+r.height/2)-(bar+(pl-bar)/2))<14}", timeout=4000)
-    except Exception:
-        pass
+    pg.wait_for_function("(()=>{const c=(" + CENTRE_JS + ")();return c&&Math.abs(c.off)<14})()", timeout=4000)
     c = pg.evaluate(CENTRE_JS)
     ok('locate button re-centres the active ayah', c and abs(c['off']) < 14, str(c))
     # pause / resume / next / prev
@@ -95,8 +92,29 @@ with sync_playwright() as p:
     ok('next ayah button moves recitation and highlight', pg.evaluate(PLAYING_JS) == [cur + 1], str(pg.evaluate(PLAYING_JS)))
     pg.tap('#quranPrevAyah'); pg.wait_for_timeout(900)
     ok('previous ayah button moves back', pg.evaluate(PLAYING_JS) == [cur], str(pg.evaluate(PLAYING_JS)))
+    pg.tap('#quranExpandPlayer'); pg.wait_for_timeout(150)
+    ok('dedicated full-screen player opens above the app', not pg.evaluate("document.getElementById('quranFullPlayer').hidden"))
+    ok('full-screen player identifies the selected reciter', 'Muhammad Al-Luhaidan' in pg.inner_text('#quranFullReciter'))
+    pg.tap('#quranFullClose'); pg.wait_for_timeout(150)
+    pg.tap('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(250)
+    ok('mini-player remains available while browsing another app screen', not pg.evaluate("document.getElementById('quranPlayer').hidden"))
+    pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(250)
     pg.tap('#quranStop'); pg.wait_for_timeout(300)
     ok('stop clears highlight and hides the player', pg.evaluate(PLAYING_JS) == [] and pg.evaluate("document.getElementById('quranPlayer').hidden"))
+    # Reciter capabilities: only the source with matching timing metadata advertises word sync.
+    pg.tap('#quranSettingsBtn'); pg.tap('#quranQariToggle')
+    ok('multiple Qaris are available', pg.evaluate("document.querySelectorAll('#quranQariMenu [data-qari-id]').length") >= 4)
+    ok('word-by-word badge appears only for the timing-supported Qari', pg.evaluate("document.querySelectorAll('#quranQariMenu .qr-qari-capability').length") == 1)
+    pg.tap('[data-qari-id="ar.alafasy"]'); pg.wait_for_timeout(200)
+    ok('selected Qari persists', pg.evaluate("localStorage.getItem('naseem-quran-reciter-v1')") == 'ar.alafasy')
+    pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(600)
+    ok('non-synchronised Qari starts its own ayah audio', 'mock/2/ayah/2.wav' in pg.evaluate("document.getElementById('quranAudio').src"))
+    ok('word highlight is not falsely shown for unsupported timing data', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word-active').length") == 0)
+    pg.tap('#quranExpandPlayer'); pg.wait_for_timeout(150)
+    ok('full-screen player shows the active Qari', 'Alafasy' in pg.inner_text('#quranFullReciter'))
+    pg.tap('#quranFullClose'); pg.tap('#quranStop')
+    pg.tap('#quranSettingsBtn'); pg.tap('#quranQariToggle'); pg.tap('[data-qari-id="muhammad-al-luhaidan"]'); pg.wait_for_timeout(150)
+    pg.tap('#quranSettingsBtn')
     # follow switch off
     pg.tap('#quranSettingsBtn'); pg.tap('#quranFollow'); pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(200)
     ok('follow switch reports off', pg.evaluate("document.getElementById('quranFollow').getAttribute('aria-checked')") == 'false')

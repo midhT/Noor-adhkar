@@ -21,7 +21,7 @@ assert(q.includes('qr-word-active'));
 assert(q.includes('loadWordTimingSurah'));
 assert(q.includes('timestamp_from')&&q.includes('timestamp_to'));
 assert(q.includes('verse_timings'));
-assert(!q.includes('ar.alafasy')); 
+assert(q.includes('ar.alafasy') && q.includes('ar.husary'), 'multiple non-word-synchronised reciters are supported');
 assert(q.includes('quranResume'));
 assert(q.includes('data-play-ayah'));
 assert(q.includes('audioQueue=timing.verse_timings'));
@@ -59,4 +59,4 @@ assert(v404Src.includes('AbortController')&&v404Src.includes('GLANCE_TIMEOUT_MS'
 console.log('Quran redesign static checks passed.');
 
 assert(q.includes('quranQariToggle')&&q.includes('quranQariMenu'));
-assert(q.includes('Muhammad Al-Luhaidan</strong><small class=\"qr-qari-capability\">Word by word</small>'));
+assert(q.includes('q.wordSync?') && q.includes('qr-qari-capability'), 'word-sync badge is capability-gated per reciter');

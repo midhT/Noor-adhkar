@@ -28,8 +28,13 @@ try {
   assert.match(manifest,/POST_NOTIFICATIONS/);
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/MainActivity.java')));
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/NoorWidgetsPlugin.java')));
+  assert.ok(existsSync(join(main,'java/com/noor/adhkar/NaseemUpdaterPlugin.java')));
+  assert.match(manifest,/REQUEST_INSTALL_PACKAGES/);
   const activity=readFileSync(join(main,'java/com/noor/adhkar/MainActivity.java'),'utf8');
+  assert.match(activity,/registerPlugin\(NaseemUpdaterPlugin.class\)/);
   assert.match(activity,/getRegistrations\(\)/);
+  const updater=readFileSync(join(main,'java/com/noor/adhkar/NaseemUpdaterPlugin.java'),'utf8');
+  assert.match(updater,/downloadApk/); assert.match(updater,/downloadStatus/); assert.match(updater,/installApk/); assert.match(updater,/SHA-256/); assert.match(updater,/DownloadManager/);
   assert.match(readFileSync(join(main,'java/com/noor/adhkar/NoorWidgetsPlugin.java'),'utf8'),/setWidgetStyle/);
   assert.match(activity,/noor-adhkar-cache-/);
   assert.match(activity,/window\.location\.reload\(\)/);
@@ -43,7 +48,7 @@ try {
   assert.ok(existsSync(join(main,'res/drawable-nodpi/widget_preview_custom.png')));
   assert.ok(existsSync(join(main,'res/drawable-nodpi/widget_preview_prayer.png')));
   assert.match(readFileSync(join(main,'res/xml/prayer_widget_info.xml'),'utf8'),/previewImage/);
-  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40109/);
-  assert.match(readFileSync(join(main,'assets/public/index.html'),'utf8'),/naseem-version-code\" content=\"40109/);
+  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40110/);
+  assert.match(readFileSync(join(main,'assets/public/index.html'),'utf8'),/naseem-version-code\" content=\"40110/);
   console.log('Android native integration patch: all assertions passed.');
 } finally { rmSync(root,{recursive:true,force:true}); }

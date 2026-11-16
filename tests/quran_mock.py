@@ -76,6 +76,14 @@ def install(page, seconds=1.2):
         if m:
             eds = surah_editions(int(m.group(1)))
             return ok(eds if 'pickthall' in m.group(2) else eds[:1])
+        m = re.match(r'^/surah/(\d+)/(ar\.[A-Za-z]+)$', path)
+        if m:
+            n = int(m.group(1)); meta = surah_list()[n - 1]
+            ayahs = [{'number': (n - 1) * 10 + a, 'numberInSurah': a,
+                      'text': f'[test audio] {n}:{a}',
+                      'audio': f'https://cdn.islamic.network/mock/{n}/ayah/{a}.wav'}
+                     for a in range(1, count(n) + 1)]
+            return ok(dict(meta, edition={'identifier': m.group(2)}, ayahs=ayahs))
         m = re.match(r'^/juz/(\d+)/quran-uthmani$', path)
         if m: return ok({'ayahs': [{'numberInSurah': 3, 'juz': int(m.group(1)), 'surah': {'number': 2, 'englishName': 'Test Surah 2'}}]})
         m = re.match(r'^/page/(\d+)/quran-uthmani$', path)
@@ -98,19 +106,18 @@ def install(page, seconds=1.2):
         return route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps(data))
     page.route('https://api.alquran.cloud/**', api)
     page.route('https://cdn.jsdelivr.net/gh/its3li/quran-word-timings@v1.0.0/**', timing)
-    long_wav = tone_wav(40.0)
-
     def audio(route):
-        """Serve the mock audio with HTTP Range support so Chromium can seek (currentTime) like a real CDN."""
-        total = len(long_wav)
-        hdr = {'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes', 'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges'}
-        m = re.match(r'bytes=(\d*)-(\d*)', route.request.headers.get('range', ''))
-        if m and (m.group(1) or m.group(2)):
-            if m.group(1):
-                a = int(m.group(1)); b = min(int(m.group(2)), total - 1) if m.group(2) else total - 1
-            else:
-                a = max(0, total - int(m.group(2))); b = total - 1
-            hdr['Content-Range'] = f'bytes {a}-{b}/{total}'
-            return route.fulfill(status=206, content_type='audio/wav', headers=hdr, body=long_wav[a:b + 1])
-        return route.fulfill(status=200, content_type='audio/wav', headers=hdr, body=long_wav)
+        body = tone_wav(40.0)
+        requested = route.request.headers.get('range', '')
+        headers = {'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes'}
+        if requested:
+            match = re.match(r'bytes=(\d+)-(\d*)', requested)
+            if match:
+                start = int(match.group(1)); end = min(len(body) - 1, int(match.group(2)) if match.group(2) else len(body) - 1)
+                if start <= end:
+                    headers['Content-Range'] = f'bytes {start}-{end}/{len(body)}'
+                    headers['Content-Length'] = str(end - start + 1)
+                    return route.fulfill(status=206, content_type='audio/wav', headers=headers, body=body[start:end + 1])
+        headers['Content-Length'] = str(len(body))
+        route.fulfill(status=200, content_type='audio/wav', headers=headers, body=body)
     page.route('https://cdn.islamic.network/mock/**', audio)

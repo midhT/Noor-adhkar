@@ -28,7 +28,7 @@ jobs:
           npm_config_fetch_retry_mintimeout: 20000
           npm_config_fetch_retry_maxtimeout: 120000
           npm_config_fetch_timeout: 300000
-        run: npm install --no-audit --no-fund --prefer-online
+        run: npm ci --no-audit --no-fund --prefer-online
       - name: Build web bundle
         run: npm run build
       - name: Install Chromium test dependencies

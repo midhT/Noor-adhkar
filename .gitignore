@@ -13,4 +13,6 @@ signing/
 *.jks
 .env
 .env.*
+
 __pycache__/
+*.py[cod]
