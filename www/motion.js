@@ -116,5 +116,28 @@
     nav.addEventListener('pointerup', e => { if (e.pointerId === pid) finish(true); });
     nav.addEventListener('pointercancel', () => finish(false));
   }
+
+  /* Morphing tab pill: a single shape glides (and stretches) to the active or dragged-over tab instead of snapping. */
+  (() => {
+    const bar = doc.querySelector('.bottom-nav'); if (!bar) return;
+    const pill = doc.createElement('span'); pill.className = 'nav-pill'; pill.setAttribute('aria-hidden', 'true');
+    bar.insertBefore(pill, bar.firstChild); bar.classList.add('has-pill');
+    let x = 0, w = 0, ready = false, raf = 0, until = 0;
+    const target = () => {
+      const it = bar.querySelector('.nav-item.peek') || bar.querySelector('.nav-item.active'); if (!it) return null;
+      const b = bar.getBoundingClientRect(), r = it.getBoundingClientRect(), edge = parseFloat(getComputedStyle(bar).borderLeftWidth) || 0;
+      return { x: r.left - b.left - edge, w: r.width };
+    };
+    const step = () => {
+      raf = 0; const t = target(); if (!t || !t.w) return;
+      if (!ready || body.classList.contains('lite')) { x = t.x; w = t.w; ready = true; } else { x += (t.x - x) * 0.24; w += (t.w - w) * 0.24; }
+      pill.style.transform = 'translate3d(' + x.toFixed(2) + 'px,0,0)'; pill.style.width = w.toFixed(2) + 'px';
+      if (!pill.classList.contains('on')) pill.classList.add('on');
+      if (Math.abs(t.x - x) > 0.4 || Math.abs(t.w - w) > 0.4 || performance.now() < until) raf = requestAnimationFrame(step);
+    };
+    const kick = () => { until = performance.now() + 380; if (!raf) raf = requestAnimationFrame(step); };
+    new MutationObserver(muts => { if (muts.some(m => m.target !== pill)) kick(); }).observe(bar, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    addEventListener('resize', kick); doc.addEventListener('noor:screen', kick); kick(); setTimeout(kick, 700);
+  })();
   window.NoorSwipe = { go };
 })();

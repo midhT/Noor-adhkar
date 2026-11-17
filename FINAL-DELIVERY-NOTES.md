@@ -1,4 +1,6 @@
-# Naseem 4.1.0 — build 40110 source delivery
+# Naseem 4.1.0 — build 40111 source delivery
+
+> 40111 changes: ambience removed (accent colours kept), morphing/fluid motion, new Quran player with lyrics view, 13 reciters. See CHANGELOG.md and QURAN-PLAYER-UPDATE.md.
 
 ## Implemented in this source candidate
 
@@ -9,7 +11,7 @@
 - Added a native Android updater bridge: official GitHub release APK URL validation, Android DownloadManager download, completion/status recovery, SHA-256 verification against the release feed, and Android's explicit package-installer confirmation. The update checker retains cache-busting and GitHub Contents API fallback.
 - Updated browser fixtures for reciter audio endpoints and HTTP byte-range responses; replaced a timing-sensitive locate assertion with a bounded settle condition; offline tests now block the Quran text, timing and audio hosts.
 - Removed the duplicate Chromium dependency-install step in the release workflow and switched CI/release dependency installation to `npm ci`.
-- Advanced Android `versionCode` to `40110`; public version remains `4.1.0`. The app ID remains `com.noor.adhkar`. The existing protected signing configuration and secrets are not changed; no keystore or passwords are included.
+- Advanced Android `versionCode` to `40111`; public version remains `4.1.0`. The app ID remains `com.noor.adhkar`. The existing protected signing configuration and secrets are not changed; no keystore or passwords are included.
 
 ## Verification performed in this workspace
 
@@ -30,4 +32,4 @@ Not verified here:
 
 ## Release gate
 
-This is a source candidate, not a signed APK or a verified release. Run the existing GitHub release workflow using the already-configured protected signing secrets. Do not create or replace a keystore. Require the full Chromium test suite, Android Gradle build, checksum publication and a real in-place install over the currently installed app to pass before distributing build 40110.
+This is a source candidate, not a signed APK or a verified release. Run the existing GitHub release workflow using the already-configured protected signing secrets. Do not create or replace a keystore. Require the full Chromium test suite, Android Gradle build, checksum publication and a real in-place install over the currently installed app to pass before distributing build 40111.

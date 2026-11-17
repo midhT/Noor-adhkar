@@ -27,6 +27,7 @@ with sync_playwright() as p:
         pg.on('pageerror', lambda e: errs.append(str(e)))
         quran_mock.install(pg, seconds=1.0)
         pg.goto(srv.url()); pg.wait_for_timeout(2400)
+        if os.environ.get('NASEEM_FULL_MOTION') == '1': pg.evaluate("document.body.classList.remove('lite')")  # exercise the animated (non-Smooth) path
         return ctx, pg, errs
 
     def open_quran(pg):
@@ -112,13 +113,43 @@ with sync_playwright() as p:
     ok('word highlight is not falsely shown for unsupported timing data', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word-active').length") == 0)
     pg.tap('#quranExpandPlayer'); pg.wait_for_timeout(150)
     ok('full-screen player shows the active Qari', 'Alafasy' in pg.inner_text('#quranFullReciter'))
-    pg.tap('#quranFullClose'); pg.tap('#quranStop')
-    if pg.evaluate("document.getElementById('quranSettings').hidden"):
-        pg.tap('#quranSettingsBtn')
-    pg.tap('#quranQariToggle')
-    pg.tap('[data-qari-id="muhammad-al-luhaidan"]')
-    pg.wait_for_timeout(150)
-    pg.tap('#quranSettingsBtn')
+    # ---- full player v2: morphing play button, lyrics (verse by verse + word by word), reciter sheet, pull-down close ----
+    ok('play button is a morphing icon in the playing state', pg.evaluate("document.querySelector('#quranFullToggle .qr-morph')?.dataset.playing") == '1')
+    ok('thirteen reciters are offered in the player', pg.evaluate("document.querySelectorAll('#quranFullQariList [data-qari-id]').length") == 13)
+    pg.tap('#quranLyricsToggle'); pg.wait_for_timeout(800)
+    ok('lyrics view opens from the player', pg.evaluate("document.getElementById('quranFullPlayer').classList.contains('qr-lyrics-on')") and pg.evaluate("getComputedStyle(document.getElementById('quranLyricsWrap')).visibility") == 'visible')
+    ok('lyrics list every ayah of the surah', pg.evaluate("document.querySelectorAll('#quranLyrics [data-lyric-ayah]').length") == pg.evaluate("document.querySelectorAll('#quranVerses .quran-ayah').length"))
+    la = pg.evaluate("[Number(document.querySelector('#quranLyrics .qr-lyric.active')?.dataset.lyricAyah||0), " + PLAYING_JS.strip('"') + "[0]||0]")
+    ok('verse being recited is the highlighted lyric', la[0] > 0 and abs(la[0] - la[1]) <= 1, str(la))
+    ok('verse-by-verse reciter shows no word highlight', pg.evaluate("document.querySelectorAll('#quranLyrics .qr-word-active').length") == 0)
+    pg.tap('#quranLyrics [data-lyric-ayah="6"]'); pg.wait_for_timeout(800)
+    ok('tapping a lyric verse recites from it', pg.evaluate(PLAYING_JS)[0] in (6, 7), str(pg.evaluate(PLAYING_JS)))
+    pg.tap('#quranFullReciterBtn'); pg.wait_for_timeout(700)
+    ok('reciter sheet slides up inside the player', pg.evaluate("document.getElementById('quranFullPlayer').classList.contains('qr-sheet-open')") and pg.evaluate("document.getElementById('quranFullQariSheet').getBoundingClientRect().top<innerHeight-120"))
+    pg.tap('#quranFullQariList [data-qari-id="muhammad-al-luhaidan"]'); pg.wait_for_timeout(1500)
+    ok('switching reciter inside the player keeps playing', pg.evaluate("localStorage.getItem('naseem-quran-reciter-v1')") == 'muhammad-al-luhaidan' and not pg.evaluate("document.getElementById('quranAudio').paused"))
+    ok('word-synchronised reciter highlights the word in the lyrics', pg.evaluate("document.querySelectorAll('#quranLyrics .qr-word-active').length") == 1, str(pg.evaluate("document.querySelectorAll('#quranLyrics .qr-word-active').length")))
+    ok('player labels the reciter as word by word', 'Word by word' in pg.inner_text('#quranFullMode'))
+    pg.tap('#quranLyricsToggle'); pg.wait_for_timeout(500)
+    ok('lyrics view closes back to the artwork', not pg.evaluate("document.getElementById('quranFullPlayer').classList.contains('qr-lyrics-on')"))
+    pg.tap('#quranFullClose'); pg.wait_for_timeout(700)
+    ok('player shrinks back into the mini-player', pg.evaluate("document.getElementById('quranFullPlayer').hidden") and not pg.evaluate("document.getElementById('quranPlayer').hidden") and not pg.evaluate("document.getElementById('quranPlayer').classList.contains('qr-player-away')"))
+    pg.tap('#quranPlayer', position={'x': 6, 'y': 30}); pg.wait_for_timeout(700)
+    ok('tapping the mini-player body opens the full player', not pg.evaluate("document.getElementById('quranFullPlayer').hidden"))
+    pg.tap('#quranFullClose'); pg.wait_for_timeout(700)
+    pg.tap('#quranStop'); pg.wait_for_timeout(200)
+    # tab pill and cross-fading screens
+    pg.evaluate("document.body.classList.remove('lite')")
+    pg.tap('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(120)
+    ok('leaving screen cross-fades instead of vanishing', pg.evaluate("document.querySelectorAll('.screen.leaving').length") == 1)
+    pg.wait_for_timeout(700)
+    pill = pg.evaluate("(()=>{const p=document.querySelector('.nav-pill').getBoundingClientRect(),a=document.querySelector('.nav-item.active').getBoundingClientRect();return {dx:Math.abs((p.left+p.width/2)-(a.left+a.width/2)),w:p.width}})()")
+    ok('tab pill has glided to the active tab', pill['w'] > 20 and pill['dx'] < 6, str(pill))
+    ok('leaving class is cleaned up', pg.evaluate("document.querySelectorAll('.screen.leaving').length") == 0)
+    pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(500)
+    pg.tap('#quranSettingsBtn') if pg.evaluate("document.getElementById('quranSettings').hidden") else None
+    pg.tap('#quranQariToggle') if pg.evaluate("document.getElementById('quranQariMenu').hidden") else None
+    pg.tap('#quranSettingsBtn') if not pg.evaluate("document.getElementById('quranSettings').hidden") else None
     # follow switch off
     pg.tap('#quranSettingsBtn'); pg.tap('#quranFollow'); pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(200)
     ok('follow switch reports off', pg.evaluate("document.getElementById('quranFollow').getAttribute('aria-checked')") == 'false')

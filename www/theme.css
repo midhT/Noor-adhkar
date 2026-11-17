@@ -37,9 +37,6 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 html,body{background:var(--bg);color:var(--text)}
 body{font-family:var(--sans);background:var(--bg);overscroll-behavior-y:none;-webkit-font-smoothing:antialiased}
 body.light{background:var(--bg)}
-/* A restrained, app-wide ambient wash follows the selected accent colour. */
-body{background:radial-gradient(ellipse at 8% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 43%),radial-gradient(ellipse at 96% 58%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 42%),var(--bg);background-attachment:fixed}
-body.light{background:radial-gradient(ellipse at 8% 0%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 43%),radial-gradient(ellipse at 96% 58%,color-mix(in srgb,var(--accent) 4%,transparent),transparent 42%),var(--bg);background-attachment:fixed}
 button{font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 button:active{transition:transform .12s}
 /* Calm, flat backdrop: no stars or drifting planet. */
@@ -331,8 +328,8 @@ button.brand-mark{padding:0;font:inherit;cursor:pointer;overflow:hidden}
 
 /* Press feedback everywhere */
 button,.stat-card,.routine-card,.quick-counter,.lib-item,.v3-card{-webkit-tap-highlight-color:transparent}
-button{transition:transform .14s var(--ease),background-color .2s ease,opacity .2s ease}
-button:active:not(:disabled){transform:scale(.97)}
+button{transition:transform .38s cubic-bezier(.34,1.5,.64,1),background-color .22s ease,opacity .2s ease,color .2s ease}
+button:active:not(:disabled){transform:scale(.955);transition-duration:.1s,.22s,.2s,.2s}
 .count-button:active{transform:scale(.955)}
 #countValue.pop{animation:pop .22s var(--ease)}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.13)}100%{transform:scale(1)}}
@@ -404,3 +401,25 @@ body.lite .bottom-nav,body.lite .stat-card,body.lite .nsheet-panel{box-shadow:no
 .accent-custom input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .accent-swatch:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 @media(max-width:360px){.accent-palette{gap:9px 5px}.accent-swatch small{font-size:8px}}
+
+/* =====================================================================
+   Fluid motion: tabs morph, leaving screens cross-fade, presses spring back.
+   Everything here animates transform / opacity only (cheap on budget phones). No decorative background layers.
+   ===================================================================== */
+main{position:relative}
+.screen.leaving{display:block;position:absolute;z-index:0;pointer-events:none;animation:scrOut .24s var(--ease) both}
+.screen.leaving>*{animation:none!important}
+.screen.leaving[data-out="next"]{animation-name:scrOutNext}
+.screen.leaving[data-out="prev"]{animation-name:scrOutPrev}
+@keyframes scrOut{to{opacity:0;transform:translate3d(0,-6px,0) scale(.985)}}
+@keyframes scrOutNext{to{opacity:0;transform:translate3d(-24px,0,0) scale(.985)}}
+@keyframes scrOutPrev{to{opacity:0;transform:translate3d(24px,0,0) scale(.985)}}
+body.lite .screen.leaving{display:none}
+/* Tab pill: one shape that glides and stretches between tabs (positioned by motion.js). */
+.nav-pill{position:absolute;z-index:0;top:6px;bottom:6px;left:0;width:0;border-radius:24px;background:color-mix(in srgb,var(--accent) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 24%,transparent);pointer-events:none;opacity:0;transition:opacity .2s ease;will-change:transform,width}
+.nav-pill.on{opacity:1}
+.bottom-nav.has-pill .nav-item{position:relative;z-index:1}
+.bottom-nav.has-pill .nav-item.active,.bottom-nav.has-pill.dragging .nav-item.peek,body.light .bottom-nav.has-pill .nav-item.active,body.light .bottom-nav.has-pill.dragging .nav-item.peek{background:transparent!important}
+.bottom-nav.has-pill .nav-item .ni{transition:transform .38s cubic-bezier(.34,1.5,.64,1)}
+.bottom-nav.has-pill .nav-item.active .ni{transform:translateY(-1px) scale(1.08)}
+@media(prefers-reduced-motion:reduce){.bottom-nav.has-pill .nav-item .ni{transition:none}}

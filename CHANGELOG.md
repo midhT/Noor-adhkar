@@ -1,5 +1,17 @@
 # Naseem Changelog
 
+## 4.1.0 · Android build 40111 (candidate)
+
+- Removed the ambience feature: the app-wide accent background wash (and its `--ambient-accent` variable) is gone. The accent colour feature is unchanged and still drives highlights in dark and light themes.
+- More fluid motion: the tab bar uses one morphing pill that glides between tabs, leaving screens cross-fade instead of vanishing, and presses spring back. Everything animates transform/opacity only; Smooth mode and reduced-motion switch the morphs off.
+- New Quran player: tapping the mini-player (anywhere on it) expands it into the full player, which shrinks back on close or when pulled down. The play button morphs between play and pause, and the artwork morphs between a rounded square and a circle.
+- Lyrics view: verse by verse for every reciter, with word-by-word highlighting for the word-synchronised reciter. Tap a verse to recite from it.
+- Reciters: 13 in total (8 added), each using a verified AlQuran Cloud edition id. Only Muhammad Al-Luhaidan is word by word; the rest are verse by verse. Reciters can be switched from the player.
+- Refreshed Quran index and reciter picker styling.
+- Tests: fixed the Quran UI reciter test (it toggled the settings panel closed), added player/lyrics/reciter/pill tests (run in Smooth and full-animation modes via NASEEM_FULL_MOTION=1), and added static ambience/motion checks.
+- Advanced Android `versionCode` to 40111; public version 4.1.0, package ID and signing identity unchanged.
+- Not verified here: GitHub Actions run, signed APK, physical-device feel, live reciter audio for the 8 added reciters (ids checked against the AlQuran Cloud published list, but no network in the build workspace).
+
 ## 4.1.0 · Android build 40110 (candidate)
 
 - Added four additional Qaris with individual ayah audio; word-by-word synchronisation remains limited to Muhammad Al-Luhaidan, whose audio is paired with the timing data.

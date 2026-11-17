@@ -41,7 +41,6 @@
       root.style.setProperty('--on-accent', contrast(color));
       root.style.setProperty('--accent-soft', `color-mix(in srgb, ${color} 14%, transparent)`);
       root.style.setProperty('--accent-line', `color-mix(in srgb, ${color} 28%, transparent)`);
-      root.style.setProperty('--ambient-accent', color);
     });
     document.querySelectorAll('.accent-swatch span').forEach(el => {
       if (el.parentElement?.dataset.accent === value.preset) el.style.setProperty('--swatch', color);

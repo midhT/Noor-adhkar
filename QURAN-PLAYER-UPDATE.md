@@ -1,21 +1,18 @@
-# Naseem 4.1.0 · Quran/player update · Android build 40110
+# Naseem 4.1.0 · Quran player, reciters and motion · Android build 40111
 
-## Quran and recitation UI
-- Added a dedicated full-screen recitation player, separate from the Quran reading surface, with an immersive accent-tinted backdrop, ornamental art, surah/ayah identity, Arabic ayah preview, seek bar, elapsed/duration labels, previous/pause/next/stop controls, and a close action.
-- The compact player opens the full player and remains available while navigating other Naseem screens. Playback controls continue to operate on the same audio element/queue.
-- Word-by-word synchronisation is included for the full Quran using Muhammad Al-Luhaidan recordings. Each surah loads its CC0 word-timing JSON and the exact audio URL paired with that timing dataset; word positions are highlighted from the recording timeline, including repeated recited words. The selected reciter is shown in the full player. Seeking across the surah also moves the active ayah and word highlight to the matching timestamp. The timing dataset is served from a version-pinned CDN and cached locally after first load; audio streams online from the recording provider. Timing data is CC0 1.0; the recording remains the property of its provider.
-- The existing Quran index, reading, bookmarks, offline text, and memorisation flows remain in place.
+## Player
+- The mini-player opens the full player when tapped anywhere on it (not only on the title). The full player expands out of the mini-player and shrinks back into it; pulling it down from the top bar or artwork also closes it.
+- Play/pause is one morphing icon; the artwork morphs between a rounded square (paused) and a circle (playing).
+- **Lyrics** button: shows the surah verse by verse, the verse being recited is highlighted and kept centred, tapping a verse recites from it. For the word-synchronised reciter the current word is highlighted as well.
+- Reciter button opens a sheet to switch reciter without leaving the player; playback continues from the same ayah.
 
-## Visual treatment
-- The player uses static artwork and the existing Naseem accent tokens. No ambience layer or animated background effect is included.
+## Reciters (13)
+Muhammad Al-Luhaidan (word by word), Mishary Alafasy, Abdurrahman Al-Sudais, Mahmoud Al-Husary, Mohamed Al-Minshawi, Saud Al-Shuraim, Abdul Basit, Abdul Basit (Mujawwad), Al-Minshawi (Mujawwad), Ali Al-Hudhaify, Ahmed Al-Ajamy, Muhammad Ayyoub, Muhammad Jibreel. Only Al-Luhaidan has matching word timing; all others are verse by verse and are not labelled as word by word.
 
-## Update reliability
-- App build code advanced to 40110; public display version remains 4.1.0.
-- Update checks now bypass stale HTTP caches and use GitHub's Contents API as a fallback if the raw `release.json` endpoint fails.
-- Same-version builds are detected by the Android version code.
-- Application ID remains `com.noor.adhkar`. Release workflows continue to use the existing protected keystore secrets; no key is generated or replaced.
-- The native updater downloads the official GitHub APK, checks its SHA-256 value from the release feed, and opens Android’s package installer for explicit confirmation. A signed CI artifact and in-place installation on the target device are not verified in this source-only environment.
+## Motion and ambience
+- Ambience removed. Accent colours kept.
+- Tab pill morph, cross-fading screens, spring press feedback, gliding panels. Transform/opacity only. Disabled by Smooth mode and by reduced-motion.
 
 ## Validation status
-- JavaScript syntax and source-level tests are run before delivery. Word-timing integration is validated against the published CC0 schema; live CDN/audio playback still requires network and device verification.
-- GitHub Actions signed build and physical-device UI/update testing remain required.
+- Quran UI browser test passes in Smooth mode and with full animations (NASEEM_FULL_MOTION=1). Motion, P0, Adhkar, Glance, onboarding and static suites pass here.
+- Not run here: tests needing the native bundle build (scheduling, widget studio), Gradle, signed release, physical-device playback/feel, live audio for the 8 added reciters.
