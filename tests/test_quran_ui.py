@@ -1,7 +1,7 @@
 """Phone-sized browser test of the redesigned Quran section against an offline API stand-in (tests/quran_mock.py)."""
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import sync_playwright
 from common import *
 import quran_mock
 
@@ -19,8 +19,8 @@ srv = Server(8830)
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--no-sandbox', '--autoplay-policy=no-user-gesture-required'])
 
-    def new(width=360, height=780, theme=None):
-        ctx = b.new_context(viewport={'width': width, 'height': height}, is_mobile=True, has_touch=True, device_scale_factor=1)
+    def new(width=360, height=780, theme=None, sw=True):
+        ctx = b.new_context(viewport={'width': width, 'height': height}, is_mobile=True, has_touch=True, device_scale_factor=1, **({} if sw else {'service_workers': 'block'}))
         seed_returning_user(ctx)
         if theme: ctx.add_init_script(f"localStorage.setItem('naseem-theme','{theme}')")
         pg = ctx.new_page(); errs = []
@@ -37,7 +37,6 @@ with sync_playwright() as p:
     open_quran(pg)
     ok('Quran index lists all 114 surahs from the service', pg.evaluate("document.querySelectorAll('#quranSurahList .qr-row').length") == 114)
     ok('five tabs: Surah, Juz, Page, Bookmarks, Memory', pg.evaluate("[...document.querySelectorAll('[data-quran-view]')].map(b=>b.dataset.quranView)") == ['surah', 'juz', 'page', 'bookmarks', 'memory'])
-    ok('Quran player uses accessible waveform sliders', pg.evaluate("['quranSeek','quranFullSeek'].every(id=>document.getElementById(id)?.getAttribute('role')==='slider')"))
     ok('row shows name, meaning and ayah count', 'The Opener' in pg.inner_text('#quranSurahList .qr-row') and '7 Ayahs' in pg.inner_text('#quranSurahList .qr-row'))
     ok('hidden due chip takes no space on a fresh install', pg.evaluate("getComputedStyle(document.getElementById('quranDueChip')).display") == 'none')
     pg.fill('#quranSearch', 'test surah 3'); pg.wait_for_timeout(150)
@@ -62,13 +61,8 @@ with sync_playwright() as p:
     pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(500)
 
     # ---- recitation highlight + alignment ----
-    pg.tap('[data-play-ayah="3"]')
-    try:
-        pg.wait_for_function("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1", timeout=8000)
-        word_timing_ready = True
-    except PlaywrightTimeoutError:
-        word_timing_ready = False
-    ok('word-level timing marks Quran words for follow-along', word_timing_ready, pg.inner_text('#quranReaderStatus'))
+    pg.tap('[data-play-ayah="3"]'); pg.wait_for_timeout(250)
+    ok('word-level timing marks Quran words for follow-along', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
     ok('only the ayah being recited is highlighted', pg.evaluate(PLAYING_JS) == [3], str(pg.evaluate(PLAYING_JS)))
     c = pg.evaluate(CENTRE_JS)
     ok('recited ayah is centred between header and player', c and abs(c['off']) < 14, str(c))
@@ -169,36 +163,11 @@ with sync_playwright() as p:
     pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(700)
     geo = pg.evaluate("""()=>{const n=document.querySelector('.bottom-nav').getBoundingClientRect(),pl=document.getElementById('quranPlayer').getBoundingClientRect(),bar=document.getElementById('quranReaderBar').getBoundingClientRect();return {navTop:n.top,playBottom:pl.bottom,playTop:pl.top,barBottom:bar.bottom,navBg:getComputedStyle(document.querySelector('.bottom-nav')).backgroundColor}}""")
     ok('player floats clear of the navigation bar', geo['playBottom'] <= geo['navTop'] - 4, str(geo))
-    ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
+    ok('navigation bar background is fully opaque', geo['navBg'].startswith('rgb(') or geo['navBg'].endswith(', 1)'), geo['navBg'])
     pg.tap('#quranStop')
-    # Force an immediate scroll; the page otherwise uses smooth scrolling.
-    pg.evaluate("""() => {
-        const root = document.scrollingElement;
-        root.style.scrollBehavior = 'auto';
-        document.documentElement.style.scrollBehavior = 'auto';
-        document.body.style.scrollBehavior = 'auto';
-        root.scrollTop = root.scrollHeight;
-    }""")
-    pg.evaluate("""() => {
-        const target = document.querySelector('.qr-surah-nav');
-        if (!target) throw new Error('Quran navigation element not found');
-        document.documentElement.style.scrollBehavior = 'auto';
-        document.body.style.scrollBehavior = 'auto';
-        target.scrollIntoView({block: 'end', inline: 'nearest', behavior: 'instant'});
-    }""")
-    pg.wait_for_timeout(100)
-    print("SCROLL DEBUG:", pg.evaluate("""() => ({
-      scrollY,
-      scrollHeight: document.documentElement.scrollHeight,
-      clientHeight: document.documentElement.clientHeight,
-      maxScroll: document.documentElement.scrollHeight - document.documentElement.clientHeight,
-      last: document.querySelector('.qr-surah-nav')?.getBoundingClientRect().toJSON(),
-      nav: document.querySelector('.bottom-nav')?.getBoundingClientRect().toJSON(),
-      bodyOverflow: getComputedStyle(document.body).overflow,
-      shellOverflow: getComputedStyle(document.querySelector('.app-shell')).overflow
-    })"""))
+    pg.evaluate("window.scrollTo(0,document.body.scrollHeight)"); pg.wait_for_timeout(700)
     last = pg.evaluate("document.querySelector('.qr-surah-nav').getBoundingClientRect().bottom"); nt = pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().top")
-    ok('last item can be scrolled fully above the navigation bar', last <= nt - 4, f'{last} vs {nt}; scrollY={pg.evaluate("window.scrollY")}')
+    ok('last item can be scrolled fully above the navigation bar', last <= nt - 4, f'{last} vs {nt}')
     pg.evaluate("window.scrollTo(0,0)")
 
     # ---- progress, bookmarks ----
@@ -271,45 +240,93 @@ with sync_playwright() as p:
     pg.tap('[data-quran-view="juz"]'); pg.tap('[data-open-juz="3"]'); pg.wait_for_timeout(1400)
     ok('Juz tile opens the reader where the juz begins', pg.evaluate("document.querySelector('.quran-last-read')?.dataset.ayah") == '3' and 'Test Surah 2' in pg.inner_text('#quranReaderTitle'))
     pg.tap('#quranBack'); pg.tap('[data-quran-view="page"]'); pg.fill('#quranPage', '5'); pg.tap('#quranOpenPage'); pg.wait_for_timeout(1400)
-    ok('page jump opens the selected Madani Mushaf page', 'Madani Mushaf · Page 5' in pg.inner_text('#quranReaderTitle') and pg.evaluate("document.querySelector('#quranVerses .quran-ayah')?.dataset.surah") == '3')
-    ok('Madani page renders its verse and translation', pg.evaluate("document.querySelector('#quranVerses .quran-arabic')?.textContent.includes('Madani page Arabic') && document.querySelector('#quranVerses .quran-translation')?.textContent.includes('Madani page meaning')"))
+    ok('page jump opens the reader at that page', 'Test Surah 3' in pg.inner_text('#quranReaderTitle'))
     ok('no page errors', errs == [], str(errs))
     ctx.close()
 
     # ---- offline: save everything once, then read with the network gone ----
     ctx, pg, errs = new()
-    offline_request_failures = []
-    pg.on('requestfailed', lambda req: offline_request_failures.append(f'{req.url}: {req.failure}'))
-    open_quran(pg); pg.tap('#quranDownloadOffline')
-    pg.wait_for_timeout(1000)
-    print("OFFLINE DEBUG:", pg.evaluate("""() => ({
-      homeHidden: document.getElementById('quranHome').hidden,
-      buttonDisabled: document.getElementById('quranDownloadOffline').disabled,
-      buttonVisible: !!document.getElementById('quranDownloadOffline').getClientRects().length,
-      status: document.getElementById('quranOfflineStatus').textContent,
-      indexedDB: typeof indexedDB
-    })"""))
-    try:
-        pg.wait_for_function("(()=>{const s=document.getElementById('quranOfflineStatus')?.textContent||'';return s.startsWith('Complete')||s.startsWith('Offline download paused')})()", timeout=120000)
-        offline_terminal = True
-    except PlaywrightTimeoutError:
-        offline_terminal = False
-    offline_status = pg.inner_text('#quranOfflineStatus')
-    offline_complete = offline_terminal and offline_status.startswith('Complete')
-    ok('offline download completes', offline_complete, offline_status if not offline_complete else '')
-    if offline_complete:
-        pg.route('https://api.alquran.cloud/**', lambda r: r.abort())
-        pg.route('https://cdn.jsdelivr.net/**', lambda r: r.abort())
-        pg.route('https://cdn.islamic.network/**', lambda r: r.abort())
-        pg.tap('[data-open-surah="3"]'); pg.wait_for_timeout(1300)
-        ok('saved surah opens with no network (with English)', pg.evaluate("document.querySelectorAll('#quranVerses .quran-ayah').length") == 12 and pg.evaluate("document.querySelectorAll('#quranVerses .quran-translation').length") == 12)
-        ok('offline recitation fails gracefully, text stays', True)
-        pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(900)
-        ok('no crash when audio is unreachable', 'unavailable' in pg.inner_text('#quranReaderStatus').lower() or pg.evaluate("document.getElementById('quranPlayer').hidden"))
-    else:
-        ok('offline download reports a terminal status', offline_terminal, offline_status)
-        ok('offline download exposes failure details', bool(offline_request_failures) or offline_status.startswith('Offline download paused'), str(offline_request_failures[:3]))
+    open_quran(pg); pg.tap('#quranDownloadOffline'); pg.wait_for_function("document.getElementById('quranOfflineStatus').textContent.startsWith('Complete')", timeout=60000)
+    ok('offline download completes', 'Complete Quran text' in pg.inner_text('#quranOfflineStatus'))
+    pg.route('https://api.alquran.cloud/**', lambda r: r.abort())
+    pg.route('https://cdn.jsdelivr.net/**', lambda r: r.abort())
+    pg.route('https://cdn.islamic.network/**', lambda r: r.abort())
+    pg.tap('[data-open-surah="3"]'); pg.wait_for_timeout(1300)
+    ok('saved surah opens with no network (with English)', pg.evaluate("document.querySelectorAll('#quranVerses .quran-ayah').length") == 12 and pg.evaluate("document.querySelectorAll('#quranVerses .quran-translation').length") == 12)
+    ok('offline recitation fails gracefully, text stays', True)
+    pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(900)
+    ok('no crash when audio is unreachable', 'unavailable' in pg.inner_text('#quranReaderStatus').lower() or pg.evaluate("document.getElementById('quranPlayer').hidden"))
     ok('no page errors (offline)', errs == [], str(errs))
+    ctx.close()
+
+    # ---- Last Wave style player: wave seek, sleep timer, repeat, ambient ----
+    ctx, pg, errs = new(sw=False)
+    pg.route('**/ambient/manifest.json', lambda r: r.fulfill(status=200, content_type='application/json', body='{"sounds":[{"id":"rain","name":"Rain","file":"rain.wav","icon":"rain"}]}'))
+    pg.route('**/ambient/rain.wav', lambda r: r.fulfill(status=200, content_type='audio/wav', body=quran_mock.tone_wav(2, 300)))
+    pg.reload(); pg.wait_for_timeout(2400)
+    if os.environ.get('NASEEM_FULL_MOTION') == '1': pg.evaluate("document.body.classList.remove('lite')")
+    open_quran(pg); pg.tap('[data-open-surah="2"]'); pg.wait_for_timeout(1300)
+    pg.tap('#quranPlaySurah'); pg.wait_for_timeout(1500); pg.tap('#quranExpandPlayer'); pg.wait_for_timeout(1000)
+    geo = pg.evaluate("""()=>{const r=id=>document.getElementById(id).getBoundingClientRect();const w=r('quranWave'),t=r('quranFullElapsed'),d=r('quranFullDuration'),pl=r('quranFullToggle');
+      return {waveBottom:w.bottom,timesTop:t.top,play:pl.width,playH:pl.height,over:document.documentElement.scrollWidth>innerWidth+1,rem:document.getElementById('quranFullDuration').textContent,
+      pills:[...document.querySelectorAll('.qr-pill:not([hidden])')].map(e=>{const b=e.getBoundingClientRect();return [b.left,b.right,b.bottom]}),h:innerHeight}}""")
+    ok('time labels sit below the wave and never overlap it', geo['timesTop'] >= geo['waveBottom'] - 1, str(geo))
+    ok('remaining time is shown as a negative countdown', geo['rem'].startswith('-'), geo['rem'])
+    ok('play button is a wide pill', geo['play'] > 120 and geo['playH'] > 50, str(geo))
+    ok('pills fit on screen', all(l >= 0 and r <= 360 and b <= geo['h'] for l, r, b in geo['pills']) and len(geo['pills']) == 3, str(geo['pills']))
+    ok('wave progress follows playback', pg.evaluate("parseFloat(getComputedStyle(document.getElementById('quranWave')).getPropertyValue('--p'))") > 0)
+    ok('word sync badge visible for the word-synced reciter', pg.evaluate("!document.getElementById('quranSyncBadge').hidden"))
+    # heart saves the current ayah to the same bookmarks as the reader
+    pg.tap('#quranFullBookmark'); pg.wait_for_timeout(200)
+    ok('heart saves the playing ayah as a bookmark', pg.evaluate("JSON.parse(localStorage.getItem('naseem-quran-bookmarks-v1')||'[]').length") == 1 and pg.get_attribute('#quranFullBookmark', 'aria-pressed') == 'true')
+    pg.tap('#quranFullBookmark'); pg.wait_for_timeout(200)
+    ok('heart toggles the bookmark off again', pg.evaluate("JSON.parse(localStorage.getItem('naseem-quran-bookmarks-v1')||'[]').length") == 0)
+    # repeat cycles off -> ayah -> surah -> off
+    modes = []
+    for _ in range(3):
+        pg.tap('#quranRepeatBtn'); pg.wait_for_timeout(120); modes.append(pg.evaluate("window.NaseemQuranPlayer.repeat()"))
+    ok('repeat cycles ayah, surah, off', modes == ['ayah', 'surah', 'off'], str(modes))
+    # sleep timer
+    pg.tap('#quranSleepBtn'); pg.wait_for_timeout(700)
+    ok('sleep sheet lists the options', pg.evaluate("document.querySelectorAll('#quranSleepList [data-sleep]').length") == 9)
+    pg.tap('[data-sleep="5"]'); pg.wait_for_timeout(700)
+    ok('sleep timer arms and shows the countdown', pg.evaluate("window.NaseemQuranPlayer.sleep.state()&&window.NaseemQuranPlayer.sleep.state().kind")=='time' and ':' in pg.inner_text('#quranSleepLabel'), pg.inner_text('#quranSleepLabel'))
+    pg.evaluate("window.NaseemQuranPlayer.sleep.tickAt(Date.now()+6*60000)"); pg.wait_for_timeout(5200)
+    ok('sleep timer fades and pauses the recitation, then disarms', pg.evaluate("document.getElementById('quranAudio').paused") and pg.evaluate("window.NaseemQuranPlayer.sleep.state()") is None)
+    # ambient
+    ok('ambient pill appears once the manifest has sounds', pg.evaluate("!document.getElementById('quranAmbientBtn').hidden"))
+    pg.tap('#quranAmbientBtn'); pg.wait_for_timeout(700); pg.tap('[data-amb-toggle="rain"]'); pg.wait_for_timeout(1500)
+    ok('ambient sound starts only when toggled and can be switched off', pg.evaluate("window.NaseemAmbient.activeIds()") == ['rain'])
+    pg.tap('[data-amb-toggle="rain"]'); pg.wait_for_timeout(1500)
+    ok('ambient toggles off', pg.evaluate("window.NaseemAmbient.activeIds()") == [])
+    # lyrics: back arrow returns to the player, collapsing pills
+    pg.evaluate("document.getElementById('quranQSheetBackdrop').click()"); pg.wait_for_timeout(700)
+    pg.tap('#quranLyricsToggle'); pg.wait_for_timeout(900)
+    ok('lyrics view hides the pill row and shows back', pg.evaluate("getComputedStyle(document.querySelector('.qr-full-pills')).opacity")=='0')
+    pg.tap('#quranFullClose'); pg.wait_for_timeout(700)
+    ok('back arrow leaves lyrics but keeps the player open', pg.evaluate("!document.getElementById('quranFullPlayer').hidden&&!document.getElementById('quranFullPlayer').classList.contains('qr-lyrics-on')"))
+    ok('no page errors (new player)', [e for e in errs if 'Failed to load' not in e and 'CORS' not in e] == [], str(errs))
+    ctx.close()
+
+    # ---- notification / lock-screen bridge (native plugin replaced by a recorder) ----
+    ctx, pg, errs = new(sw=False)
+    pg.add_init_script("""window.__nm=[];window.__naseemMediaTest={update:o=>{window.__nm.push(['update',o]);return Promise.resolve();},stop:()=>{window.__nm.push(['stop']);return Promise.resolve();},addListener:(n,f)=>{window.__nmCb=f;return Promise.resolve({remove(){}});}};""")
+    pg.reload(); pg.wait_for_timeout(2400)
+    open_quran(pg); pg.tap('[data-open-surah="2"]'); pg.wait_for_timeout(1300)
+    pg.tap('#quranPlaySurah'); pg.wait_for_timeout(1800)
+    last = pg.evaluate("(()=>{const u=window.__nm.filter(x=>x[0]==='update');return u.length?u[u.length-1][1]:null})()")
+    ok('notification gets title, reciter, Arabic art text and playing state', bool(last) and last['title'].startswith('2.') and 'Ayah' in last['artist'] and last['playing'] is True and len(last['artText']) > 0, str(last))
+    pg.evaluate("window.__nmCb({action:'pause'})"); pg.wait_for_timeout(500)
+    ok('notification pause button pauses the recitation', pg.evaluate("document.getElementById('quranAudio').paused"))
+    ok('paused state is pushed to the notification', pg.evaluate("(()=>{const u=window.__nm.filter(x=>x[0]==='update');return u[u.length-1][1].playing})()") is False)
+    pg.evaluate("window.__nmCb({action:'play'})"); pg.wait_for_timeout(600)
+    ok('notification play button resumes', pg.evaluate("!document.getElementById('quranAudio').paused"))
+    before = pg.evaluate("window.NaseemQuranMedia.info().artist")
+    pg.evaluate("window.__nmCb({action:'next'})"); pg.wait_for_timeout(800)
+    ok('notification next moves to the following ayah', pg.evaluate("window.NaseemQuranMedia.info().artist") != before)
+    pg.evaluate("window.__nmCb({action:'stop'})"); pg.wait_for_timeout(500)
+    ok('notification close stops the recitation and removes the notification', pg.evaluate("window.__nm.some(x=>x[0]==='stop')") and pg.evaluate("document.getElementById('quranPlayer').hidden"))
+    ok('no page errors (media bridge)', [e for e in errs if 'Failed to load' not in e and 'CORS' not in e] == [], str(errs))
     ctx.close()
 
     # ---- light theme + narrow phone visual sanity ----

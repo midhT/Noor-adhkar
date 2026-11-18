@@ -1,14 +1,20 @@
 # Naseem Changelog
 
-## 4.1.0 · candidate Android build 40114
-- Reduced primary navigation to Home, Dhikr, Salah, Quran and You. More features and Zakat are reachable from the You hub; all settings and account controls remain available.
-- Added a LastWave-inspired Liquid Glass bottom navigation with a muted emerald active state.
-- Replaced mini-player and full-player seek tracks with an interactive wavy waveform seek control, synchronized to playback and keyboard-accessible.
-- Added Madani 604-page reading with previous/next page navigation, plus verse and one-ayah-per-line reading modes. Existing Arabic / English translation display remains available.
-- Added visible Indo-Pak and Makki Mushaf choices but kept them disabled pending verified source text, page maps and line assets. No unsupported Mushaf layout is falsely advertised as ready.
-- Preserved Quran skeleton loading and progressive rendering; added paint containment for long Quran lists.
-- Advanced Android versionCode to 40114. Public version remains 4.1.0; application ID and existing signing configuration remain unchanged.
-- Not verified: browser visual QA, Android build, signed APK, in-place update and physical-device performance/audio testing.
+## 4.1.0 · Android build 40113 (candidate)
+
+- Background recitation: a native media service (foreground, mediaPlayback) with a notification, lock-screen controls (previous, play/pause, next, stop, seek), a MediaSession and a CPU wake lock while playing. Stops itself after 30 minutes paused or when the app is swiped away. Needs a device test.
+- Wavy seek bar redrawn on a canvas in the Last Wave style (three rolling translucent waves that taper at both ends, flattening while scrubbing); runs at 30 fps only while visible and playing, and is static in Smooth mode.
+- Performance: lyrics are built only when the lyrics view is opened, the artwork no longer uses masks or animated height, and one-off glow transitions were removed.
+- Fixed the reciter avatar button and the stacked close/back icons in the player header.
+- Tests: media bridge browser test, Android patch checks for the service, plugin and manifest.
+
+## 4.1.0 · Android build 40112 (candidate)
+
+- Redesigned Quran player in the Last Wave style: full-bleed artwork with the surah name, a wavy seek bar with elapsed and remaining time (the labels no longer overlap the bar), a wide pill play/pause, and a pill row for Sleep, Ambient and Repeat.
+- Lyrics page: WORD SYNC badge for the word-synchronised reciter, large bold lines, a glowing active line and word-by-word lighting; the back arrow returns to the player.
+- Sleep timer (5 min to 1 hour, end of ayah, end of surah) with a gentle fade-out, repeat ayah / repeat surah, and a heart to save the playing ayah (shares the reader's bookmarks).
+- Relaxing sounds mixer (rain, birds and so on) that plays alongside the recitation, off by default. Recordings are listed in `www/ambient/manifest.json` (see `www/ambient/README.txt`); the Ambient button stays hidden until recordings are added.
+- Tests: new `test_quran_player_core.js`, new browser tests for the wave layout, sleep, repeat, heart and ambient. Advanced `versionCode` to 40112.
 
 ## 4.1.0 · Android build 40111 (candidate)
 
@@ -117,25 +123,3 @@ The user-authored native widget builder, full custom Adhkar routine manager, ful
 - Cycle information is stored locally, can be cleared from Settings, and is included in user-requested backups.
 - Cycle estimates are informational only and are not medical advice or contraception guidance.
 - Preserved the existing per-prayer Salah tracker and excluded Periods entries from missed-prayer consistency totals.
-
-
-## Candidate build 40114 — navigation, Quran reading and performance
-- Reduced primary navigation to Home, Dhikr, Salah, Quran and You. The You hub exposes More features and Zakat while retaining all settings and account controls.
-- Added a Liquid Glass treatment to the five-item bottom navigation and retained profile-picture access to the account settings.
-- Replaced both Quran player range tracks with an interactive wavy waveform seek control, including keyboard access and synchronized progress.
-- Added Madani page-by-page reading with previous/next page navigation, plus verse and one-ayah-per-line reading modes. Translation remains available through the existing Arabic / English display control.
-- Indo-Pak and Makki layout choices remain visibly unavailable until a reliable, edition-specific page map and text assets can be verified; no unsupported layout is mislabeled as ready.
-- Kept progressive Quran rendering and skeleton placeholders, and added paint containment for long verse and surah lists.
-- Bumped Android versionCode to 40114 while retaining versionName 4.1.0, app ID and signing configuration.
-
-
-## Candidate build 40115 — Mushaf editions and page reader
-
-- Added secure Quran Foundation Worker integration for Indo-Pak, Indo-Pak 15-line and Indo-Pak 16-line Mushaf page data.
-- Added a genuine 15-line layout driven by API word-level line positions and the compatible IndoPak Nastaleeq font; other editions remain page-bounded readers.
-- Added Mushaf-aware verse-to-page switching, page navigation and page bookmarks.
-- Added skeleton loading for network-backed Hadith content.
-- Kept the LastWave-inspired waveform player, Liquid Glass navigation and five-tab You layout from build 40114.
-- Advanced Android versionCode to 40115 while keeping versionName 4.1.0, package ID and signing configuration unchanged.
-- Bumped service-worker cache to v4115.
-- Quran Foundation API credentials and production access are not bundled; the included Worker must be deployed and configured before Indo-Pak pages load.

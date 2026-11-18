@@ -37,13 +37,9 @@ with sync_playwright() as p:
     # ---------- navigation + scrolling ----------
     labels = ev("[...document.querySelectorAll('.nav-item small')].map(e=>e.textContent)")
     ok('onboarding does not cover returning-user navigation', not ev("!!document.querySelector('.v404-onboarding')"))
-    ok('five tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'Quran', 'You'], str(labels))
-    for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen']:
-        if sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'settingsScreen']:
-            pg.click(f'.nav-item[data-screen="{sid}"]')
-        else:
-            pg.evaluate(f"switchScreen('{sid}')")
-        pg.wait_for_timeout(450)
+    ok('six tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'More', 'Zakat', 'Settings'], str(labels))
+    for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen']:
+        pg.click(f'.nav-item[data-screen="{sid}"]'); pg.wait_for_timeout(450)
         ev("window.scrollTo(0,0)"); pg.wait_for_timeout(100)
         h = ev("document.documentElement.scrollHeight")
         drag(cdp, 700, 300); y = ev("scrollY")

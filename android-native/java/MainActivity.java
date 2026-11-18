@@ -10,6 +10,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(NoorWidgetsPlugin.class);
         registerPlugin(NaseemUpdaterPlugin.class);
+        registerPlugin(NaseemMediaPlugin.class);
         super.onCreate(savedInstanceState);
 
         // An older PWA service worker may cache index.html and the very script that would
@@ -33,5 +34,14 @@ public class MainActivity extends BridgeActivity {
                 + "})()",
             null
         ), 1500);
+    }
+
+    /** Recitation keeps playing with the screen off: the media service keeps the process alive, so keep the WebView running too. */
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (NaseemMediaService.running && getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().resumeTimers();
+        }
     }
 }

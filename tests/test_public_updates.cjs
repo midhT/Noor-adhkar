@@ -9,7 +9,7 @@ assert.match(html, /id="naseemUpdateStatus"/);
 assert.match(m2, /add_init_script\("""\(\(\) => \{/);
 assert.match(m2, /saved\.setupComplete = true/);
 assert.match(m2, /localStorage\.setItem\('naseem-onboarding-complete-v1', '1'\)/);
-assert.match(m2, /'Home', 'Dhikr', 'Salah', 'Quran', 'You'/);
+assert.match(m2, /'Home', 'Dhikr', 'Salah', 'More', 'Zakat', 'Settings'/);
 const store = new Map();
 const listeners = {};
 const document = {
@@ -21,7 +21,7 @@ const window = { addEventListener(name, fn) { listeners[name] = fn; }, setTimeou
 const context = {
   document, window, URL, Date, Math, Number, String, JSON, AbortController,
   localStorage: { getItem: k => store.get(k) || null, setItem: (k,v) => store.set(k,v) },
-  setTimeout() {}, fetch: async () => ({ ok: true, json: async () => ({ version: '4.1.0', androidVersionCode: 40111, releaseUrl: 'https://github.com/midhT/Naseem-public/releases/tag/v4.1.0', downloadUrl: 'https://github.com/midhT/Naseem-public/releases/download/v4.1.0/app-release.apk', notesSummary: 'Bug fixes and improvements.' }) })
+  setTimeout() {}, fetch: async () => ({ ok: true, json: async () => ({ version: '4.1.0', androidVersionCode: 40113, releaseUrl: 'https://github.com/midhT/Naseem-public/releases/tag/v4.1.0', downloadUrl: 'https://github.com/midhT/Naseem-public/releases/download/v4.1.0/app-release.apk', notesSummary: 'Bug fixes and improvements.' }) })
 };
 vm.runInNewContext(source, context, { filename: 'public-updates.js' });
 (async () => {
@@ -32,16 +32,16 @@ vm.runInNewContext(source, context, { filename: 'public-updates.js' });
   assert.equal(window.NaseemUpdates.currentBuild, 40109);
   assert.match(source, /cache: 'no-store'/);
   assert.match(source, /api\.github\.com\/repos\/midhT\/Naseem-public\/contents\/release\.json/);
-  assert.equal(window.NaseemUpdates.isUpdateAvailable({ version: '4.1.0', androidVersionCode: 40111 }), true);
+  assert.equal(window.NaseemUpdates.isUpdateAvailable({ version: '4.1.0', androidVersionCode: 40113 }), true);
   assert.equal(window.NaseemUpdates.isUpdateAvailable({ version: '4.1.0', androidVersionCode: 40109 }), false);
   const result = await window.NaseemUpdates.check(true);
   assert.equal(result.ok, true);
   assert.equal(result.updateAvailable, true);
   assert.equal(result.version, '4.1.0');
-  assert.equal(result.androidVersionCode, 40111);
+  assert.equal(result.androidVersionCode, 40113);
   const state = JSON.parse(store.get('naseem-public-update-state-v1'));
   assert.equal(state.latest, '4.1.0');
-  assert.equal(state.latestBuild, 40111);
-  assert.equal(state.notifiedBuild, '4.1.0+40111');
+  assert.equal(state.latestBuild, 40113);
+  assert.equal(state.notifiedBuild, '4.1.0+40113');
   console.log('Public update checker tests passed.');
 })().catch(error => { console.error(error); process.exit(1); });

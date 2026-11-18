@@ -24,7 +24,6 @@
     <div class="v404-card"><p class="v404-note">This is a curated multilingual hadith encyclopedia, not a complete digital edition of Sahih al-Bukhari or Sahih Muslim. References and grading are shown only when supplied by the provider. Translations may differ between editions. Content is fetched online, is not bundled, and is not represented as scholar-reviewed by Naseem. Provider acknowledgements are listed in Settings → About Naseem → Credits &amp; Acknowledgements.</p></div>`;
   document.querySelector('main')?.appendChild(screen);
   const status = message => { const el=$('hadithStatus'); if(el)el.textContent=message; };
-  const skeletonRows = (count=5) => Array.from({length:count},()=>'<div class="hadith-skeleton" aria-hidden="true"><i></i><span><b></b><small></small></span></div>').join('');
   const request = async (path) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 12000);
@@ -37,7 +36,7 @@
   let categories = [], page = 1, activeCategory = '', busy = false;
   const categorySelect = $('hadithCategory');
   async function loadCategories() {
-    status('Loading topics from HadeethEnc…'); $('hadithResults').innerHTML=skeletonRows(4);
+    status('Loading topics from HadeethEnc…');
     try {
       const rows = await request(`/categories/roots/?language=${encodeURIComponent($('hadithLanguage').value)}`);
       if (!Array.isArray(rows) || !rows.length) throw new Error('No categories returned');
@@ -49,7 +48,7 @@
   }
   async function loadList() {
     if (!activeCategory || busy) return;
-    busy = true; $('hadithDetail').hidden = true; $('hadithResults').innerHTML=skeletonRows(6);
+    busy = true; $('hadithDetail').hidden = true; $('hadithResults').innerHTML='';
     status('Loading hadith entries…');
     try {
       const data = await request(`/hadeeths/list/?language=${encodeURIComponent($('hadithLanguage').value)}&category_id=${encodeURIComponent(activeCategory)}&page=${page}&per_page=20`);
@@ -68,7 +67,7 @@
     finally { busy=false; }
   }
   async function loadDetail(id) {
-    const detail=$('hadithDetail'); detail.hidden=false; detail.innerHTML=skeletonRows(3); detail.scrollIntoView({behavior:'smooth',block:'start'});
+    const detail=$('hadithDetail'); detail.hidden=false; detail.innerHTML='<p class="v404-note">Loading translations…</p>'; detail.scrollIntoView({behavior:'smooth',block:'start'});
     const languages=['ar','en','ur'];
     const results=await Promise.all(languages.map(async lang=>{try{return [lang,await request(`/hadeeths/one/?id=${encodeURIComponent(id)}&language=${lang}`)];}catch(_){return [lang,null];}}));
     const found=Object.fromEntries(results);

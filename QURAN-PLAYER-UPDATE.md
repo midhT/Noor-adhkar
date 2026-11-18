@@ -16,18 +16,3 @@ Muhammad Al-Luhaidan (word by word), Mishary Alafasy, Abdurrahman Al-Sudais, Mah
 ## Validation status
 - Quran UI browser test passes in Smooth mode and with full animations (NASEEM_FULL_MOTION=1). Motion, P0, Adhkar, Glance, onboarding and static suites pass here.
 - Not run here: tests needing the native bundle build (scheduling, widget studio), Gradle, signed release, physical-device playback/feel, live audio for the 8 added reciters.
-
-
-## Build 40114 Quran UI, player and performance refinement
-- Replaced the high-saturation player surface with a restrained graphite layout and a single muted accent.
-- Added consistent monochrome identity thumbnails for each reciter in the mini-player, full-screen player and picker. They are abstract identity markers with initials, not photographic portraits.
-- Refined the full Quran surface: home/index, Surah/Juz/Page/Bookmarks/Memory tabs, search/list rows, reader toolbar/settings, ayah presentation, memorisation cards and the full player hierarchy around surah, ayah reference, reciter identity, lyrics and transport controls.
-- Applied translucent glass only to the audio seek bars; bottom navigation remains unchanged.
-- Quran index and ayah content now show skeleton placeholders and render in animation-frame batches. Quran search is debounced.
-- Global screen entry animation now targets only the first four content blocks to avoid dozens of simultaneous animations on long screens.
-- Existing playback pipeline, reciter edition IDs, word timing, lyrics follow-along, bookmarks and memorisation remain in place.
-
-
-## Build 40115 Mushaf reader integration
-
-Build 40115 retains the wavy waveform player and adds the Mushaf-aware page/line reader. See `IMPLEMENTATION-40115.md` and `quran-foundation-worker/README.md` for the API and deployment details.

@@ -44,15 +44,13 @@ assert.match(pkg.dependencies['@capacitor/app'], /^\^7\./);
 assert.match(js, /setupCitySearch/);
 assert.match(js, /Visualise Salah times/);
 assert.doesNotMatch(html, /data-planned=/);
-assert.match(html, /<small>You<\/small>/);
-assert.match(html, /data-open-screen="featuresScreen"/);
-assert.match(html, /data-open-screen="zakatScreen"/);
+assert.match(html, /<small>More<\/small>/);
 assert.match(html, /salah-experience\.js/);
 assert.match(read('www/prayer-dashboard.js'), /homeScreen/);
 assert.match(read('www/salah-experience.js'), /naseem-salah-habit-v1/);
 assert.match(read('www/salah-experience.js'), /lastThirdWindow/);
 assert.match(read('www/public-updates.js'), /Naseem-public/);
-assert.match(read('www/sw.js'), /noor-adhkar-cache-v4115/);
+assert.match(read('www/sw.js'), /noor-adhkar-cache-v4113/);
 assert.match(read('www/salah.js'), /asr: 'hanafi'/); // Internal calculation compatibility; no school label is shown in the UI.
 assert.doesNotMatch(read('www/salah-settings.js'), /School \(madhab\)|id=\"ssSchool\"/);
 assert.doesNotMatch(read('www/salah.js'), /raw\.asr === 'hanafi'.*settings\.asr = 'standard'/);

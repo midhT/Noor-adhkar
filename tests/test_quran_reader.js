@@ -30,7 +30,7 @@ assert(q.includes('quranPauseResume'));
 assert(q.includes('quranFullPlayer')&&q.includes('quranExpandPlayer'));
 assert(q.includes('quranFullSeek')&&q.includes('quranFullToggle'));
 assert(q.includes('function openFullPlayer')&&q.includes('function closeFullPlayer'));
-assert(q.includes('Playback continues while you browse Naseem.'));
+assert(q.includes('The recitation continues while you browse Naseem.'));
 assert(q.includes('quranLyrics')&&q.includes('function buildLyrics')&&q.includes('data-lyric-ayah'), 'lyrics view: verse by verse, with word highlight');
 assert((q.match(/wordSync:(true|false)/g)||[]).length===13&&(q.match(/wordSync:true/g)||[]).length===1, 'thirteen reciters, exactly one word-synchronised');
 assert(q.includes("'ar.shuraim'")&&q.includes("'ar.abdulbasit'")&&q.includes("'ar.hudhaify'"), 'extra reciters use verified AlQuran Cloud edition ids');
@@ -63,6 +63,4 @@ assert(v404Src.includes('AbortController')&&v404Src.includes('GLANCE_TIMEOUT_MS'
 console.log('Quran redesign static checks passed.');
 
 assert(q.includes('quranQariToggle')&&q.includes('quranQariMenu'));
-assert(q.includes('qariAvatarHTML')&&q.includes('quranFullAvatarButton')&&q.includes('quranMiniAvatar'), 'reciter identity thumbnails are present in the player and picker');
-assert(q.includes('renderAyahsProgressively')&&q.includes('ayahSkeletonHTML')&&q.includes('surahSkeletonHTML'), 'Quran content is skeleton-loaded and rendered in animation-frame batches');
 assert(q.includes('q.wordSync?') && q.includes('qr-qari-capability'), 'word-sync badge is capability-gated per reciter');
