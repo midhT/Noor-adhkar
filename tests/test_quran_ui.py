@@ -259,6 +259,55 @@ with sync_playwright() as p:
     ok('no page errors (offline)', errs == [], str(errs))
     ctx.close()
 
+    # ---- Last Wave style player: wave seek, sleep timer, repeat, ambient ----
+    ctx, pg, errs = new()
+    pg.route('**/ambient/manifest.json', lambda r: r.fulfill(status=200, content_type='application/json', body='{"sounds":[{"id":"rain","name":"Rain","file":"rain.wav","icon":"rain"}]}'))
+    pg.route('**/ambient/rain.wav', lambda r: r.fulfill(status=200, content_type='audio/wav', body=quran_mock.tone_wav(2, 300)))
+    pg.reload(); pg.wait_for_timeout(2400)
+    if os.environ.get('NASEEM_FULL_MOTION') == '1': pg.evaluate("document.body.classList.remove('lite')")
+    open_quran(pg); pg.tap('[data-open-surah="2"]'); pg.wait_for_timeout(1300)
+    pg.tap('#quranPlaySurah'); pg.wait_for_timeout(1500); pg.tap('#quranExpandPlayer'); pg.wait_for_timeout(1000)
+    geo = pg.evaluate("""()=>{const r=id=>document.getElementById(id).getBoundingClientRect();const w=r('quranWave'),t=r('quranFullElapsed'),d=r('quranFullDuration'),pl=r('quranFullToggle');
+      return {waveBottom:w.bottom,timesTop:t.top,play:pl.width,playH:pl.height,over:document.documentElement.scrollWidth>innerWidth+1,rem:document.getElementById('quranFullDuration').textContent,
+      pills:[...document.querySelectorAll('.qr-pill:not([hidden])')].map(e=>{const b=e.getBoundingClientRect();return [b.left,b.right,b.bottom]}),h:innerHeight}}""")
+    ok('time labels sit below the wave and never overlap it', geo['timesTop'] >= geo['waveBottom'] - 1, str(geo))
+    ok('remaining time is shown as a negative countdown', geo['rem'].startswith('-'), geo['rem'])
+    ok('play button is a wide pill', geo['play'] > 120 and geo['playH'] > 50, str(geo))
+    ok('pills fit on screen', all(l >= 0 and r <= 360 and b <= geo['h'] for l, r, b in geo['pills']) and len(geo['pills']) == 3, str(geo['pills']))
+    ok('wave progress follows playback', pg.evaluate("parseFloat(getComputedStyle(document.getElementById('quranWave')).getPropertyValue('--p'))") > 0)
+    ok('word sync badge visible for the word-synced reciter', pg.evaluate("!document.getElementById('quranSyncBadge').hidden"))
+    # heart saves the current ayah to the same bookmarks as the reader
+    pg.tap('#quranFullBookmark'); pg.wait_for_timeout(200)
+    ok('heart saves the playing ayah as a bookmark', pg.evaluate("JSON.parse(localStorage.getItem('naseem-quran-bookmarks-v1')||'[]').length") == 1 and pg.get_attribute('#quranFullBookmark', 'aria-pressed') == 'true')
+    pg.tap('#quranFullBookmark'); pg.wait_for_timeout(200)
+    ok('heart toggles the bookmark off again', pg.evaluate("JSON.parse(localStorage.getItem('naseem-quran-bookmarks-v1')||'[]').length") == 0)
+    # repeat cycles off -> ayah -> surah -> off
+    modes = []
+    for _ in range(3):
+        pg.tap('#quranRepeatBtn'); pg.wait_for_timeout(120); modes.append(pg.evaluate("window.NaseemQuranPlayer.repeat()"))
+    ok('repeat cycles ayah, surah, off', modes == ['ayah', 'surah', 'off'], str(modes))
+    # sleep timer
+    pg.tap('#quranSleepBtn'); pg.wait_for_timeout(700)
+    ok('sleep sheet lists the options', pg.evaluate("document.querySelectorAll('#quranSleepList [data-sleep]').length") == 9)
+    pg.tap('[data-sleep="5"]'); pg.wait_for_timeout(700)
+    ok('sleep timer arms and shows the countdown', pg.evaluate("window.NaseemQuranPlayer.sleep.state()&&window.NaseemQuranPlayer.sleep.state().kind")=='time' and ':' in pg.inner_text('#quranSleepLabel'), pg.inner_text('#quranSleepLabel'))
+    pg.evaluate("window.NaseemQuranPlayer.sleep.tickAt(Date.now()+6*60000)"); pg.wait_for_timeout(5200)
+    ok('sleep timer fades and pauses the recitation, then disarms', pg.evaluate("document.getElementById('quranAudio').paused") and pg.evaluate("window.NaseemQuranPlayer.sleep.state()") is None)
+    # ambient
+    ok('ambient pill appears once the manifest has sounds', pg.evaluate("!document.getElementById('quranAmbientBtn').hidden"))
+    pg.tap('#quranAmbientBtn'); pg.wait_for_timeout(700); pg.tap('[data-amb-toggle="rain"]'); pg.wait_for_timeout(1500)
+    ok('ambient sound starts only when toggled and can be switched off', pg.evaluate("window.NaseemAmbient.activeIds()") == ['rain'])
+    pg.tap('[data-amb-toggle="rain"]'); pg.wait_for_timeout(1500)
+    ok('ambient toggles off', pg.evaluate("window.NaseemAmbient.activeIds()") == [])
+    # lyrics: back arrow returns to the player, collapsing pills
+    pg.evaluate("document.getElementById('quranQSheetBackdrop').click()"); pg.wait_for_timeout(700)
+    pg.tap('#quranLyricsToggle'); pg.wait_for_timeout(900)
+    ok('lyrics view hides the pill row and shows back', pg.evaluate("getComputedStyle(document.querySelector('.qr-full-pills')).opacity")=='0')
+    pg.tap('#quranFullClose'); pg.wait_for_timeout(700)
+    ok('back arrow leaves lyrics but keeps the player open', pg.evaluate("!document.getElementById('quranFullPlayer').hidden&&!document.getElementById('quranFullPlayer').classList.contains('qr-lyrics-on')"))
+    ok('no page errors (new player)', [e for e in errs if 'Failed to load' not in e and 'CORS' not in e] == [], str(errs))
+    ctx.close()
+
     # ---- light theme + narrow phone visual sanity ----
     ctx, pg, errs = new(width=320, theme='light')
     open_quran(pg); pg.tap('[data-open-surah="1"]'); pg.wait_for_timeout(1300)

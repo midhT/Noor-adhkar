@@ -1,5 +1,13 @@
 # Naseem Changelog
 
+## 4.1.0 · Android build 40112 (candidate)
+
+- Redesigned Quran player in the Last Wave style: full-bleed artwork with the surah name, a wavy seek bar with elapsed and remaining time (the labels no longer overlap the bar), a wide pill play/pause, and a pill row for Sleep, Ambient and Repeat.
+- Lyrics page: WORD SYNC badge for the word-synchronised reciter, large bold lines, a glowing active line and word-by-word lighting; the back arrow returns to the player.
+- Sleep timer (5 min to 1 hour, end of ayah, end of surah) with a gentle fade-out, repeat ayah / repeat surah, and a heart to save the playing ayah (shares the reader's bookmarks).
+- Relaxing sounds mixer (rain, birds and so on) that plays alongside the recitation, off by default. Recordings are listed in `www/ambient/manifest.json` (see `www/ambient/README.txt`); the Ambient button stays hidden until recordings are added.
+- Tests: new `test_quran_player_core.js`, new browser tests for the wave layout, sleep, repeat, heart and ambient. Advanced `versionCode` to 40112.
+
 ## 4.1.0 · Android build 40111 (candidate)
 
 - Removed the ambience feature: the app-wide accent background wash (and its `--ambient-accent` variable) is gone. The accent colour feature is unchanged and still drives highlights in dark and light themes.

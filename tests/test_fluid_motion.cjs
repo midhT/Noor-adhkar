@@ -3,7 +3,8 @@
 const fs = require('fs'), assert = require('assert');
 const read = p => fs.readFileSync(p, 'utf8');
 const theme = read('www/theme.css'), accent = read('www/accent.js'), quran = read('www/quran-reader.css') + read('www/quran-reader.js');
-assert(!/ambient|ambience/i.test(theme + accent + quran), 'no ambience layer anywhere in the app');
+assert(!/ambient|ambience/i.test(theme + accent), 'no visual ambience layer in theme or accent');
+assert(!/--ambient-accent|ambient wash|ambience/i.test(quran), 'no visual ambience layer in the Quran UI (ambient SOUNDS are a separate feature)');
 assert(!/background-attachment:\s*fixed/.test(theme), 'no fixed-attachment page wash (repaints on every scroll frame)');
 assert(accent.includes("'--accent'") && accent.includes("'--on-accent'"), 'accent colour feature is intact');
 assert(theme.includes('.nav-pill') && read('www/motion.js').includes('nav-pill'), 'tab pill morph is present');
