@@ -868,19 +868,52 @@
   $('quranVerses').addEventListener('pointercancel',()=>{pageSwipeStart=null;},{passive:true});
   document.querySelectorAll('[data-quran-view]').forEach(b=>b.addEventListener('click',()=>switchQuranView(b.dataset.quranView)));
   $('quranDownloadOffline').addEventListener('click',async()=>{
-    const button=$('quranDownloadOffline'),label=$('quranOfflineStatus');if(button.disabled)return;button.disabled=true;
-    try{await openOfflineDB();let saved=0;
+    const button=$('quranDownloadOffline'),label=$('quranOfflineStatus');
+    if(button.disabled)return;
+    button.disabled=true;
+    let terminal=false;
+    label.textContent='Starting offline Quran download…';
+    try{
+      await openOfflineDB();
+      let saved=0;
       for(let n=1;n<=114;n++){
         label.textContent=`Saving Quran text offline · ${n}/114 surahs`;
-        const key=`${n}:translation`;let payload=await getOfflineSurah(key);
-        if(!payload){payload=await request(`/surah/${n}/editions/quran-uthmani,en.pickthall`);await putOfflineSurah(key,payload);}
+        const key=`${n}:translation`;
         const arabicKey=`${n}:arabic`;
-        if(!(await getOfflineSurah(arabicKey))){const arabicOnly=(Array.isArray(payload)?payload:[payload]).filter(x=>String(x.edition?.identifier||'').includes('uthmani'));if(arabicOnly.length)await putOfflineSurah(arabicKey,arabicOnly);}
+        let payload=await getOfflineSurah(key);
+        let arabic=await getOfflineSurah(arabicKey);
+
+        if(!payload||!arabic){
+          let fresh;
+          try{
+            fresh=await request(`/surah/${n}/editions/quran-uthmani,en.pickthall`);
+          }catch(error){
+            throw new Error(`Surah ${n} could not be downloaded`);
+          }
+          const editions=Array.isArray(fresh)?fresh:[fresh];
+          const arabicEdition=editions.filter(x=>String(x?.edition?.identifier||'').includes('uthmani'));
+          const englishEdition=editions.filter(x=>String(x?.edition?.identifier||'').includes('pickthall'));
+          if(!payload){
+            if(!englishEdition.length)throw new Error(`Surah ${n} translation is missing`);
+            await putOfflineSurah(key,fresh);
+          }
+          if(!arabic){
+            if(!arabicEdition.length)throw new Error(`Surah ${n} Arabic text is missing`);
+            await putOfflineSurah(arabicKey,arabicEdition);
+          }
+        }
         saved++;
       }
       label.textContent=`Complete Quran text with English meanings saved on this device (${saved} surahs). Audio is not downloaded.`;
-    }catch(error){label.textContent='Offline download paused. Check your connection or device storage, then try again; already saved surahs are kept.';}
-    finally{button.disabled=false;}
+      terminal=true;
+    }catch(error){
+      console.error('Naseem offline Quran download:',error);
+      label.textContent='Offline download paused. Check your connection or device storage, then try again; already saved surahs are kept.';
+      terminal=true;
+    }finally{
+      button.disabled=false;
+      if(!terminal)label.textContent='Offline download paused. Please try again; already saved surahs are kept.';
+    }
   });
 
   // Android back button / gesture: step out of the reader or review before leaving the Quran tab.

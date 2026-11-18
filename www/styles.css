@@ -185,3 +185,15 @@ body.light .nav-item{color:rgba(42,57,48,.66)}body.light .nav-item.active{color:
 .hadith-skeleton b{width:68%}.hadith-skeleton small{width:42%}
 @keyframes naseem-shimmer{0%,100%{opacity:.45}50%{opacity:.9}}
 @media(prefers-reduced-motion:reduce){.hadith-skeleton i,.hadith-skeleton b,.hadith-skeleton small{animation:none}}
+
+
+/* Naseem Quran bottom navigation clearance */
+.qr-reader,
+.qr-review {
+  padding-bottom: 160px !important;
+  scroll-margin-bottom: 160px;
+}
+html,
+body {
+  scroll-padding-bottom: 160px;
+}

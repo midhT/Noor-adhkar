@@ -172,8 +172,17 @@ with sync_playwright() as p:
     ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
     pg.tap('#quranStop')
     # Force an immediate scroll; the page otherwise uses smooth scrolling.
-    pg.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})")
-    pg.wait_for_timeout(150)
+    pg.evaluate("""() => {
+        const root = document.scrollingElement;
+        root.style.scrollBehavior = 'auto';
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.body.style.scrollBehavior = 'auto';
+        root.scrollTop = root.scrollHeight;
+    }""")
+    pg.wait_for_function(
+        "document.scrollingElement.scrollTop >= document.scrollingElement.scrollHeight - 2",
+        timeout=5000
+    )
     print("SCROLL DEBUG:", pg.evaluate("""() => ({
       scrollY,
       scrollHeight: document.documentElement.scrollHeight,
