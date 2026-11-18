@@ -19,8 +19,8 @@ srv = Server(8830)
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--no-sandbox', '--autoplay-policy=no-user-gesture-required'])
 
-    def new(width=360, height=780, theme=None):
-        ctx = b.new_context(viewport={'width': width, 'height': height}, is_mobile=True, has_touch=True, device_scale_factor=1)
+    def new(width=360, height=780, theme=None, sw=True):
+        ctx = b.new_context(viewport={'width': width, 'height': height}, is_mobile=True, has_touch=True, device_scale_factor=1, **({} if sw else {'service_workers': 'block'}))
         seed_returning_user(ctx)
         if theme: ctx.add_init_script(f"localStorage.setItem('naseem-theme','{theme}')")
         pg = ctx.new_page(); errs = []
@@ -260,7 +260,7 @@ with sync_playwright() as p:
     ctx.close()
 
     # ---- Last Wave style player: wave seek, sleep timer, repeat, ambient ----
-    ctx, pg, errs = new()
+    ctx, pg, errs = new(sw=False)
     pg.route('**/ambient/manifest.json', lambda r: r.fulfill(status=200, content_type='application/json', body='{"sounds":[{"id":"rain","name":"Rain","file":"rain.wav","icon":"rain"}]}'))
     pg.route('**/ambient/rain.wav', lambda r: r.fulfill(status=200, content_type='audio/wav', body=quran_mock.tone_wav(2, 300)))
     pg.reload(); pg.wait_for_timeout(2400)

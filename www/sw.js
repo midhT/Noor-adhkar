@@ -19,7 +19,7 @@ self.addEventListener("fetch", event => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  const dynamicUi = request.mode === "navigate" || /\.(?:html?|js|css)$/i.test(url.pathname);
+  const dynamicUi = request.mode === "navigate" || /\.(?:html?|js|css)$/i.test(url.pathname) || /\/ambient\/manifest\.json$/.test(url.pathname);
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     if (dynamicUi) {
