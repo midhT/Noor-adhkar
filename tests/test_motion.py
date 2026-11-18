@@ -68,8 +68,11 @@ with sync_playwright() as p:
     swipe(cdp, 330, 60, y=300); ok('no wrap past the last tab', cur() == 'settingsScreen')
     swipe(cdp, 60, 330, y=300); ok('swipe right: You -> Quran', cur() == 'quranReaderScreen', cur())
     swipe(cdp, 60, 330, y=300); ok('swipe right: Quran -> Salah', cur() == 'salahScreen', cur())
-    swipe(cdp, 60, 330, y=300); ok('swipe right: Salah -> Dhikr counter', cur() == 'dhikrScreen' and not ev("document.getElementById('counterScreen').hidden"), cur())
+    # Dhikr's selected subpanel is preserved when leaving the tab. We left
+    # Dhikr on Adhkar above, so returning from Salah must show Adhkar first.
+    swipe(cdp, 60, 330, y=300); ok('swipe right: Salah -> Dhikr Adhkar', cur() == 'dhikrScreen' and not ev("document.getElementById('libraryScreen').hidden"), cur())
     ok('bottom nav follows swipe', ev("document.querySelector('.nav-item.active').dataset.screen") == 'dhikrScreen')
+    swipe(cdp, 60, 330, y=300); ok('swipe right: Adhkar -> Counter', cur() == 'dhikrScreen' and not ev("document.getElementById('counterScreen').hidden"), cur())
     swipe(cdp, 60, 330, y=300); ok('swipe right: Dhikr counter -> Home', cur() == 'homeScreen', cur())
     # Re-enter Dhikr and verify its two internal panels in both directions.
     swipe(cdp, 330, 60, y=300); ok('swipe left: Home -> Dhikr counter', cur() == 'dhikrScreen' and not ev("document.getElementById('counterScreen').hidden"), cur())
