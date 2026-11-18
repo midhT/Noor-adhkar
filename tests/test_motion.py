@@ -63,17 +63,18 @@ with sync_playwright() as p:
     swipe(cdp, 330, 60, y=300); ok('swipe left inside Dhikr: Counter -> Adhkar panel', cur() == 'dhikrScreen' and ev("!document.getElementById('libraryScreen').hidden"))
     swipe(cdp, 330, 60, y=300); ok('swipe left again: Dhikr -> Salah', cur() == 'salahScreen', cur())
     swipe(cdp, 330, 60, y=300); ok('swipe left again: Salah -> Quran', cur() == 'quranReaderScreen', cur())
-    swipe(cdp, 330, 60, y=300); ok('swipe left again: Quran -> Explore', cur() == 'featuresScreen', cur())
-    swipe(cdp, 330, 60, y=300); ok('swipe left again: Explore -> Zakat', cur() == 'zakatScreen', cur())
-    swipe(cdp, 330, 60, y=300); ok('swipe left again: Zakat -> Settings', cur() == 'settingsScreen', cur())
+    swipe(cdp, 330, 60, y=300); ok('swipe left again: Quran -> You', cur() == 'settingsScreen', cur())
+    ok('You tab is active after swipe', ev("document.querySelector('.nav-item.active').dataset.screen") == 'settingsScreen')
     swipe(cdp, 330, 60, y=300); ok('no wrap past the last tab', cur() == 'settingsScreen')
-    swipe(cdp, 60, 330, y=300); ok('swipe right: Settings -> Zakat', cur() == 'zakatScreen', cur())
-    swipe(cdp, 60, 330, y=300); ok('swipe right: Zakat -> Explore', cur() == 'featuresScreen', cur())
-    ok('bottom nav follows swipe', ev("document.querySelector('.nav-item.active').dataset.screen") == 'featuresScreen')
-    swipe(cdp, 60, 330, y=300); ok('swipe right: Explore -> Quran', cur() == 'quranReaderScreen', cur())
+    swipe(cdp, 60, 330, y=300); ok('swipe right: You -> Quran', cur() == 'quranReaderScreen', cur())
     swipe(cdp, 60, 330, y=300); ok('swipe right: Quran -> Salah', cur() == 'salahScreen', cur())
-    swipe(cdp, 60, 330, y=300); ok('swipe right: Salah -> Dhikr library', cur() == 'dhikrScreen' and ev("!document.getElementById('libraryScreen').hidden"), cur())
-    swipe(cdp, 60, 330, y=300); ok('swipe right from Adhkar panel returns to Counter first', cur() == 'dhikrScreen' and ev("!document.getElementById('counterScreen').hidden"), cur())
+    swipe(cdp, 60, 330, y=300); ok('swipe right: Salah -> Dhikr counter', cur() == 'dhikrScreen' and not ev("document.getElementById('counterScreen').hidden"), cur())
+    ok('bottom nav follows swipe', ev("document.querySelector('.nav-item.active').dataset.screen") == 'dhikrScreen')
+    swipe(cdp, 60, 330, y=300); ok('swipe right: Dhikr counter -> Home', cur() == 'homeScreen', cur())
+    # Re-enter Dhikr and verify its two internal panels in both directions.
+    swipe(cdp, 330, 60, y=300); ok('swipe left: Home -> Dhikr counter', cur() == 'dhikrScreen' and not ev("document.getElementById('counterScreen').hidden"), cur())
+    swipe(cdp, 330, 60, y=300); ok('swipe left: Counter -> Adhkar', cur() == 'dhikrScreen' and not ev("document.getElementById('libraryScreen').hidden"), cur())
+    swipe(cdp, 60, 330, y=300); ok('swipe right: Adhkar -> Counter', cur() == 'dhikrScreen' and not ev("document.getElementById('counterScreen').hidden"), cur())
     h = ev("scrollY"); ok('mostly-vertical drag does not change tab', (swipe(cdp, 200, 230, y=300), cur() == 'dhikrScreen')[1])
     before = ev("state.count||0"); ev("document.getElementById('countButton').scrollIntoView({block:'center'})"); pg.wait_for_timeout(400)
     by = ev("(()=>{const r=document.getElementById('countButton').getBoundingClientRect();return r.y+r.height/2})()"); bx = ev("(()=>{const r=document.getElementById('countButton').getBoundingClientRect();return r.x+r.width*0.8})()")
@@ -97,13 +98,18 @@ with sync_playwright() as p:
     for w in (320, 360, 393, 412, 600):
         c2 = b.new_context(viewport={'width': w, 'height': 800}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata'); seed_returning_user(c2); q = c2.new_page(); q.goto(srv.url()); q.wait_for_timeout(2300)
         bad = []
-        for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen']:
+        for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'settingsScreen']:
             q.click(f'.nav-item[data-screen="{sid}"]'); q.wait_for_timeout(450)
             if sid == 'settingsScreen':
                 for g in ['stAccount', 'stSalah', 'stNotifications', 'stAppearance']:
                     q.evaluate(f"document.getElementById('{g}').open=true")
             q.wait_for_timeout(200)
             if q.evaluate("document.documentElement.scrollWidth") > w + 1: bad.append(sid)
+        # Features and Zakat are destinations inside You, not bottom-nav tabs.
+        q.click('[data-open-screen="featuresScreen"]'); q.wait_for_timeout(450)
+        if q.evaluate("document.documentElement.scrollWidth") > w + 1: bad.append('featuresScreen')
+        q.click('[data-open-feature="zakatScreen"]'); q.wait_for_timeout(450)
+        if q.evaluate("document.documentElement.scrollWidth") > w + 1: bad.append('zakatScreen')
         ok(f'no horizontal overflow at {w}px', not bad, str(bad)); c2.close()
     ok('no page errors', not errs, str(errs)); b.close()
 srv.stop(); sys.exit(R.done('Motion/menus/swipe'))
