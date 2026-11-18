@@ -165,8 +165,33 @@ with sync_playwright() as p:
     ok('player floats clear of the navigation bar', geo['playBottom'] <= geo['navTop'] - 4, str(geo))
     ok('navigation bar background is fully opaque', geo['navBg'].startswith('rgb(') or geo['navBg'].endswith(', 1)'), geo['navBg'])
     pg.tap('#quranStop')
-    pg.evaluate("window.scrollTo(0,document.body.scrollHeight)"); pg.wait_for_timeout(700)
-    last = pg.evaluate("document.querySelector('.qr-surah-nav').getBoundingClientRect().bottom"); nt = pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().top")
+    pg.evaluate("""async () => {
+        const root = document.scrollingElement;
+        const last = document.querySelector('.qr-surah-nav');
+        const nav = document.querySelector('.bottom-nav');
+        if (!root || !last || !nav) throw new Error('Quran scroll elements not found');
+
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.body.style.scrollBehavior = 'auto';
+
+        for (let i = 0; i < 6; i++) {
+            const gap = last.getBoundingClientRect().bottom -
+                        nav.getBoundingClientRect().top + 4;
+            if (gap <= 0) break;
+
+            const maxScroll = root.scrollHeight - root.clientHeight;
+            const next = Math.min(maxScroll, root.scrollTop + gap + 16);
+            if (next <= root.scrollTop) break;
+
+            root.scrollTop = next;
+            await new Promise(resolve =>
+                requestAnimationFrame(() => requestAnimationFrame(resolve))
+            );
+        }
+    }""")
+    pg.wait_for_timeout(150)
+    last = pg.evaluate("document.querySelector('.qr-surah-nav').getBoundingClientRect().bottom")
+    nt = pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().top")
     ok('last item can be scrolled fully above the navigation bar', last <= nt - 4, f'{last} vs {nt}')
     pg.evaluate("window.scrollTo(0,0)")
 
