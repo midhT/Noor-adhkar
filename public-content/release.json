@@ -2,9 +2,9 @@
   "version": "4.1.0",
   "releaseUrl": "https://github.com/midhT/Naseem-public/releases/tag/v4.1.0",
   "downloadUrl": "https://github.com/midhT/Naseem-public/releases/download/v4.1.0/app-release.apk",
-  "notesSummary": "Naseem 4.1.0 build 40113: Quran recitation now has a media notification and lock-screen controls, a Last Wave style wavy seek bar and a smoother player.",
+  "notesSummary": "Naseem 4.1.0 build 40111: smoother morphing animations, a new Quran player that opens from the mini-player with verse-by-verse and word-by-word lyrics, and 13 reciters. The ambience effect is removed.",
   "publishedAt": null,
   "checksumUrl": null,
   "sha256": null,
-  "androidVersionCode": 40113
+  "androidVersionCode": 40111
 }

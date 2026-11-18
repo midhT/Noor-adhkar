@@ -87,7 +87,9 @@ def install(page, seconds=1.2):
         m = re.match(r'^/juz/(\d+)/quran-uthmani$', path)
         if m: return ok({'ayahs': [{'numberInSurah': 3, 'juz': int(m.group(1)), 'surah': {'number': 2, 'englishName': 'Test Surah 2'}}]})
         m = re.match(r'^/page/(\d+)/quran-uthmani$', path)
-        if m: return ok({'ayahs': [{'numberInSurah': 2, 'juz': 1, 'surah': {'number': 3, 'englishName': 'Test Surah 3'}}]})
+        if m: return ok({'ayahs': [{'numberInSurah': 2, 'text': '[test] Madani page Arabic', 'juz': 1, 'page': int(m.group(1)), 'surah': {'number': 3, 'englishName': 'Test Surah 3'}}]})
+        m = re.match(r'^/page/(\d+)/en\.pickthall$', path)
+        if m: return ok({'ayahs': [{'numberInSurah': 2, 'text': '[test] Madani page meaning', 'juz': 1, 'page': int(m.group(1)), 'surah': {'number': 3, 'englishName': 'Test Surah 3'}}]})
         route.fulfill(status=404, body='{}')
     def timing(route):
         m = re.search(r'/quran-com/(\d{3})\.json$', route.request.url)

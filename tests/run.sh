@@ -23,7 +23,6 @@ node tests/test_custom_widget.js
 node tests/test_signing.mjs
 node tests/test_hadith_library.js
 node tests/test_quran_reader.js
-node tests/test_quran_player_core.js
 node tests/test_quran_memory.js
 node tests/test_fluid_motion.cjs
 node tests/test_release_config.mjs

@@ -15,7 +15,7 @@ if (!buildMatch) throw new Error('www/index.html must declare the naseem-version
 const versionCode = Number(buildMatch[1]);
 if (!Number.isSafeInteger(versionCode) || versionCode <= 0) throw new Error('Invalid Naseem Android version code.');
 // The public versionName remains 4.1.0; increase this meta value for each new installable APK.
-// 40100-40109 are prior 4.1.0 builds; 40113 is the next in-place update candidate.
+// 40111-40114 are prior 4.1.0 candidates; 40115 is the next in-place update candidate.
 if (existsSync(gradlePath)) {
   let gradle = readFileSync(gradlePath, 'utf8');
   if (/versionCode\s+\d+/.test(gradle)) gradle = gradle.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`);
@@ -43,9 +43,6 @@ const permissions = [
   '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />',
   '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />',
   '<uses-permission android:name="android.permission.VIBRATE" />',
-  '<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />',
-  '<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />',
-  '<uses-permission android:name="android.permission.WAKE_LOCK" />',
   '<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />',
   '<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />',
   '<uses-permission android:name="android.permission.USE_EXACT_ALARM" />',
@@ -93,10 +90,5 @@ if (!manifest.includes('.CustomWidgetConfigActivity')) {
   manifest = manifest.replace('</application>', `${configure}    </application>`);
 }
 
-// Quran recitation media service (notification, lock-screen controls, background keep-alive).
-if (!manifest.includes('.NaseemMediaService')) {
-  manifest = manifest.replace('</application>', `        <service android:name=".NaseemMediaService" android:exported="false" android:foregroundServiceType="mediaPlayback" />
-    </application>`);
-}
 writeFileSync(manifestPath, manifest);
 console.log('Noor native Android files and manifest entries are in place for', pkg);

@@ -20,7 +20,7 @@ const strings = new Set([...read(join(native, 'res/values/noor_widgets.xml')).ma
 // 1. Every R.* reference in the Java sources resolves to a real resource.
 for (const file of javaFiles) {
   const src = read(join(native, 'java', file));
-  for (const [, kind, name] of src.matchAll(/(?<!android\.)\bR\.(id|layout|drawable|string)\.(\w+)/g)) {
+  for (const [, kind, name] of src.matchAll(/\bR\.(id|layout|drawable|string)\.(\w+)/g)) {
     if (kind === 'id') assert.ok(allIds.has(name), `${file}: R.id.${name} is not defined in any layout`);
     if (kind === 'layout') assert.ok(layouts[name], `${file}: R.layout.${name} is missing`);
     if (kind === 'drawable') assert.ok(drawables.has(name), `${file}: R.drawable.${name} is missing`);

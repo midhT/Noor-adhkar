@@ -30,12 +30,6 @@ try {
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/NoorWidgetsPlugin.java')));
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/NaseemUpdaterPlugin.java')));
   assert.match(manifest,/REQUEST_INSTALL_PACKAGES/);
-  assert.match(manifest,/\.NaseemMediaService/); assert.match(manifest,/foregroundServiceType="mediaPlayback"/); assert.match(manifest,/FOREGROUND_SERVICE_MEDIA_PLAYBACK/); assert.match(manifest,/WAKE_LOCK/);
-  const mediaSvc=readFileSync(join(main,'java/com/noor/adhkar/NaseemMediaService.java'),'utf8');
-  assert.match(mediaSvc,/MediaSession/); assert.match(mediaSvc,/Notification\.MediaStyle/); assert.match(mediaSvc,/startForeground/); assert.match(mediaSvc,/FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK/);
-  assert.match(readFileSync(join(main,'java/com/noor/adhkar/NaseemMediaPlugin.java'),'utf8'),/name = "NaseemMedia"/);
-  assert.match(readFileSync(join(main,'java/com/noor/adhkar/MainActivity.java'),'utf8'),/registerPlugin\(NaseemMediaPlugin.class\)/);
-  assert.ok(existsSync(join(main,'res/drawable/ic_stat_naseem.xml')));
   const activity=readFileSync(join(main,'java/com/noor/adhkar/MainActivity.java'),'utf8');
   assert.match(activity,/registerPlugin\(NaseemUpdaterPlugin.class\)/);
   assert.match(activity,/getRegistrations\(\)/);
@@ -54,7 +48,7 @@ try {
   assert.ok(existsSync(join(main,'res/drawable-nodpi/widget_preview_custom.png')));
   assert.ok(existsSync(join(main,'res/drawable-nodpi/widget_preview_prayer.png')));
   assert.match(readFileSync(join(main,'res/xml/prayer_widget_info.xml'),'utf8'),/previewImage/);
-  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40113/);
-  assert.match(readFileSync(join(main,'assets/public/index.html'),'utf8'),/naseem-version-code\" content=\"40113/);
+  assert.match(readFileSync(join(root,'android/app/build.gradle'),'utf8'),/versionCode 40115/);
+  assert.match(readFileSync(join(main,'assets/public/index.html'),'utf8'),/naseem-version-code\" content=\"40115/);
   console.log('Android native integration patch: all assertions passed.');
 } finally { rmSync(root,{recursive:true,force:true}); }
