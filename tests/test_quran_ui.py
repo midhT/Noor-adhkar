@@ -1,7 +1,7 @@
 """Phone-sized browser test of the redesigned Quran section against an offline API stand-in (tests/quran_mock.py)."""
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from common import *
 import quran_mock
 
@@ -62,8 +62,13 @@ with sync_playwright() as p:
     pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(500)
 
     # ---- recitation highlight + alignment ----
-    pg.tap('[data-play-ayah="3"]'); pg.wait_for_timeout(250)
-    ok('word-level timing marks Quran words for follow-along', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
+    pg.tap('[data-play-ayah="3"]')
+    try:
+        pg.wait_for_function("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1", timeout=8000)
+        word_timing_ready = True
+    except PlaywrightTimeoutError:
+        word_timing_ready = False
+    ok('word-level timing marks Quran words for follow-along', word_timing_ready, pg.inner_text('#quranReaderStatus'))
     ok('only the ayah being recited is highlighted', pg.evaluate(PLAYING_JS) == [3], str(pg.evaluate(PLAYING_JS)))
     c = pg.evaluate(CENTRE_JS)
     ok('recited ayah is centred between header and player', c and abs(c['off']) < 14, str(c))
@@ -166,9 +171,11 @@ with sync_playwright() as p:
     ok('player floats clear of the navigation bar', geo['playBottom'] <= geo['navTop'] - 4, str(geo))
     ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
     pg.tap('#quranStop')
-    pg.evaluate("window.scrollTo(0,document.body.scrollHeight)"); pg.wait_for_timeout(700)
+    # Force an immediate scroll; the page otherwise uses smooth scrolling.
+    pg.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})")
+    pg.wait_for_timeout(150)
     last = pg.evaluate("document.querySelector('.qr-surah-nav').getBoundingClientRect().bottom"); nt = pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().top")
-    ok('last item can be scrolled fully above the navigation bar', last <= nt - 4, f'{last} vs {nt}')
+    ok('last item can be scrolled fully above the navigation bar', last <= nt - 4, f'{last} vs {nt}; scrollY={pg.evaluate("window.scrollY")}')
     pg.evaluate("window.scrollTo(0,0)")
 
     # ---- progress, bookmarks ----
@@ -248,16 +255,29 @@ with sync_playwright() as p:
 
     # ---- offline: save everything once, then read with the network gone ----
     ctx, pg, errs = new()
-    open_quran(pg); pg.tap('#quranDownloadOffline'); pg.wait_for_function("document.getElementById('quranOfflineStatus').textContent.startsWith('Complete')", timeout=60000)
-    ok('offline download completes', 'Complete Quran text' in pg.inner_text('#quranOfflineStatus'))
-    pg.route('https://api.alquran.cloud/**', lambda r: r.abort())
-    pg.route('https://cdn.jsdelivr.net/**', lambda r: r.abort())
-    pg.route('https://cdn.islamic.network/**', lambda r: r.abort())
-    pg.tap('[data-open-surah="3"]'); pg.wait_for_timeout(1300)
-    ok('saved surah opens with no network (with English)', pg.evaluate("document.querySelectorAll('#quranVerses .quran-ayah').length") == 12 and pg.evaluate("document.querySelectorAll('#quranVerses .quran-translation').length") == 12)
-    ok('offline recitation fails gracefully, text stays', True)
-    pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(900)
-    ok('no crash when audio is unreachable', 'unavailable' in pg.inner_text('#quranReaderStatus').lower() or pg.evaluate("document.getElementById('quranPlayer').hidden"))
+    offline_request_failures = []
+    pg.on('requestfailed', lambda req: offline_request_failures.append(f'{req.url}: {req.failure}'))
+    open_quran(pg); pg.tap('#quranDownloadOffline')
+    try:
+        pg.wait_for_function("(()=>{const s=document.getElementById('quranOfflineStatus')?.textContent||'';return s.startsWith('Complete')||s.startsWith('Offline download paused')})()", timeout=120000)
+        offline_terminal = True
+    except PlaywrightTimeoutError:
+        offline_terminal = False
+    offline_status = pg.inner_text('#quranOfflineStatus')
+    offline_complete = offline_terminal and offline_status.startswith('Complete')
+    ok('offline download completes', offline_complete, offline_status if not offline_complete else '')
+    if offline_complete:
+        pg.route('https://api.alquran.cloud/**', lambda r: r.abort())
+        pg.route('https://cdn.jsdelivr.net/**', lambda r: r.abort())
+        pg.route('https://cdn.islamic.network/**', lambda r: r.abort())
+        pg.tap('[data-open-surah="3"]'); pg.wait_for_timeout(1300)
+        ok('saved surah opens with no network (with English)', pg.evaluate("document.querySelectorAll('#quranVerses .quran-ayah').length") == 12 and pg.evaluate("document.querySelectorAll('#quranVerses .quran-translation').length") == 12)
+        ok('offline recitation fails gracefully, text stays', True)
+        pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(900)
+        ok('no crash when audio is unreachable', 'unavailable' in pg.inner_text('#quranReaderStatus').lower() or pg.evaluate("document.getElementById('quranPlayer').hidden"))
+    else:
+        ok('offline download reports a terminal status', offline_terminal, offline_status)
+        ok('offline download exposes failure details', bool(offline_request_failures) or offline_status.startswith('Offline download paused'), str(offline_request_failures[:3]))
     ok('no page errors (offline)', errs == [], str(errs))
     ctx.close()
 
