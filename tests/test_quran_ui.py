@@ -1,3 +1,14 @@
+print("SCROLL DEBUG:", pg.evaluate("""() => ({
+  scrollY,
+  scrollHeight: document.documentElement.scrollHeight,
+  clientHeight: document.documentElement.clientHeight,
+  maxScroll: document.documentElement.scrollHeight - document.documentElement.clientHeight,
+  last: document.querySelector('.qr-surah-nav')?.getBoundingClientRect().toJSON(),
+  nav: document.querySelector('.bottom-nav')?.getBoundingClientRect().toJSON(),
+  bodyOverflow: getComputedStyle(document.body).overflow,
+  shellOverflow: getComputedStyle(document.querySelector('.app-shell')).overflow
+})"""))
+
 """Phone-sized browser test of the redesigned Quran section against an offline API stand-in (tests/quran_mock.py)."""
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -258,6 +269,14 @@ with sync_playwright() as p:
     offline_request_failures = []
     pg.on('requestfailed', lambda req: offline_request_failures.append(f'{req.url}: {req.failure}'))
     open_quran(pg); pg.tap('#quranDownloadOffline')
+    pg.wait_for_timeout(1000)
+    print("OFFLINE DEBUG:", pg.evaluate("""() => ({
+      homeHidden: document.getElementById('quranHome').hidden,
+      buttonDisabled: document.getElementById('quranDownloadOffline').disabled,
+      buttonVisible: !!document.getElementById('quranDownloadOffline').getClientRects().length,
+      status: document.getElementById('quranOfflineStatus').textContent,
+      indexedDB: typeof indexedDB
+    })"""))
     try:
         pg.wait_for_function("(()=>{const s=document.getElementById('quranOfflineStatus')?.textContent||'';return s.startsWith('Complete')||s.startsWith('Offline download paused')})()", timeout=120000)
         offline_terminal = True
