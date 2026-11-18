@@ -179,10 +179,14 @@ with sync_playwright() as p:
         document.body.style.scrollBehavior = 'auto';
         root.scrollTop = root.scrollHeight;
     }""")
-    pg.wait_for_function(
-        "document.scrollingElement.scrollTop >= document.scrollingElement.scrollHeight - 2",
-        timeout=5000
-    )
+    pg.evaluate("""() => {
+        const target = document.querySelector('.qr-surah-nav');
+        if (!target) throw new Error('Quran navigation element not found');
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.body.style.scrollBehavior = 'auto';
+        target.scrollIntoView({block: 'end', inline: 'nearest', behavior: 'instant'});
+    }""")
+    pg.wait_for_timeout(100)
     print("SCROLL DEBUG:", pg.evaluate("""() => ({
       scrollY,
       scrollHeight: document.documentElement.scrollHeight,
