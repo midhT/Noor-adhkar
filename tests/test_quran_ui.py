@@ -1,14 +1,3 @@
-print("SCROLL DEBUG:", pg.evaluate("""() => ({
-  scrollY,
-  scrollHeight: document.documentElement.scrollHeight,
-  clientHeight: document.documentElement.clientHeight,
-  maxScroll: document.documentElement.scrollHeight - document.documentElement.clientHeight,
-  last: document.querySelector('.qr-surah-nav')?.getBoundingClientRect().toJSON(),
-  nav: document.querySelector('.bottom-nav')?.getBoundingClientRect().toJSON(),
-  bodyOverflow: getComputedStyle(document.body).overflow,
-  shellOverflow: getComputedStyle(document.querySelector('.app-shell')).overflow
-})"""))
-
 """Phone-sized browser test of the redesigned Quran section against an offline API stand-in (tests/quran_mock.py)."""
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -185,6 +174,16 @@ with sync_playwright() as p:
     # Force an immediate scroll; the page otherwise uses smooth scrolling.
     pg.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})")
     pg.wait_for_timeout(150)
+    print("SCROLL DEBUG:", pg.evaluate("""() => ({
+      scrollY,
+      scrollHeight: document.documentElement.scrollHeight,
+      clientHeight: document.documentElement.clientHeight,
+      maxScroll: document.documentElement.scrollHeight - document.documentElement.clientHeight,
+      last: document.querySelector('.qr-surah-nav')?.getBoundingClientRect().toJSON(),
+      nav: document.querySelector('.bottom-nav')?.getBoundingClientRect().toJSON(),
+      bodyOverflow: getComputedStyle(document.body).overflow,
+      shellOverflow: getComputedStyle(document.querySelector('.app-shell')).overflow
+    })"""))
     last = pg.evaluate("document.querySelector('.qr-surah-nav').getBoundingClientRect().bottom"); nt = pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().top")
     ok('last item can be scrolled fully above the navigation bar', last <= nt - 4, f'{last} vs {nt}; scrollY={pg.evaluate("window.scrollY")}')
     pg.evaluate("window.scrollTo(0,0)")
