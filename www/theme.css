@@ -13,7 +13,7 @@
   --accent:#159b68;--on-accent:#061b12;
   --line:rgba(255,255,255,.08);--hair:rgba(255,255,255,.065);
   --ring-off:#37383c;--ring-in:#17181b;
-  --nav-bg:rgba(22,23,26,.95);
+  --nav-bg:rgba(22,23,26,.58);
   --shadow:0 14px 34px rgba(0,0,0,.30);
   --radius:24px;
   --sans:-apple-system,BlinkMacSystemFont,"Inter","SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
@@ -28,7 +28,7 @@ body.light{
   --accent:#16865b;--on-accent:#ffffff;
   --line:rgba(31,30,27,.11);--hair:rgba(31,30,27,.09);
   --ring-off:#dcd8cd;--ring-in:#f6f4ee;
-  --nav-bg:rgba(251,250,247,.95);
+  --nav-bg:rgba(251,250,247,.68);
   --shadow:0 12px 28px rgba(40,34,20,.09);
 }
 
@@ -153,10 +153,10 @@ body.light .count-button{box-shadow:0 0 0 10px rgba(31,30,27,.03),0 18px 40px rg
 .bottom-nav{
   left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));width:auto;max-width:496px;margin:0 auto;
   grid-template-columns:none;display:flex;align-items:stretch;justify-content:space-between;gap:2px;
-  padding:6px;border-radius:30px;border:1px solid var(--hair);background:var(--nav-bg);
+  padding:6px;border-radius:30px;border:1px solid color-mix(in srgb,var(--text) 13%,transparent);background:var(--nav-bg);
   -webkit-backdrop-filter:blur(24px) saturate(1.2);backdrop-filter:blur(24px) saturate(1.2);
-  box-shadow:0 18px 40px rgba(0,0,0,.38)}
-body.light .bottom-nav{background:var(--nav-bg);border-color:var(--hair);box-shadow:0 14px 34px rgba(40,34,20,.14)}
+  box-shadow:0 18px 40px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.10)}
+body.light .bottom-nav{background:var(--nav-bg);border-color:rgba(255,255,255,.72);box-shadow:0 14px 34px rgba(40,34,20,.14),inset 0 1px 0 rgba(255,255,255,.72)}
 .nav-item{flex:1 1 0;min-width:0;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 0;border-radius:24px;border:0;background:transparent;color:var(--muted);transition:flex-grow .28s ease,background .2s,color .2s}
 .nav-item .ni{display:grid;place-items:center;font-size:0;line-height:0}
 .nav-item small{display:none;font-size:9px;font-weight:600;letter-spacing:.03em;line-height:1}
@@ -307,21 +307,22 @@ button.brand-mark{padding:0;font:inherit;cursor:pointer;overflow:hidden}
    Animations use transform + opacity only (compositor-friendly, cheap on budget phones).
    ===================================================================== */
 :root{--ease:cubic-bezier(.22,.8,.24,1);--dur:.34s}
-.bottom-nav{-webkit-backdrop-filter:none;backdrop-filter:none}  /* nav background is already 95% opaque; blur only cost frame time */
+/* LastWave-inspired Liquid Glass navigation: translucent surface, restrained blur and a soft inner highlight. */
+.bottom-nav{-webkit-backdrop-filter:blur(24px) saturate(1.45);backdrop-filter:blur(24px) saturate(1.45)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.bottom-nav{background:var(--panel);}}
+@media(prefers-reduced-transparency:reduce){.bottom-nav{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--panel)}}
 
 /* Tab transitions: the entering screen slides a little in the direction of travel. */
-.screen{animation:none}
+.screen{animation:none;contain:layout style}
 .screen.active{animation:scrFade var(--dur) var(--ease) both}
 .screen.active[data-dir="next"]{animation-name:scrNext}
 .screen.active[data-dir="prev"]{animation-name:scrPrev}
 @keyframes scrFade{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:none}}
 @keyframes scrNext{from{opacity:0;transform:translate3d(28px,0,0)}to{opacity:1;transform:none}}
 @keyframes scrPrev{from{opacity:0;transform:translate3d(-28px,0,0)}to{opacity:1;transform:none}}
-/* Cards rise in one after another */
-.screen.active>*{animation:rise .42s var(--ease) both}
-.screen.active>*:nth-child(2){animation-delay:.04s}.screen.active>*:nth-child(3){animation-delay:.08s}
-.screen.active>*:nth-child(4){animation-delay:.12s}.screen.active>*:nth-child(5){animation-delay:.16s}
-.screen.active>*:nth-child(n+6){animation-delay:.2s}
+/* Animate only the first few entry points; large screens no longer trigger dozens of simultaneous animations. */
+.screen.active>*:nth-child(-n+4){animation:rise .34s var(--ease) both}
+.screen.active>*:nth-child(2){animation-delay:.035s}.screen.active>*:nth-child(3){animation-delay:.07s}.screen.active>*:nth-child(4){animation-delay:.105s}
 @keyframes rise{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}
 .dpanel.enter{animation:rise .34s var(--ease) both}
 .dpanel>*{animation:none}
