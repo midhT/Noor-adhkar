@@ -9,7 +9,7 @@ assert.match(html, /id="naseemUpdateStatus"/);
 assert.match(m2, /add_init_script\("""\(\(\) => \{/);
 assert.match(m2, /saved\.setupComplete = true/);
 assert.match(m2, /localStorage\.setItem\('naseem-onboarding-complete-v1', '1'\)/);
-assert.match(m2, /'Home', 'Dhikr', 'Salah', 'More', 'Zakat', 'Settings'/);
+assert.match(m2, /'Home', 'Dhikr', 'Salah', 'Quran', 'You'/);
 const store = new Map();
 const listeners = {};
 const document = {

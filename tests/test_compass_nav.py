@@ -58,7 +58,7 @@ with sync_playwright() as p:
     cur = lambda: ev("document.querySelector('.screen.active').id")
     rects = lambda: ev("[...document.querySelectorAll('.bottom-nav .nav-item')].map(e=>{const r=e.getBoundingClientRect();return [e.dataset.screen,r.left+r.width/2,r.top+r.height/2]})")
     peek = lambda: ev("(document.querySelector('.nav-item.peek')||{dataset:{}}).dataset.screen")
-    ids = [c[0] for c in rects()]; ok('seven tabs in the bar, in order', ids == ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen'], str(ids))
+    ids = [c[0] for c in rects()]; ok('five primary tabs in the bar, in order', ids == ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'settingsScreen'], str(ids))
     def touch(t, x, y): cdp.send('Input.dispatchTouchEvent', {'type': t, 'touchPoints': [{'x': x, 'y': y}] if t != 'touchEnd' else []})
     def drag(from_id, to_id, mid_id=None, check=None):
         r = {c[0]: c for c in rects()}; x0, y = r[from_id][1], r[from_id][2]
@@ -84,11 +84,11 @@ with sync_playwright() as p:
     r = {c[0]: c for c in rects()}; x0, y = r['dhikrScreen'][1], r['dhikrScreen'][2]
     touch('touchStart', x0, y); touch('touchMove', x0 + 12, y); time.sleep(0.05)
     r = {c[0]: c for c in rects()}; trail = []
-    for sid in ['salahScreen', 'featuresScreen', 'zakatScreen', 'featuresScreen']:
+    for sid in ['salahScreen', 'quranReaderScreen', 'settingsScreen', 'quranReaderScreen']:
         touch('touchMove', r[sid][1], y); time.sleep(0.05); trail.append(peek())
     touch('touchEnd', 0, 0); time.sleep(0.6)
-    ok('highlight tracks the finger tab by tab, forwards and back', trail == ['salahScreen', 'featuresScreen', 'zakatScreen', 'featuresScreen'], str(trail))
-    ok('release lands on the tab under the finger', cur() == 'featuresScreen', cur())
+    ok('highlight tracks the finger tab by tab, forwards and back', trail == ['salahScreen', 'quranReaderScreen', 'settingsScreen', 'quranReaderScreen'], str(trail))
+    ok('release lands on the tab under the finger', cur() == 'quranReaderScreen', cur())
     ok('release off the end of the bar clamps to the last tab', (lambda: (touch('touchStart', *rects()[4][1:]), touch('touchMove', rects()[4][1] + 14, rects()[4][2]), time.sleep(0.05), touch('touchMove', 392, rects()[4][2]), touch('touchEnd', 0, 0), time.sleep(0.6), cur() == 'settingsScreen')[-1])())
     r = {c[0]: c for c in rects()}
     pg.touchscreen.tap(r['salahScreen'][1], r['salahScreen'][2]); pg.wait_for_timeout(500)
