@@ -22,7 +22,7 @@ assert.match(qibla, /sensor\?bearing-spin:bearing/, 'mini Qibla arrow uses the l
 assert.match(reminders, /Make wudu 💧/);
 assert.match(glance, /raw\.githubusercontent\.com\/midhT\/Naseem-public\/main\/content\/glance\.json/);
 assert.match(v404, /window\.NASEEM_GLANCE_FEED/);
-assert.match(sw, /noor-adhkar-cache-v4114/);
+assert.match(sw, /noor-adhkar-cache-v4115/);
 assert.match(sw, /glance-config\.js/);
 const updater = read('android-native/java/NaseemUpdaterPlugin.java');
 assert.match(updater, /DownloadManager/); assert.match(updater, /downloadApk/); assert.match(updater, /installApk/);
