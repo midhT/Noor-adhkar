@@ -1,0 +1,10 @@
+const assert = require('node:assert/strict');
+const S = require('../www/salah.js');
+const at = (hour, minute, second = 0) => new Date(2026, 10, 14, hour, minute, second);
+assert.equal(S.isPrayerTimeReached('20:00', at(19, 59, 59)), false, 'future prayer remains locked');
+assert.equal(S.isPrayerTimeReached('20:00', at(20, 0, 0)), true, 'prayer unlocks exactly at its scheduled minute');
+assert.equal(S.isPrayerTimeReached('20:00', at(20, 0, 1)), true, 'prayer remains available after its start');
+assert.equal(S.isPrayerTimeReached('05:15', at(6, 0)), true, 'earlier prayers can be logged later in the day');
+assert.equal(S.isPrayerTimeReached('', at(6, 0)), false, 'missing prayer time fails closed');
+assert.equal(S.isPrayerTimeReached('invalid', at(6, 0)), false, 'invalid prayer time fails closed');
+console.log('Salah tracker prayer-time gate tests passed.');

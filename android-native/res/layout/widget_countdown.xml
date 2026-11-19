@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sc_root" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:id="@+id/sc_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/noor_widget_bg" android:importantForAccessibility="no" />
+    <ImageView android:id="@+id/sc_dial" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_margin="10dp" android:scaleType="fitCenter" android:importantForAccessibility="no" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:gravity="center" android:orientation="vertical" android:padding="12dp">
+        <TextView android:id="@+id/sc_kicker" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:letterSpacing="0.18" android:text="UP NEXT" android:textColor="#FF9BA59F" android:textSize="9sp" />
+        <TextView android:id="@+id/sc_name" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium" android:maxLines="1" android:text="Dhuhr" android:textColor="#FFF4F7F2" android:textSize="17sp" />
+        <Chronometer android:id="@+id/sc_timer" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light" android:textColor="#FFF4F7F2" android:textSize="32sp" />
+        <TextView android:id="@+id/sc_time" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:maxLines="1" android:text="12:21 PM" android:textColor="#FF63D6A0" android:textSize="12sp" />
+        <TextView android:id="@+id/sc_hint" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:gravity="center" android:text="Open Naseem to set prayer times" android:textColor="#FF9BA59F" android:textSize="11sp" android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

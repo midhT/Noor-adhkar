@@ -1,0 +1,11 @@
+const fs=require('fs'),assert=require('assert');
+const java=fs.readFileSync('android-native/java/CustomWidgetProvider.java','utf8');
+const plugin=fs.readFileSync('android-native/java/NoorWidgetsPlugin.java','utf8');
+const native=fs.readFileSync('www/native.js','utf8');
+const ui=fs.readFileSync('www/v404.js','utf8');
+const patch=fs.readFileSync('scripts/patch-android.mjs','utf8');
+for(const token of ['CUSTOM_WIDGET_BLOCKS','CUSTOM_WIDGET_LAYOUT','CUSTOM_WIDGET_DUA','CUSTOM_WIDGET_ACTION']) assert(java.includes(token)||plugin.includes(token),`missing ${token}`);
+for(const token of ['cw_prayer','cw_tasbeeh','cw_hijri','cw_dua','ACTION_COUNT']) assert(java.includes(token),`missing native widget feature ${token}`);
+for(const token of ['setCustomWidget','studio-widget-block','studioCustomSave','studioWidgetAction','studioWidgetDua']) assert(ui.includes(token)||native.includes(token),`missing UI bridge ${token}`);
+assert(patch.includes('CustomWidgetProvider')&&patch.includes('CustomWidgetConfigActivity'));
+console.log('Custom Widget composition source checks passed.');

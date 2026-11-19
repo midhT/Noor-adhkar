@@ -1,0 +1,16 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const html = fs.readFileSync('www/index.html', 'utf8');
+const settings = fs.readFileSync('www/settings.js', 'utf8');
+assert.ok(html.includes('id="stCycle" hidden'), 'cycle tracker is hidden by default');
+for (const id of ['cycleStartDate','cycleLength','cyclePeriodLength','cycleSaveStart','cycleClearData','cycleSummary','cycleHistory']) assert.ok(html.includes(`id="${id}"`), `missing cycle control ${id}`);
+assert.ok(settings.includes("const CYCLE_KEY = 'naseemCycleTrackerV1'"), 'cycle data uses a dedicated local key');
+assert.ok(settings.includes("cyclePanel.hidden=gender!=='female'"), 'cycle tracker is only visible for female profiles');
+assert.ok(settings.includes('localStorage.setItem(CYCLE_KEY'), 'cycle data is stored locally');
+assert.ok(settings.includes("'naseemCycleTrackerV1'"), 'cycle data is included in backups');
+assert.ok(settings.includes('cycleData.starts=[...new Set([...cycleData.starts,cycleDate.value])].sort().slice(-500)'), 'period starts are deduplicated and retained as history');
+assert.ok(settings.includes('cycleEstimate'), 'next-cycle estimate is calculated');
+assert.ok(settings.includes('cycleData.starts.length}</b>'), 'recorded cycle count is displayed');
+assert.ok(settings.includes("cycle.starts.some(d => { if (typeof d !== 'string'"), 'backup restore validates cycle dates');
+assert.ok(settings.includes("localStorage.removeItem(CYCLE_KEY)"), 'cycle data can be cleared');
+console.log('Cycle tracker checks passed.');

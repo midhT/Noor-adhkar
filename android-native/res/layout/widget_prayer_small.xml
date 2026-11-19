@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pw_root" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:id="@+id/pw_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/noor_widget_bg" android:importantForAccessibility="no" />
+    <LinearLayout android:id="@+id/pw_content" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:gravity="center_vertical" android:orientation="vertical" android:padding="14dp">
+        <TextView android:id="@+id/pw_kicker" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:letterSpacing="0.18" android:text="NEXT PRAYER" android:textColor="#FF9BA59F" android:textSize="9sp" />
+        <TextView android:id="@+id/pw_title" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="2dp" android:fontFamily="sans-serif-medium" android:maxLines="1"
+            android:text="Dhuhr" android:textColor="#FFF4F7F2" android:textSize="18sp" />
+        <Chronometer android:id="@+id/pw_timer" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" android:fontFamily="sans-serif-light" android:textColor="#FF63D6A0" android:textSize="26sp" />
+        <TextView android:id="@+id/pw_time" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:maxLines="1" android:text="12:21 PM" android:textColor="#FF9BA59F" android:textSize="11sp" />
+        <TextView android:id="@+id/pw_hint" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Open Naseem to set prayer times" android:textColor="#FF9BA59F" android:textSize="11sp" android:visibility="gone" />
+        <ImageView android:id="@+id/pw_bar" android:layout_width="match_parent" android:layout_height="6dp"
+            android:layout_marginTop="8dp" android:scaleType="fitXY" android:importantForAccessibility="no" />
+    </LinearLayout>
+</FrameLayout>

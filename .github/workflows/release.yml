@@ -1,0 +1,135 @@
+name: Build and publish Naseem public release APK
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Check out private application source
+        uses: actions/checkout@v4
+      - name: Read release version
+        id: meta
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$VERSION" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version v$VERSION" >&2
+            exit 1
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install dependencies
+        env:
+          npm_config_fetch_retries: 5
+          npm_config_fetch_retry_mintimeout: 20000
+          npm_config_fetch_retry_maxtimeout: 120000
+          npm_config_fetch_timeout: 300000
+        run: npm ci --no-audit --no-fund --prefer-online
+      - name: Build web app
+        run: npm run build
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --retries 5 --timeout 120 playwright
+          python -m playwright install --with-deps chromium
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK components
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+      - name: Add Android platform
+        run: npx cap add android
+      - name: Generate app icons and splash
+        run: npx --yes --package=@capacitor/assets capacitor-assets generate --android
+      - name: Apply themed icon layer
+        run: node scripts/patch-icons.mjs
+      - name: Integrate Android widgets and permissions
+        run: node scripts/patch-android.mjs
+      - name: Run full verification suite
+        run: REQUIRE_BROWSER_TESTS=1 bash tests/run.sh
+      - name: Decode protected release key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.NASEEM_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || { echo 'Missing NASEEM_KEYSTORE_BASE64 secret' >&2; exit 1; }
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/naseem-release.keystore"
+          test -s "$RUNNER_TEMP/naseem-release.keystore"
+      - name: Configure protected release signing
+        env:
+          NASEEM_KEYSTORE: ${{ runner.temp }}/naseem-release.keystore
+          NASEEM_STORE_PASSWORD: ${{ secrets.NASEEM_STORE_PASSWORD }}
+          NASEEM_KEY_ALIAS: ${{ secrets.NASEEM_KEY_ALIAS }}
+          NASEEM_KEY_PASSWORD: ${{ secrets.NASEEM_KEY_PASSWORD }}
+        run: node scripts/apply-signing.mjs
+      - name: Build signed APK
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleRelease
+      - name: Generate APK SHA-256 checksum
+        id: checksum
+        shell: bash
+        run: |
+          (cd android/app/build/outputs/apk/release && sha256sum app-release.apk > app-release.apk.sha256)
+          cat android/app/build/outputs/apk/release/app-release.apk.sha256
+          echo "apk_sha256=$(cut -d' ' -f1 android/app/build/outputs/apk/release/app-release.apk.sha256)" >> "$GITHUB_OUTPUT"
+      - name: Publish APK to public Naseem repository
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: midhT/Naseem-public
+          token: ${{ secrets.NASEEM_PUBLIC_REPO_TOKEN }}
+          tag_name: v${{ steps.meta.outputs.version }}
+          name: Naseem v${{ steps.meta.outputs.version }}
+          generate_release_notes: true
+          overwrite_files: true
+          files: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/release/app-release.apk.sha256
+      - name: Check out public content repository
+        uses: actions/checkout@v4
+        with:
+          repository: midhT/Naseem-public
+          token: ${{ secrets.NASEEM_PUBLIC_REPO_TOKEN }}
+          path: public-feed
+      - name: Publish versioned public feeds and release metadata
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          APK_SHA256: ${{ steps.checksum.outputs.apk_sha256 }}
+          GH_TOKEN: ${{ secrets.NASEEM_PUBLIC_REPO_TOKEN }}
+        run: |
+          mkdir -p public-feed/content
+          cp public-content/content/glance.json public-feed/content/glance.json
+          cp public-content/content/duas.json public-feed/content/duas.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const version=process.env.VERSION;
+          const sourceIndex=fs.readFileSync('www/index.html','utf8');
+          const buildMatch=sourceIndex.match(/<meta\s+name=["']naseem-version-code["']\s+content=["'](\d+)["'][^>]*>/i);
+          if(!buildMatch) throw new Error('naseem-version-code missing from www/index.html');
+          const androidVersionCode=Number(buildMatch[1]);
+          const release={version,androidVersionCode,releaseUrl:`https://github.com/midhT/Naseem-public/releases/tag/v${version}`,downloadUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk`,checksumUrl:`https://github.com/midhT/Naseem-public/releases/download/v${version}/app-release.apk.sha256`,sha256:process.env.APK_SHA256,notesSummary:'Naseem 4.1.0: multi-reciter Quran playback, full-screen controls and Android update installation. Word-by-word sync is available for Muhammad Al-Luhaidan.',publishedAt:new Date().toISOString()};
+          fs.writeFileSync('public-feed/release.json',JSON.stringify(release,null,2)+'\n');
+          NODE
+          cd public-feed
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add release.json content/glance.json content/duas.json
+          git diff --cached --quiet || { git commit -m "Publish Naseem ${VERSION} public feeds"; git push; }
+      - name: Upload signed APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Naseem-v${{ steps.meta.outputs.version }}-release
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error

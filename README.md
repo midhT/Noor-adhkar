@@ -1,27 +1,23 @@
-# Noor V5
+# Naseem (نسيم) — Noor Project V4
 
-Noor is an offline-first Islamic daily companion built with Flutter.
+Naseem is the public-facing name of the Noor Project Islamic daily companion. The private source repository remains `midhT/Noor-adhkar`; public app releases and remote content are published through `midhT/Naseem-public`.
 
-## Included in this source package
-- Dhikr counter with ten presets, custom dhikr, session completion and saved progress.
-- Salah schedule calculation using the `adhan` package, with selectable calculation method and madhab.
-- Focus timer with optional local ambient audio asset.
-- Journey screen with streak and session history.
-- Local preferences using SharedPreferences.
-- Dark navy and warm-gold visual system.
-- GitHub Actions workflow for analysis, tests and Android APK build.
+## Architecture
+- Capacitor 7 web application with native Android prayer, Tasbeeh and Hijri widgets.
+- Local-first user settings, Adhkar progress, reminders and backups. No account or cloud sync.
+- Salah calculations run locally; users can set location, calculation method, Asr school, manual adjustments and Jamaat times.
+- Glance and Dua Library can update from the public JSON feeds and retain local fallback content.
+- Quran Reader and Hadith Library use their respective public APIs; Quran text caches recently opened Surahs locally and offers per-Ayah recitation when online.
 
-## Build
-Install Flutter stable and Android SDK, then run:
-
-```bash
-flutter pub get
-flutter analyze
-flutter test
-flutter build apk --release
+## Development
+```sh
+npm ci
+npm run build
+node tests/test_new_tools.js
+bash tests/run.sh
 ```
 
-APK: `build/app/outputs/flutter-apk/app-release.apk`
+The Android project is generated in CI with `npx cap add android`, then native widgets and permissions are copied from `android-native/` by `scripts/patch-android.mjs`. See `RELEASE-SETUP.md` for protected release signing and public-repository publication.
 
-## Important
-Prayer times depend on the coordinates, calculation method and local authority. Confirm them against your local mosque before relying on them. Notification delivery depends on Android permissions and battery settings. This source has not been compiled or tested on a physical device in this generation session.
+## Release status
+This V4.1.0 working archive is a release candidate, not a declaration of Play Store readiness. Read `RELEASE-BLOCKERS.md` before publishing. Static checks do not replace Chromium tests or testing on a physical Android device.

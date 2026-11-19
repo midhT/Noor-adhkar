@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const tracker = fs.readFileSync('www/salah-experience.js', 'utf8');
+const profile = fs.readFileSync('www/profile.js', 'utf8');
+for (const label of ['Salah on time!', 'Not praying early!', 'Praying Salah very late!', 'Periods']) assert.ok(tracker.includes(label), `missing ${label}`);
+assert.ok(tracker.includes("gender==='female'"), 'Periods is offered only for female profiles');
+assert.ok(tracker.includes("status==='periods'&&profileGender()!=='female'"), 'Periods cannot be saved for other profiles');
+assert.ok(tracker.includes("status!=='periods'&&!statusOf(d,id)&&!prayerIsAvailable"), 'prayer status is time-gated while Periods is exempt');
+assert.ok(tracker.includes('denom=5-periods'), 'Periods is excluded from the daily denominator');
+assert.ok(tracker.includes("statusOf(day,p.id)!=='periods'"), 'Periods is excluded from weekly denominator');
+assert.ok(tracker.includes('Where to improve'), 'weekly improvement section exists');
+assert.ok(profile.includes("gender: ['male','female','unspecified'].includes(v.gender)"), 'profile preserves gender');
+assert.ok(profile.includes("profile.gender=['male','female','unspecified']"), 'profile refresh preserves gender');
+console.log('Gender-specific Salah tracking checks passed.');

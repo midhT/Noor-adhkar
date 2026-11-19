@@ -1,0 +1,9 @@
+name = "naseem-quran-content"
+main = "src/index.js"
+compatibility_date = "2026-11-18"
+workers_dev = true
+
+[vars]
+QF_ENV = "prelive"
+QF_SCOPE = "content.quran.read content.translations.read content.metadata.read"
+ALLOWED_ORIGINS = "https://localhost,capacitor://localhost"

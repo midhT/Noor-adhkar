@@ -1,0 +1,125 @@
+"""Offline stand-in for the AlQuran Cloud API, used ONLY by browser tests.
+
+The text below is test data, not shipped content: surah 1 uses the well-known Al-Fatihah wording so layout can be judged
+realistically; every other surah is generated filler marked "[test]" so no test can be mistaken for real Quran text.
+Audio is a short generated tone so the recitation follow-along logic (highlight, centring, advance) is exercised for real.
+"""
+import io, json, math, re, struct, wave
+
+FATIHA = [
+    'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ',
+    'ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ',
+    'ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ',
+    'مَـٰلِكِ يَوْمِ ٱلدِّينِ',
+    'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
+    'ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ',
+    'صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ',
+]
+FATIHA_EN = [
+    'In the name of Allah, the Beneficent, the Merciful.',
+    'Praise be to Allah, Lord of the Worlds,',
+    'The Beneficent, the Merciful.',
+    'Master of the Day of Judgment,',
+    'Thee (alone) we worship; Thee (alone) we ask for help.',
+    'Show us the straight path,',
+    'The path of those whom Thou hast favoured; Not (the path) of those who earn Thine anger nor of those who go astray.',
+]
+BISMILLAH = FATIHA[0]
+COUNTS = {1: 7, 2: 30, 3: 12, 9: 6}  # small, test-sized surahs; the list below still advertises 114 entries
+
+
+def count(n):
+    return COUNTS.get(n, 6)
+
+
+def surah_list():
+    return [{'number': n, 'name': f'سُورَةُ {n}', 'englishName': 'Al-Fatihah' if n == 1 else f'Test Surah {n}',
+             'englishNameTranslation': 'The Opener' if n == 1 else f'Meaning {n}', 'numberOfAyahs': count(n),
+             'revelationType': 'Meccan'} for n in range(1, 115)]
+
+
+def surah_editions(n):
+    meta = surah_list()[n - 1]
+    ar, en = [], []
+    for a in range(1, count(n) + 1):
+        if n == 1:
+            ta, te = FATIHA[a - 1], FATIHA_EN[a - 1]
+        else:
+            ta = FATIHA[(a - 1) % 7 + 0] if a > 1 else ('' if n == 9 else BISMILLAH + ' ') + 'الٓمٓ'
+            te = f'[test] english meaning {n}:{a}'
+        ar.append({'number': a, 'text': ta, 'numberInSurah': a, 'juz': 1, 'page': 1})
+        en.append({'number': a, 'text': te, 'numberInSurah': a})
+    base = {k: meta[k] for k in ('number', 'name', 'englishName', 'englishNameTranslation', 'revelationType')}
+    base['numberOfAyahs'] = meta['numberOfAyahs']
+    return [dict(base, edition={'identifier': 'quran-uthmani'}, ayahs=ar), dict(base, edition={'identifier': 'en.pickthall'}, ayahs=en)]
+
+
+def tone_wav(seconds=1.2, freq=440):
+    rate = 8000
+    buf = io.BytesIO()
+    with wave.open(buf, 'wb') as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(rate)
+        w.writeframes(b''.join(struct.pack('<h', int(3000 * math.sin(2 * math.pi * freq * i / rate))) for i in range(int(rate * seconds))))
+    return buf.getvalue()
+
+
+def install(page, seconds=1.2):
+    """Route every AlQuran Cloud request (and the mock audio files) on this page to the offline fixtures."""
+    wav = tone_wav(seconds)
+
+    def api(route):
+        path = re.sub(r'^https://api\.alquran\.cloud/v1', '', route.request.url)
+        def ok(data): route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps({'code': 200, 'status': 'OK', 'data': data}))
+        m = re.match(r'^/surah$', path)
+        if m: return ok(surah_list())
+        m = re.match(r'^/surah/(\d+)/editions/(.+)$', path)
+        if m:
+            eds = surah_editions(int(m.group(1)))
+            return ok(eds if 'pickthall' in m.group(2) else eds[:1])
+        m = re.match(r'^/surah/(\d+)/(ar\.[A-Za-z]+)$', path)
+        if m:
+            n = int(m.group(1)); meta = surah_list()[n - 1]
+            ayahs = [{'number': (n - 1) * 10 + a, 'numberInSurah': a,
+                      'text': f'[test audio] {n}:{a}',
+                      'audio': f'https://cdn.islamic.network/mock/{n}/ayah/{a}.wav'}
+                     for a in range(1, count(n) + 1)]
+            return ok(dict(meta, edition={'identifier': m.group(2)}, ayahs=ayahs))
+        m = re.match(r'^/juz/(\d+)/quran-uthmani$', path)
+        if m: return ok({'ayahs': [{'numberInSurah': 3, 'juz': int(m.group(1)), 'surah': {'number': 2, 'englishName': 'Test Surah 2'}}]})
+        m = re.match(r'^/page/(\d+)/quran-uthmani$', path)
+        if m: return ok({'ayahs': [{'numberInSurah': 2, 'text': '[test] Madani page Arabic', 'juz': 1, 'page': int(m.group(1)), 'surah': {'number': 3, 'englishName': 'Test Surah 3'}}]})
+        m = re.match(r'^/page/(\d+)/en\.pickthall$', path)
+        if m: return ok({'ayahs': [{'numberInSurah': 2, 'text': '[test] Madani page meaning', 'juz': 1, 'page': int(m.group(1)), 'surah': {'number': 3, 'englishName': 'Test Surah 3'}}]})
+        route.fulfill(status=404, body='{}')
+    def timing(route):
+        m = re.search(r'/quran-com/(\d{3})\.json$', route.request.url)
+        if not m:
+            return route.fulfill(status=404, body='{}')
+        n = int(m.group(1)); editions = surah_editions(n); ayahs = editions[0]['ayahs']
+        verse_timings = []
+        for a in ayahs:
+            parts = a['text'].split()
+            if n not in (1, 9) and a['numberInSurah'] == 1 and len(parts) > 4:
+                parts = parts[4:]
+            start = (a['numberInSurah'] - 1) * 1000
+            segments = [[i + 1, start + i * max(1, 1000 // max(1, len(parts))), start + (i + 1) * max(1, 1000 // max(1, len(parts)))] for i, _ in enumerate(parts)]
+            verse_timings.append({'verse_key': f'{n}:{a["numberInSurah"]}', 'timestamp_from': start, 'timestamp_to': start + 1000, 'segments': segments})
+        data = {'surah': n, 'audio_url': f'https://cdn.islamic.network/mock/{n}/full.wav', 'verse_timings': verse_timings}
+        return route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps(data))
+    page.route('https://api.alquran.cloud/**', api)
+    page.route('https://cdn.jsdelivr.net/gh/its3li/quran-word-timings@v1.0.0/**', timing)
+    def audio(route):
+        body = tone_wav(40.0)
+        requested = route.request.headers.get('range', '')
+        headers = {'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes'}
+        if requested:
+            match = re.match(r'bytes=(\d+)-(\d*)', requested)
+            if match:
+                start = int(match.group(1)); end = min(len(body) - 1, int(match.group(2)) if match.group(2) else len(body) - 1)
+                if start <= end:
+                    headers['Content-Range'] = f'bytes {start}-{end}/{len(body)}'
+                    headers['Content-Length'] = str(end - start + 1)
+                    return route.fulfill(status=206, content_type='audio/wav', headers=headers, body=body[start:end + 1])
+        headers['Content-Length'] = str(len(body))
+        route.fulfill(status=200, content_type='audio/wav', headers=headers, body=body)
+    page.route('https://cdn.islamic.network/mock/**', audio)

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hw_root" android:layout_width="match_parent" android:layout_height="match_parent">
+    <ImageView android:id="@+id/hw_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/noor_widget_bg" android:importantForAccessibility="no" />
+    <LinearLayout android:id="@+id/hw_content" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:gravity="center_vertical" android:orientation="vertical" android:padding="18dp">
+        <TextView android:id="@+id/hw_kicker" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:letterSpacing="0.18" android:text="ISLAMIC CALENDAR" android:textColor="#FF9BA59F" android:textSize="9sp" />
+        <TextView android:id="@+id/hw_day" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" android:fontFamily="sans-serif-light" android:includeFontPadding="false"
+            android:text="14" android:textColor="#FFF4F7F2" android:textSize="52sp" />
+        <TextView android:id="@+id/hw_month" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="2dp" android:fontFamily="sans-serif-medium" android:maxLines="2"
+            android:text="Jumada al-Ula 1448 AH" android:textColor="#FF63D6A0" android:textSize="15sp" />
+        <TextView android:id="@+id/hw_greg" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="6dp" android:maxLines="1" android:text="Sunday, 15 November" android:textColor="#FF9BA59F" android:textSize="11sp" />
+        <TextView android:id="@+id/hw_hint" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="2dp" android:text="Open Naseem to update" android:textColor="#FF9BA59F" android:textSize="10sp" android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>
