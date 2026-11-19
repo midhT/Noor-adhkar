@@ -250,8 +250,9 @@ with sync_playwright() as p:
 
     # ---- offline: save everything once, then read with the network gone ----
     ctx, pg, errs = new()
-    open_quran(pg); pg.tap('#quranDownloadOffline'); pg.wait_for_function("document.getElementById('quranOfflineStatus').textContent.startsWith('Complete')", timeout=60000)
-    ok('offline download completes', 'Complete Quran text' in pg.inner_text('#quranOfflineStatus'))
+    open_quran(pg); pg.tap('#quranDownloadOffline'); pg.wait_for_function("(()=>{const s=document.getElementById('quranOfflineStatus').textContent;return s.startsWith('Complete')||s.startsWith('Offline download paused')})()", timeout=60000)
+    offline_status = pg.inner_text('#quranOfflineStatus')
+    ok('offline download completes', offline_status.startswith('Complete'), offline_status)
     pg.route('https://api.alquran.cloud/**', lambda r: r.abort())
     pg.route('https://cdn.jsdelivr.net/**', lambda r: r.abort())
     pg.route('https://cdn.islamic.network/**', lambda r: r.abort())
