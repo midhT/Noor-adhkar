@@ -882,7 +882,7 @@
       }};
       await Promise.all(Array.from({length:workerCount},worker));
       label.textContent=`Complete Quran text with English meanings saved on this device (${saved} surahs). Audio is not downloaded.`;
-    }catch(error){label.textContent='Offline download paused. Check your connection or device storage, then try again; already saved surahs are kept.';}
+    }catch(error){console.error('[Quran offline download]',error);label.textContent='Offline download paused: '+String(error?.message||error).slice(0,180);}
     finally{button.disabled=false;}
   });
 
