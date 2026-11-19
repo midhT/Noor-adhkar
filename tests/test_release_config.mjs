@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
@@ -8,7 +9,12 @@ for (const key of ['NASEEM_KEYSTORE_BASE64', 'NASEEM_STORE_PASSWORD', 'NASEEM_KE
 assert.match(release, /assembleRelease/);
 assert.match(release, /softprops\/action-gh-release/);
 assert.match(release, /midhT\/Naseem-public/);
-assert.ok(!existsSync('signing/naseem.keystore'), 'legacy embedded keystore removed');
+let legacyKeystoreTracked = false;
+try {
+  execFileSync('git', ['ls-files', '--error-unmatch', 'signing/naseem.keystore'], { stdio: 'ignore' });
+  legacyKeystoreTracked = true;
+} catch {}
+assert.equal(legacyKeystoreTracked, false, 'legacy embedded keystore must not be tracked');
 assert.match(readFileSync('.gitignore', 'utf8'), /\*\.keystore/);
 assert.match(readFileSync('www/sw.js', 'utf8'), /noor-adhkar-cache-v4115/);
 console.log('V4.1.0 release configuration checks passed.');
