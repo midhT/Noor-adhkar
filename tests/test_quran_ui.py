@@ -62,7 +62,8 @@ with sync_playwright() as p:
     pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(500)
 
     # ---- recitation highlight + alignment ----
-    pg.tap('[data-play-ayah="3"]'); pg.wait_for_timeout(250)
+    pg.tap('[data-play-ayah="3"]')
+    pg.wait_for_function("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1", timeout=15000)
     ok('word-level timing marks Quran words for follow-along', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
     ok('only the ayah being recited is highlighted', pg.evaluate(PLAYING_JS) == [3], str(pg.evaluate(PLAYING_JS)))
     c = pg.evaluate(CENTRE_JS)
@@ -166,7 +167,8 @@ with sync_playwright() as p:
     ok('player floats clear of the navigation bar', geo['playBottom'] <= geo['navTop'] - 4, str(geo))
     ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
     pg.tap('#quranStop')
-    pg.evaluate("window.scrollTo(0,document.body.scrollHeight)"); pg.wait_for_timeout(700)
+    pg.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})")
+    pg.wait_for_function("Math.abs(window.scrollY-(document.documentElement.scrollHeight-window.innerHeight))<3", timeout=5000)
     last = pg.evaluate("document.querySelector('.qr-surah-nav').getBoundingClientRect().bottom"); nt = pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().top")
     ok('last item can be scrolled fully above the navigation bar', last <= nt - 4, f'{last} vs {nt}')
     pg.evaluate("window.scrollTo(0,0)")
