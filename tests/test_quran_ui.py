@@ -62,8 +62,13 @@ with sync_playwright() as p:
     pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(500)
 
     # ---- recitation highlight + alignment ----
-    pg.tap('[data-play-ayah="3"]'); pg.wait_for_timeout(250)
-    ok('word-level timing marks Quran words for follow-along', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
+    pg.tap('[data-play-ayah="3"]')
+    try:
+        pg.wait_for_function("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1", timeout=8000)
+        word_follow_started = True
+    except Exception:
+        word_follow_started = False
+    ok('word-level timing marks Quran words for follow-along', word_follow_started and pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
     ok('only the ayah being recited is highlighted', pg.evaluate(PLAYING_JS) == [3], str(pg.evaluate(PLAYING_JS)))
     c = pg.evaluate(CENTRE_JS)
     ok('recited ayah is centred between header and player', c and abs(c['off']) < 14, str(c))
@@ -166,7 +171,8 @@ with sync_playwright() as p:
     ok('player floats clear of the navigation bar', geo['playBottom'] <= geo['navTop'] - 4, str(geo))
     ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
     pg.tap('#quranStop')
-    pg.evaluate("window.scrollTo(0,document.body.scrollHeight)"); pg.wait_for_timeout(700)
+    pg.evaluate("document.documentElement.style.scrollBehavior='auto';document.body.style.scrollBehavior='auto';window.scrollTo(0,Math.max(document.documentElement.scrollHeight,document.body.scrollHeight))")
+    pg.wait_for_function("Math.abs(window.scrollY-(Math.max(document.documentElement.scrollHeight,document.body.scrollHeight)-window.innerHeight))<3", timeout=4000)
     last = pg.evaluate("document.querySelector('.qr-surah-nav').getBoundingClientRect().bottom"); nt = pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().top")
     ok('last item can be scrolled fully above the navigation bar', last <= nt - 4, f'{last} vs {nt}')
     pg.evaluate("window.scrollTo(0,0)")
@@ -246,43 +252,40 @@ with sync_playwright() as p:
     ok('no page errors', errs == [], str(errs))
     ctx.close()
 
-    # ---- offline download diagnostics ----
+    # ---- offline: save everything once, then read with the network gone ----
     ctx, pg, errs = new()
+    offline_requests, offline_failures, offline_responses, offline_console = [], [], [], []
+    # Attach before opening the Quran screen so its setup and download traffic are captured.
+    pg.on("request", lambda r: offline_requests.append(r.url))
+    pg.on("requestfailed", lambda r: offline_failures.append((r.url, str(r.failure))))
+    pg.on("response", lambda r: offline_responses.append((r.status, r.url)))
+    pg.on("console", lambda m: offline_console.append(m.text) if m.type == "error" else None)
     open_quran(pg)
-
-    requests = []
-    failures = []
-    responses = []
-    console_errors = []
-
-    pg.on("request", lambda r: requests.append(r.url) if "alquran.cloud" in r.url else None)
-    pg.on("requestfailed", lambda r: failures.append((r.url, str(r.failure))) if "alquran.cloud" in r.url else None)
-    pg.on("response", lambda r: responses.append((r.status, r.url)) if "alquran.cloud" in r.url else None)
-    pg.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
-
-    pg.tap('#quranDownloadOffline')
-
+    pg.locator('#quranDownloadOffline').click(timeout=8000)
+    # A real click must synchronously disable the control or finish immediately.
+    pg.wait_for_function("(() => { const b=document.getElementById('quranDownloadOffline'); const s=document.getElementById('quranOfflineStatus')?.textContent||''; return !b || b.disabled || s.startsWith('Complete') || s.startsWith('Offline download paused'); })()", timeout=3000)
     try:
-        pg.wait_for_function(
-            """(() => {
-                const s = document.getElementById('quranOfflineStatus')?.textContent || '';
-                return s.startsWith('Complete') || s.startsWith('Offline download paused');
-            })()""",
-            timeout=30000
-        )
+        pg.wait_for_function("""(() => {
+            const s = document.getElementById('quranOfflineStatus')?.textContent || '';
+            return s.startsWith('Complete') || s.startsWith('Offline download paused');
+        })()""", timeout=60000)
     except Exception:
-        print("\\n===== OFFLINE DOWNLOAD DIAGNOSTICS =====")
-        print("Status:", pg.locator("#quranOfflineStatus").inner_text())
-        print("Button disabled:", pg.locator("#quranDownloadOffline").is_disabled())
-        print("API request count:", len(requests))
-        print("Last requests:", requests[-8:])
-        print("Last responses:", responses[-8:])
-        print("Failed requests:", failures[-8:])
-        print("Console errors:", console_errors[-8:])
-        print("Page errors:", errs[-8:])
-        print("===== END DIAGNOSTICS =====")
+        diagnostic = pg.evaluate("""() => ({
+            status: document.getElementById('quranOfflineStatus')?.textContent ?? '<missing>',
+            buttonExists: !!document.getElementById('quranDownloadOffline'),
+            buttonDisabled: document.getElementById('quranDownloadOffline')?.disabled ?? null,
+            screenActive: document.querySelector('.screen.active')?.id ?? null,
+            documentReady: document.readyState
+        })""")
+        print("\n===== OFFLINE DOWNLOAD DIAGNOSTICS =====")
+        print("Browser state:", diagnostic)
+        print("Requests:", len(offline_requests), offline_requests[-12:])
+        print("Responses:", offline_responses[-12:])
+        print("Failed requests:", offline_failures[-12:])
+        print("Console errors:", offline_console[-12:])
+        print("Page errors:", errs[-12:])
+        print("===== END OFFLINE DOWNLOAD DIAGNOSTICS =====")
         raise
-
     offline_status = pg.inner_text('#quranOfflineStatus')
     ok('offline download completes', offline_status.startswith('Complete'), offline_status)
     pg.route('https://api.alquran.cloud/**', lambda r: r.abort())

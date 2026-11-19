@@ -873,8 +873,9 @@
     const button=$('quranDownloadOffline'),label=$('quranOfflineStatus');if(button.disabled)return;button.disabled=true;
     try{
       const stored=await getOfflineSurahMap();let saved=0,pendingWrites=[];
-      // Fetch sequentially and commit in small batches: one IndexedDB writer,
-      // fewer transactions, and previously committed batches remain resumable.
+      // Fetch sequentially and commit in small batches. This avoids overlapping
+      // IndexedDB writers while reducing transaction overhead; completed batches
+      // remain saved if a later request fails, so the next attempt can resume.
       for(let n=1;n<=114;n++){
         label.textContent=`Saving Quran text offline · ${n}/114 surahs`;
         const key=`${n}:translation`,arabicKey=`${n}:arabic`;
