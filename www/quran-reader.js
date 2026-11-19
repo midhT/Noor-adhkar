@@ -173,7 +173,9 @@
   let dbPromise=null;
   function openOfflineDB(){if(!('indexedDB' in window))return Promise.reject(new Error('Offline storage is unavailable'));if(dbPromise)return dbPromise;dbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE,{keyPath:'key'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Database open failed'));});return dbPromise;}
   async function getOfflineSurah(key){const db=await openOfflineDB();return new Promise((resolve,reject)=>{const req=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get(key);req.onsuccess=()=>resolve(req.result?.payload||null);req.onerror=()=>reject(req.error);});}
-  async function putOfflineSurah(key,payload){const db=await openOfflineDB();return new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put({key,payload,savedAt:Date.now()});tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error||new Error('Offline save failed'));});}
+  async function getOfflineSurahMap(){const db=await openOfflineDB();return new Promise((resolve,reject)=>{const req=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).getAll();req.onsuccess=()=>resolve(new Map((req.result||[]).map(row=>[row.key,row.payload])));req.onerror=()=>reject(req.error||new Error('Offline index read failed'));});}
+  async function putOfflineSurahs(entries){if(!entries.length)return true;const db=await openOfflineDB();return new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite'),store=tx.objectStore(DB_STORE),savedAt=Date.now();for(const [key,payload] of entries)store.put({key,payload,savedAt});tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error||new Error('Offline save failed'));tx.onabort=()=>reject(tx.error||new Error('Offline save aborted'));});}
+  async function putOfflineSurah(key,payload){return putOfflineSurahs([[key,payload]]);}
   const saveCache=(key,value)=>{try{cache[key]=value;const keys=Object.keys(cache);while(keys.length>10)delete cache[keys.shift()];localStorage.setItem(CACHE_KEY,JSON.stringify(cache));}catch(_){}};
   const surahName=n=>surahs[n-1]?.englishName||`Surah ${n}`;
   const status=m=>{if($('quranStatus'))$('quranStatus').textContent=m;if($('quranReaderStatus'))$('quranReaderStatus').textContent=m;};
@@ -869,15 +871,16 @@
   document.querySelectorAll('[data-quran-view]').forEach(b=>b.addEventListener('click',()=>switchQuranView(b.dataset.quranView)));
   $('quranDownloadOffline').addEventListener('click',async()=>{
     const button=$('quranDownloadOffline'),label=$('quranOfflineStatus');if(button.disabled)return;button.disabled=true;
-    try{await openOfflineDB();let saved=0;
-      for(let n=1;n<=114;n++){
-        label.textContent=`Saving Quran text offline · ${n}/114 surahs`;
-        const key=`${n}:translation`;let payload=await getOfflineSurah(key);
-        if(!payload){payload=await request(`/surah/${n}/editions/quran-uthmani,en.pickthall`);await putOfflineSurah(key,payload);}
-        const arabicKey=`${n}:arabic`;
-        if(!(await getOfflineSurah(arabicKey))){const arabicOnly=(Array.isArray(payload)?payload:[payload]).filter(x=>String(x.edition?.identifier||'').includes('uthmani'));if(arabicOnly.length)await putOfflineSurah(arabicKey,arabicOnly);}
-        saved++;
-      }
+    try{
+      const stored=await getOfflineSurahMap();let saved=0,next=1;const workerCount=4;
+      const worker=async()=>{while(true){const n=next++;if(n>114)return;label.textContent=`Saving Quran text offline · ${Math.min(n,114)}/114 surahs`;
+        const key=`${n}:translation`,arabicKey=`${n}:arabic`;let payload=stored.get(key);
+        if(!payload)payload=await request(`/surah/${n}/editions/quran-uthmani,en.pickthall`);
+        const arabic=stored.get(arabicKey)|| (Array.isArray(payload)?payload:[payload]).filter(x=>String(x.edition?.identifier||'').includes('uthmani'));
+        const writes=[];if(!stored.has(key))writes.push([key,payload]);if(!stored.has(arabicKey)&&arabic.length)writes.push([arabicKey,arabic]);
+        await putOfflineSurahs(writes);saved++;
+      }};
+      await Promise.all(Array.from({length:workerCount},worker));
       label.textContent=`Complete Quran text with English meanings saved on this device (${saved} surahs). Audio is not downloaded.`;
     }catch(error){label.textContent='Offline download paused. Check your connection or device storage, then try again; already saved surahs are kept.';}
     finally{button.disabled=false;}
