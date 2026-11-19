@@ -872,15 +872,21 @@
   $('quranDownloadOffline').addEventListener('click',async()=>{
     const button=$('quranDownloadOffline'),label=$('quranOfflineStatus');if(button.disabled)return;button.disabled=true;
     try{
-      const stored=await getOfflineSurahMap();let saved=0,next=1;const workerCount=4;
-      const worker=async()=>{while(true){const n=next++;if(n>114)return;label.textContent=`Saving Quran text offline · ${Math.min(n,114)}/114 surahs`;
-        const key=`${n}:translation`,arabicKey=`${n}:arabic`;let payload=stored.get(key);
-        if(!payload)payload=await request(`/surah/${n}/editions/quran-uthmani,en.pickthall`);
-        const arabic=stored.get(arabicKey)|| (Array.isArray(payload)?payload:[payload]).filter(x=>String(x.edition?.identifier||'').includes('uthmani'));
-        const writes=[];if(!stored.has(key))writes.push([key,payload]);if(!stored.has(arabicKey)&&arabic.length)writes.push([arabicKey,arabic]);
-        await putOfflineSurahs(writes);saved++;
-      }};
-      await Promise.all(Array.from({length:workerCount},worker));
+      const stored=await getOfflineSurahMap();let saved=0;
+      // Keep one IndexedDB writer active at a time. This avoids overlapping
+      // readwrite transactions on mobile Chromium while preserving resumable saves.
+      for(let n=1;n<=114;n++){
+        label.textContent=`Saving Quran text offline · ${n}/114 surahs`;
+        const key=`${n}:translation`,arabicKey=`${n}:arabic`;
+        let payload=stored.get(key);
+        if(!payload){payload=await request(`/surah/${n}/editions/quran-uthmani,en.pickthall`);}
+        const arabic=stored.get(arabicKey)||(Array.isArray(payload)?payload:[payload]).filter(x=>String(x.edition?.identifier||'').includes('uthmani'));
+        const writes=[];
+        if(!stored.has(key))writes.push([key,payload]);
+        if(!stored.has(arabicKey)&&arabic.length)writes.push([arabicKey,arabic]);
+        await putOfflineSurahs(writes);
+        saved++;
+      }
       label.textContent=`Complete Quran text with English meanings saved on this device (${saved} surahs). Audio is not downloaded.`;
     }catch(error){console.error('[Quran offline download]',error);label.textContent='Offline download paused: '+String(error?.message||error).slice(0,180);}
     finally{button.disabled=false;}
