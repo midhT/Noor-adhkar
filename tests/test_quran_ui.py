@@ -246,9 +246,43 @@ with sync_playwright() as p:
     ok('no page errors', errs == [], str(errs))
     ctx.close()
 
-    # ---- offline: save everything once, then read with the network gone ----
+    # ---- offline download diagnostics ----
     ctx, pg, errs = new()
-    open_quran(pg); pg.tap('#quranDownloadOffline'); pg.wait_for_function("(()=>{const s=document.getElementById('quranOfflineStatus').textContent;return s.startsWith('Complete')||s.startsWith('Offline download paused')})()", timeout=180000)
+    open_quran(pg)
+
+    requests = []
+    failures = []
+    responses = []
+    console_errors = []
+
+    pg.on("request", lambda r: requests.append(r.url) if "alquran.cloud" in r.url else None)
+    pg.on("requestfailed", lambda r: failures.append((r.url, str(r.failure))) if "alquran.cloud" in r.url else None)
+    pg.on("response", lambda r: responses.append((r.status, r.url)) if "alquran.cloud" in r.url else None)
+    pg.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
+
+    pg.tap('#quranDownloadOffline')
+
+    try:
+        pg.wait_for_function(
+            """(() => {
+                const s = document.getElementById('quranOfflineStatus')?.textContent || '';
+                return s.startsWith('Complete') || s.startsWith('Offline download paused');
+            })()""",
+            timeout=30000
+        )
+    except Exception:
+        print("\\n===== OFFLINE DOWNLOAD DIAGNOSTICS =====")
+        print("Status:", pg.locator("#quranOfflineStatus").inner_text())
+        print("Button disabled:", pg.locator("#quranDownloadOffline").is_disabled())
+        print("API request count:", len(requests))
+        print("Last requests:", requests[-8:])
+        print("Last responses:", responses[-8:])
+        print("Failed requests:", failures[-8:])
+        print("Console errors:", console_errors[-8:])
+        print("Page errors:", errs[-8:])
+        print("===== END DIAGNOSTICS =====")
+        raise
+
     offline_status = pg.inner_text('#quranOfflineStatus')
     ok('offline download completes', offline_status.startswith('Complete'), offline_status)
     pg.route('https://api.alquran.cloud/**', lambda r: r.abort())
