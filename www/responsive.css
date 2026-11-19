@@ -477,3 +477,6 @@ body.light .nav-item{color:rgba(42,57,48,.66)}body.light .nav-item.active{color:
 
 /* Keep the 4.1.0 navigation bar opaque: must come after the earlier translucent light-theme rules. */
 body .bottom-nav,body.light .bottom-nav{background:var(--nav-solid)}
+
+/* Keep the 4.1.0 navigation bar opaque. */
+body .bottom-nav,body.light .bottom-nav{background:var(--nav-solid)}
