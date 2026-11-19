@@ -13,7 +13,7 @@ assert(q.includes('naseem-quran-offline-v1'));
 assert(q.includes('quranDownloadOffline'));
 assert(q.includes('indexedDB.open(DB_NAME,1)'));
 assert(q.includes('for(let n=1;n<=114;n++)'), 'offline downloader covers all 114 surahs sequentially');
-assert(q.includes('getOfflineSurahMap')&&q.includes('putOfflineSurahs(writes)'), 'offline save batches IndexedDB reads and writes');
+assert(q.includes('getOfflineSurahMap')&&q.includes('pendingWrites.push')&&q.includes('putOfflineSurahs(pendingWrites)')&&q.includes('n%10===0'), 'offline save batches IndexedDB writes every 10 surahs');
 assert(!q.includes('workerCount=4'), 'offline save avoids concurrent IndexedDB writers');
 assert(q.includes('quran-word-timings@v1.0.0'));
 assert(q.includes('Muhammad Al-Luhaidan'));
