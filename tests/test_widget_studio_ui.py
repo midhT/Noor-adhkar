@@ -16,7 +16,9 @@ try:
           setCustomWidget:async s=>{window.__customWidgetCalls.push(s);return true;},
           setPrayerTimes:async()=>true,setTasbeeh:async()=>true,setHijriDate:async()=>true
         }; }""")
-        page.click('.nav-item[data-screen="featuresScreen"]');page.wait_for_timeout(100)
+        page.click('.nav-item[data-screen="settingsScreen"]');page.wait_for_timeout(100)
+page.click('.you-shortcut[data-open-screen="featuresScreen"]');page.wait_for_timeout(100)
+assert page.locator('.nav-item[data-screen="settingsScreen"]').evaluate("(e) => e.classList.contains('active')")
         page.click('[data-open-v404="widgets"]');page.wait_for_timeout(200)
         page.select_option('#studioWidgetTheme','light')
         page.select_option('#studioWidgetAccent','silver')
