@@ -58,7 +58,7 @@
 .qm-empty{margin-top:14px;line-height:1.7}
 
 /* ---- reader ---- */
-#quranReaderScreen .qr-reader{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+#quranReaderScreen .qr-reader{padding-bottom:12px}
 /* The page scrolls inside <body>, which makes position:sticky unreliable, so the reader header is fixed and the app header is hidden while reading. */
 body.qr-immersive .topbar{display:none}
 .qr-bar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;max-width:520px;margin:0 auto;z-index:18;display:flex;align-items:center;gap:2px;height:58px;padding:6px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
