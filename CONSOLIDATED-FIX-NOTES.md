@@ -1,18 +1,14 @@
-# Naseem 4.1.0 build 40115 — Quran/browser verification repair
+# Naseem 4.1.0 build 40115 — consolidated source repair
 
-## Changes in this archive
-- Quran offline text download fetches surahs sequentially and commits IndexedDB records in batches of ten. This avoids overlapping writers and reduces transaction overhead while retaining already-saved surahs for resumable downloads.
-- The offline browser test uses a real locator click, checks that the handler starts, waits for a terminal status, and captures API/CDN requests, failed requests, console errors, and safe DOM state when it fails.
-- The word-follow-along browser assertion waits for the asynchronous timing-data request and first audio time update instead of assuming highlighting must appear within 250 ms.
-- The bottom-of-reader layout test disables smooth scrolling for its measurement and waits until the document has actually reached its maximum scroll position.
-- The responsive foundation restores vertical document scrolling on `.app-shell` while retaining horizontal overflow clipping, so bottom reader controls can clear the floating navigation.
-- The Quran offline static contract now checks the actual sequential, batched writer implementation.
-- Existing Quran features, app identity, package ID, public version 4.1.0, and versionCode 40115 are retained.
-- No local signing keystore is included or changed. CI must continue using the existing protected signing secrets and original signing identity.
+## Changes in this repair
+- Quran offline save now reads the IndexedDB index once, downloads up to four surahs concurrently, and stores each surah's Arabic and English payloads in one write transaction. Existing saved surahs are retained and skipped.
+- Restored normal document vertical scrolling by overriding the app-shell clipping rule; horizontal overflow remains constrained at the document level.
+- Added the Quran Foundation Worker, Mushaf integration, and Quran player core suites to `tests/run.sh`.
+- Updated the legacy 40114 static contract test to assert the actual 40115 HTML and service-worker cache versions.
+- Excluded the local Android signing keystore and signing directory from this distributable archive. The original local keystore is not modified or deleted. CI signing must continue to use the existing protected credentials.
 
-## Validation performed in the preparation environment
-- All JavaScript syntax checks passed.
-- All standalone Node integration checks passed, including Quran reader, Quran memory, Quran Foundation Worker, Mushaf integration, Quran player, release configuration, signing configuration, and public update checks.
-- Responsive, navigation, and V4.1.0 static checks passed.
-- Python syntax compilation for the Quran browser test passed.
-- The local Playwright browser suite could not be executed here because the environment blocks Chromium access to its local test server (`ERR_BLOCKED_BY_ADMINISTRATOR`). The required GitHub Actions browser suite and Android build have therefore **not** been claimed as passed; they must run in GitHub Actions.
+## Validation boundary
+JavaScript syntax and the three newly wired standalone suites are run against this source archive during preparation. Playwright browser UI tests, GitHub Actions, Android Gradle build, installed-app signature comparison, and physical-device QA still require CI/device execution. This archive is not a signed APK or release approval.
+
+## Identity and release constraints
+Public version remains 4.1.0; versionCode remains 40115. Keep application ID `com.noor.adhkar` and the existing signing identity/secrets unchanged. Do not generate or rotate a keystore.

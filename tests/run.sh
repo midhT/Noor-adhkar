@@ -62,6 +62,9 @@ run_py_test tests/test_widget_studio_ui.py
 run_py_test tests/test_compass_nav.py
 run_py_test tests/test_quran_ui.py
 NASEEM_FULL_MOTION=1 run_py_test tests/test_quran_ui.py
+run_py_test tests/test_sleep_timer_ui.py
+run_py_test tests/test_glass_ui.py
+run_py_test tests/test_media_bridge_ui.py
 run_py_test tests/test_glance.py
 run_py_test tests/test_layout_overlap.py
 run_py_test tests/test_onboarding_responsive.py

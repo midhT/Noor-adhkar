@@ -43,6 +43,7 @@
   const ICON={
     back:svg('<path d="m15 5-7 7 7 7"/>'),
     down:svg('<path d="m6 9 6 6 6-6"/>'),
+    moon:svg('<path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/>'),
     lyrics:svg('<path d="M4 6h16M4 11h10M4 16h16M4 21h8"/>'),
     play:svg('<path d="M8 5.5v13l11-6.5z" fill="currentColor"/>'),
     pause:svg('<path d="M8 5.5v13M16 5.5v13" stroke-width="3.2"/>'),
@@ -125,8 +126,10 @@
       <div class="qr-lyrics-wrap" id="quranLyricsWrap"><div class="qr-lyrics-head"><strong id="quranLyricsTitle">Al-Quran</strong><small>Tap a verse to recite from it</small></div><div class="qr-lyrics" id="quranLyrics" role="list" aria-label="Verse by verse lyrics"></div></div>
     </div><div class="qr-full-transport">${waveSeekHTML("quranFullSeek")}<div class="qr-full-times"><span id="quranFullElapsed">0:00</span><span id="quranFullDuration">0:00</span></div>
       <div class="qr-full-controls"><button type="button" class="qr-full-side" id="quranLyricsToggle" aria-pressed="false" aria-label="Show verse by verse lyrics">${ICON.lyrics}</button><button type="button" class="qr-full-secondary" id="quranFullPrev" aria-label="Previous ayah">${ICON.prev}</button><button type="button" class="qr-full-play" id="quranFullToggle" aria-label="Play">${ICON.play}</button><button type="button" class="qr-full-secondary" id="quranFullNext" aria-label="Next ayah">${ICON.next}</button><button type="button" class="qr-full-side qr-full-qari" id="quranFullReciterBtn" aria-expanded="false" aria-label="Choose reciter"><span id="quranFullAvatarButton"></span></button></div>
+      <div class="qr-sleep-row"><button type="button" class="qr-sleep-btn" id="quranSleepBtn" aria-haspopup="dialog" aria-expanded="false" aria-pressed="false">${ICON.moon}<span id="quranSleepLabel">Sleep</span></button></div>
       <p class="qr-full-note">Playback continues while you browse Naseem.</p></div></div>
-    <div class="qr-qsheet-backdrop" id="quranQSheetBackdrop"></div><div class="qr-qsheet" id="quranFullQariSheet" role="dialog" aria-label="Choose reciter"><span class="qr-full-handle" aria-hidden="true"></span><strong class="qr-qsheet-title">Choose a reciter</strong><div class="qr-qsheet-list" id="quranFullQariList" role="listbox">${QARIS.map(qariOptionHTML).join('')}</div></div></div>`
+    <div class="qr-qsheet-backdrop" id="quranQSheetBackdrop"></div><div class="qr-qsheet" id="quranFullQariSheet" role="dialog" aria-label="Choose reciter"><span class="qr-full-handle" aria-hidden="true"></span><strong class="qr-qsheet-title">Choose a reciter</strong><div class="qr-qsheet-list" id="quranFullQariList" role="listbox">${QARIS.map(qariOptionHTML).join('')}</div></div>
+    <div class="qr-sleep-sheet" id="quranSleepSheet" role="dialog" aria-label="Sleep timer"><span class="qr-full-handle" aria-hidden="true"></span><strong class="qr-qsheet-title">Sleep timer</strong><div class="qr-qsheet-list" id="quranSleepList" role="radiogroup" aria-label="Stop recitation after">${(window.NaseemPlayerCore?window.NaseemPlayerCore.SLEEP_OPTIONS:[{id:'off',label:'Off'}]).map(o=>`<button type="button" class="qr-sleep-opt" role="radio" aria-checked="false" data-sleep="${o.id}">${o.label}</button>`).join('')}</div></div></div>`
   // The headers are fixed to the viewport. They live outside the screen element because the screen keeps a transform
   // after its entrance animation, which would turn "fixed" into "fixed to the screen".
   const readerBar=document.createElement('div');readerBar.id='quranReaderBar';readerBar.className='qr-bar';readerBar.hidden=true;
@@ -254,7 +257,7 @@
   }
   function closeFullPlayer(animated=false){
     if(fullPlayer.hidden)return;
-    const finish=()=>{if(fullAnim){fullAnim.cancel();fullAnim=null;}fullPlayer.hidden=true;fullPlayer.setAttribute('aria-hidden','true');fullPlayer.classList.remove('qr-closing','qr-opening','qr-sheet-open');fullPlayer.style.transform='';document.body.classList.remove('qr-full-player-open');updatePlayerVisibility();};
+    const finish=()=>{if(fullAnim){fullAnim.cancel();fullAnim=null;}fullPlayer.hidden=true;fullPlayer.setAttribute('aria-hidden','true');fullPlayer.classList.remove('qr-closing','qr-opening','qr-sheet-open','qr-sleep-open');fullPlayer.style.transform='';document.body.classList.remove('qr-full-player-open');updatePlayerVisibility();};
     if(fullAnim){fullAnim.cancel();fullAnim=null;}
     if(!animated||reduceMotion()||!fullPlayer.animate||!audioQueue.length){finish();return;}
     player.classList.remove('qr-player-away');const to=miniInset();
@@ -266,8 +269,10 @@
   const fmtTime=value=>{const n=Math.max(0,Math.floor(Number(value)||0));return `${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;};
   function syncReciterUI(){const q=qari(),mode=$('quranFullMode');$('quranFullReciter').textContent=q.name;if(mode){mode.textContent=q.wordSync?'Word by word':'Verse by verse';mode.classList.toggle('is-word',q.wordSync);}$('quranFullAvatar').innerHTML=qariAvatarHTML(q,true);$('quranFullAvatarButton').innerHTML=qariAvatarHTML(q);$('quranMiniAvatar').innerHTML=qariAvatarHTML(q);$('quranMiniAvatar').setAttribute('aria-label',q.name);}
   function syncFullPlayer(){const item=audioQueue[audioIndex];if(!item)return;syncReciterUI();const surahNo=Number(item.surah)||current,ayahNo=Number(item.numberInSurah)||progress.ayah||1,total=surahs[surahNo-1]?.numberOfAyahs;$('quranFullTitle').textContent=`${surahNo}. ${surahName(surahNo)}`;$('quranLyricsTitle').textContent=`${surahNo}. ${surahName(surahNo)}`;$('quranFullReference').textContent=`Ayah ${ayahNo}${total?` of ${total}`:''}`;$('quranFullStatus').textContent=recitation.paused?'Paused':'Now reciting';morph($('quranFullToggle'),!recitation.paused);$('quranFullToggle').setAttribute('aria-label',recitation.paused?'Play':'Pause');}
-  function showHome(){$('quranReader').hidden=true;$('quranReview').hidden=true;$('quranHome').hidden=false;syncImmersive();window.scrollTo(0,0);renderMemory();}
-  function showReader(){$('quranHome').hidden=true;$('quranReview').hidden=true;$('quranReader').hidden=false;syncImmersive();window.scrollTo(0,0);}
+  /* Short slide-in when moving between the surah index and the reader (transform + opacity only; skipped in Smooth / reduced-motion). */
+  function qrSlideIn(el,back){if(!el)return;el.classList.remove('qr-in-next','qr-in-prev');if(reduceMotion())return;void el.offsetWidth;el.classList.add(back?'qr-in-prev':'qr-in-next');setTimeout(()=>el.classList.remove('qr-in-next','qr-in-prev'),340);}
+  function showHome(){$('quranReader').hidden=true;$('quranReview').hidden=true;$('quranHome').hidden=false;syncImmersive();window.scrollTo(0,0);renderMemory();qrSlideIn($('quranHome'),true);}
+  function showReader(){$('quranHome').hidden=true;$('quranReview').hidden=true;$('quranReader').hidden=false;syncImmersive();window.scrollTo(0,0);qrSlideIn($('quranReader'),false);}
   const readerOpen=()=>!$('quranReader').hidden;
   const screenActive=()=>document.querySelector('.screen.active')?.id==='quranReaderScreen';
 
@@ -550,6 +555,51 @@
     if(on){const line=$('quranLyrics').querySelector('.qr-lyric.active');if(line)centerLyric(line,false,true);}
   }
   function toggleQariSheet(open){fullPlayer.classList.toggle('qr-sheet-open',open);$('quranFullReciterBtn').setAttribute('aria-expanded',String(open));}
+  /* ---------- Sleep timer (rules live in quran-player-core.js) ---------- */
+  const PC=window.NaseemPlayerCore;let sleepState=null,sleepClock=null;
+  function sleepRender(){const b=$('quranSleepBtn');if(!b)return;$('quranSleepLabel').textContent=PC?PC.sleepLabel(sleepState,Date.now()):'Sleep';b.classList.toggle('on',!!sleepState);b.setAttribute('aria-pressed',String(!!sleepState));document.querySelectorAll('#quranSleepList [data-sleep]').forEach(x=>x.setAttribute('aria-checked',String((sleepState?sleepState.id:'off')===x.dataset.sleep)));}
+  function sleepCancel(){sleepState=null;if(sleepClock){clearInterval(sleepClock);sleepClock=null;}try{sleepRender();}catch(_){}}
+  function sleepNote(){const t='Sleep timer finished. Recitation stopped.';status(t);$('quranPlaybackStatus').textContent=t;$('quranFullStatus').textContent=t;}
+  function sleepFire(){
+    const timed=!!sleepState&&sleepState.kind==='time';sleepCancel();
+    if(timed&&!recitation.paused){const v0=recitation.volume;let n=0;const fade=setInterval(()=>{n++;recitation.volume=Math.max(0,v0*(1-n/20));if(n>=20){clearInterval(fade);recitation.pause();recitation.volume=v0;setPlayIcon(false);setTimeout(sleepNote,60);}},150);}
+    else if(timed)sleepNote();
+    else{finishQueue();sleepNote();}
+  }
+  function sleepEvent(evt){if(!PC||!sleepState)return false;if(PC.sleepShouldFire(sleepState,evt,Date.now())){sleepFire();return true;}return false;}
+  function sleepSet(id){
+    if(!PC)return;sleepState=PC.sleepStart(id,Date.now());if(sleepClock){clearInterval(sleepClock);sleepClock=null;}
+    if(sleepState&&sleepState.kind==='time')sleepClock=setInterval(()=>{if(!sleepEvent('tick'))sleepRender();},1000);
+    sleepRender();status(sleepState?`Sleep timer set: ${PC.SLEEP_OPTIONS.find(o=>o.id===sleepState.id)?.label||''}.`:'Sleep timer off.');
+  }
+  function toggleSleepSheet(open){fullPlayer.classList.toggle('qr-sleep-open',open);$('quranSleepBtn').setAttribute('aria-expanded',String(open));}
+
+  /* ---------- Native media session: notification, lock-screen / headset buttons, background keep-alive ----------
+     Only active inside the Android app (window.NoorNative.media comes from native.js); the browser build is unaffected. */
+  let mediaListening=false,mediaLastAt=0;
+  const nativeMedia=()=>window.NoorNative&&window.NoorNative.media||null;
+  function mediaOnAction(e){
+    const a=e&&e.action;
+    if(a==='play'){if(recitation.paused)$('quranPauseResume').click();}
+    else if(a==='pause'){if(!recitation.paused)recitation.pause();}
+    else if(a==='next')stepAyah(1);
+    else if(a==='prev')stepAyah(-1);
+    else if(a==='stop')userStop();
+    else if(a==='seek'&&Number.isFinite(Number(e.positionMs))&&Number.isFinite(recitation.duration)){recitation.currentTime=Math.max(0,Math.min(recitation.duration,Number(e.positionMs)/1000));}
+  }
+  function mediaPush(force){
+    const m=nativeMedia();if(!m||!audioQueue.length)return;
+    clearTimeout(mediaStopTimer);
+    const now=Date.now();if(!force&&now-mediaLastAt<1000)return;mediaLastAt=now;
+    if(!mediaListening){mediaListening=true;m.onAction(mediaOnAction);}
+    const item=audioQueue[audioIndex]||{},surahNo=Number(item.surah)||current;
+    m.update({title:`${surahNo}. ${surahName(surahNo)}`,artist:`Ayah ${item.numberInSurah||1} · ${qari().name}`,artText:surahs[surahNo-1]?.name||'',playing:!recitation.paused,positionMs:Math.round((recitation.currentTime||0)*1000),durationMs:Number.isFinite(recitation.duration)?Math.round(recitation.duration*1000):0});
+  }
+  let mediaStopTimer=0;
+  /* delayMs>0: internal reloads (e.g. auto-continue to the next surah) wait so the service is not torn down between surahs while the app is in the background. */
+  function mediaStop(delayMs){const m=nativeMedia();if(!m)return;clearTimeout(mediaStopTimer);if(delayMs>0)mediaStopTimer=setTimeout(()=>{if(!audioQueue.length)m.stop();},delayMs);else m.stop();}
+  function userStop(){sleepCancel();stopRecitation();mediaStop();}
+
   async function chooseQari(next){
     if(!QARIS.some(q=>q.id===next)||next===selectedQari)return;
     const wasPlaying=audioQueue.length>0,wasPaused=recitation.paused,ayah=Number(audioQueue[audioIndex]?.numberInSurah)||progress.ayah||1;
@@ -590,8 +640,8 @@
       showPlayer();setPlayIcon(true);status(`Playing recitation · ${item.surah||current}:${item.numberInSurah}`);
     }catch(_){if(token!==playToken)return;setPlayIcon(false);status('Recitation could not start. Check your connection and audio settings.');$('quranPlaybackStatus').textContent='Playback could not start.';}
   }
-  function finishQueue(){audioQueue=[];audioIndex=0;playToken++;recitation.pause();player.hidden=true;setPlayIcon(false);$('quranPlaybackStatus').textContent='Recitation finished.';$('quranFullStatus').textContent='Recitation finished.';closeFullPlayer();clearPlaying();}
-  function stopRecitation(){if(!recitation)return;playToken++;recitation.pause();recitation.removeAttribute('src');delete recitation.dataset.wordAudioUrl;recitation.load();audioQueue=[];audioIndex=0;lyricsSurah=0;if(player)player.hidden=true;try{setPlayIcon(false);}catch(_){}closeFullPlayer();clearPlaying();}
+  function finishQueue(){sleepCancel();audioQueue=[];audioIndex=0;playToken++;mediaStop();recitation.pause();player.hidden=true;setPlayIcon(false);$('quranPlaybackStatus').textContent='Recitation finished.';$('quranFullStatus').textContent='Recitation finished.';closeFullPlayer();clearPlaying();}
+  function stopRecitation(){if(!recitation)return;mediaStop(20000);playToken++;recitation.pause();recitation.removeAttribute('src');delete recitation.dataset.wordAudioUrl;recitation.load();audioQueue=[];audioIndex=0;lyricsSurah=0;if(player)player.hidden=true;try{setPlayIcon(false);}catch(_){}closeFullPlayer();clearPlaying();}
   async function loadWordTimingSurah(surah){
     const key=`word-timing:${surah}`;let data=cache[key];
     if(!data){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),18000);try{const response=await fetch(`${WORD_TIMING_BASE}/${String(surah).padStart(3,'0')}.json`,{headers:{Accept:'application/json'},signal:controller.signal,cache:'force-cache'});if(!response.ok)throw new Error(`Timing data HTTP ${response.status}`);data=await response.json();if(Number(data.surah)!==Number(surah)||!data.audio_url||!Array.isArray(data.verse_timings))throw new Error('Invalid word timing data');saveCache(key,data);}finally{clearTimeout(timer);}}
@@ -629,10 +679,11 @@
   }
   async function continueToNextSurah(){const next=current+1;if(next>114||playMode!=='surah'){finishQueue();return;}const ok=await loadSurah(next,1);if(ok)await startPlayback(1);else finishQueue();}
   function stepAyah(d){if(!audioQueue.length){startPlayback(Math.max(1,progress.surah===current?progress.ayah:1));return;}const i=audioIndex+d;if(i<0){audioIndex=0;}else if(i>=audioQueue.length){if(playMode==='single'){finishQueue();return;}continueToNextSurah();return;}else audioIndex=i;lastUserScroll=0;playQueueItem(true);}
-  recitation.addEventListener('ended',()=>{if(playMode==='single'){finishQueue();return;}if(audioQueue.length&&audioIndex<audioQueue.length-1){audioIndex++;playQueueItem(false);}else if(audioQueue.length)continueToNextSurah();});
-  recitation.addEventListener('pause',()=>{if(audioQueue.length)setPlayIcon(false);});
-  recitation.addEventListener('play',()=>{setPlayIcon(true);if(!fullPlayer.hidden)syncFullPlayer();});
-  recitation.addEventListener('loadedmetadata',()=>{$('quranFullDuration').textContent=fmtTime(recitation.duration);});
+  recitation.addEventListener('ended',()=>{if(playMode==='single'){finishQueue();return;}if(audioQueue.length&&audioIndex<audioQueue.length-1){if(sleepEvent('ayah-end'))return;audioIndex++;playQueueItem(false);}else if(audioQueue.length){if(sleepEvent('ayah-end')||sleepEvent('surah-end'))return;continueToNextSurah();}});
+  recitation.addEventListener('pause',()=>{if(audioQueue.length){setPlayIcon(false);mediaPush(true);}});
+  recitation.addEventListener('play',()=>{setPlayIcon(true);if(!fullPlayer.hidden)syncFullPlayer();mediaPush(true);});
+  recitation.addEventListener('seeked',()=>mediaPush(true));
+  recitation.addEventListener('loadedmetadata',()=>{$('quranFullDuration').textContent=fmtTime(recitation.duration);mediaPush(true);});
   recitation.addEventListener('pause',()=>{if(!fullPlayer.hidden)syncFullPlayer();});
   let lastWordKey='';
   recitation.addEventListener('timeupdate',()=>{
@@ -642,19 +693,19 @@
     if(!audioQueue[audioIndex]?.wordSynced)return;
     let seekIndex=audioQueue.findIndex(x=>x.wordSynced&&ms>=Number(x.timestamp_from)&&ms<Number(x.timestamp_to));
     if(seekIndex<0){for(let i=audioQueue.length-1;i>=0;i--){if(ms>=Number(audioQueue[i].timestamp_from)){seekIndex=i;break;}}}
-    if(seekIndex>=0&&seekIndex!==audioIndex){audioIndex=seekIndex;highlightPlayingAyah(audioQueue[audioIndex].numberInSurah,false);}
+    if(seekIndex>=0&&seekIndex!==audioIndex){if(seekIndex===audioIndex+1&&sleepEvent('ayah-end'))return;audioIndex=seekIndex;highlightPlayingAyah(audioQueue[audioIndex].numberInSurah,false);mediaPush(true);}
     const item=audioQueue[audioIndex];
     const segment=item.segments?.findLast?item.segments.findLast(x=>Number(x[1])<=ms&&Number(x[2])>=ms):[...(item.segments||[])].reverse().find(x=>Number(x[1])<=ms&&Number(x[2])>=ms);
     if(segment){const key=`${item.surah}:${item.numberInSurah}:${Number(segment[0])}`;if(key!==lastWordKey&&markWord(key))lastWordKey=key;}
-    if(item.timestamp_to&&ms>=Number(item.timestamp_to)-35){if(playMode==='single')finishQueue();else if(audioIndex<audioQueue.length-1){audioIndex++;playQueueItem(false);}else continueToNextSurah();}
+    if(item.timestamp_to&&ms>=Number(item.timestamp_to)-35){if(playMode==='single')finishQueue();else if(audioIndex<audioQueue.length-1){if(sleepEvent('ayah-end'))return;audioIndex++;playQueueItem(false);}else{if(sleepEvent('ayah-end')||sleepEvent('surah-end'))return;continueToNextSurah();}}
   });
   $('quranPauseResume').addEventListener('click',async()=>{if(recitation.paused){if(recitation.src){try{await recitation.play();}catch(_){status('Tap play again to resume recitation.');}}else if(audioQueue.length)playQueueItem();}else recitation.pause();});
   bindWaveSeek('quranSeek');bindWaveSeek('quranFullSeek');
   $('quranFullClose').addEventListener('click',()=>closeFullPlayer(true));
   $('quranFullToggle').addEventListener('click',()=>$('quranPauseResume').click());$('quranFullPrev').addEventListener('click',()=>$('quranPrevAyah').click());$('quranFullNext').addEventListener('click',()=>$('quranNextAyah').click());
-  $('quranFullStop').addEventListener('click',()=>{stopRecitation();$('quranFullStatus').textContent='Recitation stopped';});
+  $('quranFullStop').addEventListener('click',()=>{userStop();$('quranFullStatus').textContent='Recitation stopped';});
   $('quranPrevAyah').addEventListener('click',()=>stepAyah(-1));$('quranNextAyah').addEventListener('click',()=>stepAyah(1));
-  $('quranStop').addEventListener('click',stopRecitation);
+  $('quranStop').addEventListener('click',userStop);
   $('quranLocate').addEventListener('click',()=>{lastUserScroll=0;if(activeEl)scrollToAyah(activeEl);});
   $('quranPlaySurah').addEventListener('click',()=>{if(audioQueue.length&&playMode==='surah'){$('quranPauseResume').click();}else startPlayback(Math.max(1,progress.surah===current?progress.ayah:1));});
 
@@ -679,7 +730,9 @@
   $('quranQariMenu').addEventListener('click',e=>{const o=e.target.closest('[data-qari-id]');if(o)chooseQari(o.dataset.qariId);});
   $('quranFullQariList').addEventListener('click',e=>{const o=e.target.closest('[data-qari-id]');if(!o)return;toggleQariSheet(false);chooseQari(o.dataset.qariId);});
   $('quranFullReciterBtn').addEventListener('click',()=>toggleQariSheet(!fullPlayer.classList.contains('qr-sheet-open')));
-  $('quranQSheetBackdrop').addEventListener('click',()=>toggleQariSheet(false));
+  $('quranQSheetBackdrop').addEventListener('click',()=>{toggleQariSheet(false);toggleSleepSheet(false);});
+  $('quranSleepBtn').addEventListener('click',()=>toggleSleepSheet(!fullPlayer.classList.contains('qr-sleep-open')));
+  $('quranSleepList').addEventListener('click',e=>{const o=e.target.closest('[data-sleep]');if(!o)return;sleepSet(o.dataset.sleep);toggleSleepSheet(false);});
   $('quranLyricsToggle').addEventListener('click',()=>toggleLyrics());
   player.addEventListener('click',e=>{if(e.target.closest('button:not(#quranExpandPlayer),input,.qr-wave-seek'))return;openFullPlayer();});
   const lyricsHost=$('quranLyrics');
@@ -688,7 +741,7 @@
   lyricsHost.addEventListener('click',e=>playLyric(e.target.closest('[data-lyric-ayah]')));
   lyricsHost.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const l=e.target.closest('[data-lyric-ayah]');if(l){e.preventDefault();playLyric(l);}}});
   /* Pull the player down (from its top bar or artwork) to close it, like other music players. */
-  fullPlayer.addEventListener('pointerdown',e=>{if(e.button>0||e.target.closest('button,input,.qr-lyrics,.qr-qsheet'))return;if(!e.target.closest('.qr-full-top,.qr-full-handle,.qr-full-hero'))return;dragFull={y:e.clientY,id:e.pointerId,dy:0,on:false};});
+  fullPlayer.addEventListener('pointerdown',e=>{if(e.button>0||e.target.closest('button,input,.qr-lyrics,.qr-qsheet,.qr-sleep-sheet'))return;if(!e.target.closest('.qr-full-top,.qr-full-handle,.qr-full-hero'))return;dragFull={y:e.clientY,id:e.pointerId,dy:0,on:false};});
   fullPlayer.addEventListener('pointermove',e=>{if(!dragFull||e.pointerId!==dragFull.id)return;const dy=e.clientY-dragFull.y;if(dy<=0&&!dragFull.on)return;if(!dragFull.on&&dy<8)return;if(!dragFull.on){dragFull.on=true;try{fullPlayer.setPointerCapture(e.pointerId);}catch(_){}fullPlayer.style.transition='none';}dragFull.dy=Math.max(0,dy);fullPlayer.style.transform=`translate3d(0,${dragFull.dy}px,0) scale(${1-Math.min(.07,dragFull.dy/2800)})`;fullPlayer.style.borderRadius=`${Math.min(30,dragFull.dy/4)}px`;});
   const endDrag=e=>{if(!dragFull||e.pointerId!==dragFull.id)return;const d=dragFull;dragFull=null;if(!d.on)return;fullPlayer.style.transition='';if(d.dy>110){fullPlayer.style.borderRadius='';fullPlayer.style.transform='';closeFullPlayer(true);}else{fullPlayer.style.transition='transform .45s cubic-bezier(.34,1.45,.64,1),border-radius .3s ease';fullPlayer.style.transform='';fullPlayer.style.borderRadius='';setTimeout(()=>{fullPlayer.style.transition='';},480);}};
   fullPlayer.addEventListener('pointerup',endDrag);fullPlayer.addEventListener('pointercancel',endDrag);
@@ -872,23 +925,20 @@
   $('quranDownloadOffline').addEventListener('click',async()=>{
     const button=$('quranDownloadOffline'),label=$('quranOfflineStatus');if(button.disabled)return;button.disabled=true;
     try{
-      const stored=await getOfflineSurahMap();let saved=0,pendingWrites=[];
-      // Fetch sequentially and commit in small batches. This avoids overlapping
-      // IndexedDB writers while reducing transaction overhead; completed batches
-      // remain saved if a later request fails, so the next attempt can resume.
+      const stored=await getOfflineSurahMap();let saved=0;
+      // Keep one IndexedDB writer active at a time. This avoids overlapping
+      // readwrite transactions on mobile Chromium while preserving resumable saves.
       for(let n=1;n<=114;n++){
         label.textContent=`Saving Quran text offline · ${n}/114 surahs`;
         const key=`${n}:translation`,arabicKey=`${n}:arabic`;
         let payload=stored.get(key);
-        if(!payload)payload=await request(`/surah/${n}/editions/quran-uthmani,en.pickthall`);
+        if(!payload){payload=await request(`/surah/${n}/editions/quran-uthmani,en.pickthall`);}
         const arabic=stored.get(arabicKey)||(Array.isArray(payload)?payload:[payload]).filter(x=>String(x.edition?.identifier||'').includes('uthmani'));
-        if(!stored.has(key))pendingWrites.push([key,payload]);
-        if(!stored.has(arabicKey)&&arabic.length)pendingWrites.push([arabicKey,arabic]);
+        const writes=[];
+        if(!stored.has(key))writes.push([key,payload]);
+        if(!stored.has(arabicKey)&&arabic.length)writes.push([arabicKey,arabic]);
+        await putOfflineSurahs(writes);
         saved++;
-        if(n%10===0||n===114){
-          await putOfflineSurahs(pendingWrites);
-          pendingWrites=[];
-        }
       }
       label.textContent=`Complete Quran text with English meanings saved on this device (${saved} surahs). Audio is not downloaded.`;
     }catch(error){console.error('[Quran offline download]',error);label.textContent='Offline download paused: '+String(error?.message||error).slice(0,180);}

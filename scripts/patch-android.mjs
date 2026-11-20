@@ -43,6 +43,10 @@ const permissions = [
   '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />',
   '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />',
   '<uses-permission android:name="android.permission.VIBRATE" />',
+  // Quran recitation keeps playing with the screen off: foreground media service + CPU wake lock.
+  '<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />',
+  '<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />',
+  '<uses-permission android:name="android.permission.WAKE_LOCK" />',
   '<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />',
   '<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />',
   '<uses-permission android:name="android.permission.USE_EXACT_ALARM" />',
@@ -88,6 +92,14 @@ if (!manifest.includes('.CustomWidgetConfigActivity')) {
         </activity>
 `;
   manifest = manifest.replace('</application>', `${configure}    </application>`);
+}
+
+// Foreground media service for background Quran playback (notification, lock-screen controls).
+if (!manifest.includes('.NaseemMediaService')) {
+  const service = `
+        <service android:name=".NaseemMediaService" android:exported="false" android:foregroundServiceType="mediaPlayback" />
+`;
+  manifest = manifest.replace('</application>', `${service}    </application>`);
 }
 
 writeFileSync(manifestPath, manifest);

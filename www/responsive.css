@@ -18,8 +18,7 @@ body {
   max-width: 100%;
   min-width: 0;
   margin-inline: auto;
-  height: auto;
-  overflow: visible !important;
+  overflow: visible;
 }
 
 main,
@@ -474,15 +473,6 @@ body.light .bottom-nav{background:linear-gradient(145deg,rgba(255,255,255,.78),r
 body.light .nav-item{color:rgba(42,57,48,.66)}body.light .nav-item.active{color:#176b4b;background:rgba(55,151,105,.13);border-color:rgba(55,151,105,.18)}
 @media(max-width:370px){.bottom-nav{width:calc(100% - 16px);padding-left:5px;padding-right:5px}.nav-item small{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.nav-item{transition:none}}
-
-/* Keep the 4.1.0 navigation bar opaque: must come after the earlier translucent light-theme rules. */
-body .bottom-nav,body.light .bottom-nav{background:var(--nav-solid)}
-
-/* Keep the 4.1.0 navigation bar opaque. */
-body .bottom-nav,body.light .bottom-nav{background:var(--nav-solid)}
-
-/* Keep the 4.1.0 navigation bar opaque: must come after the earlier translucent light-theme rules. */
-body .bottom-nav,body.light .bottom-nav{background:var(--nav-solid)}
 
 /* Keep the 4.1.0 navigation bar opaque: must come after the earlier translucent light-theme rules. */
 body .bottom-nav,body.light .bottom-nav{background:var(--nav-solid)}

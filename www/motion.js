@@ -8,7 +8,8 @@
   const read = () => { try { const v = localStorage.getItem(KEY); return ['auto', 'full', 'smooth'].includes(v) ? v : 'auto'; } catch (_) { return 'auto'; } };
   const weak = () => {
     const n = navigator, c = n.connection || {};
-    return (n.hardwareConcurrency && n.hardwareConcurrency <= 4) || (n.deviceMemory && n.deviceMemory <= 3) || c.saveData === true;
+    /* Only genuinely low-end devices drop to Smooth mode: most mid-range phones report 4-8 cores and should keep transitions. */
+    return (n.hardwareConcurrency && n.hardwareConcurrency <= 2) || (n.deviceMemory && n.deviceMemory <= 2) || c.saveData === true;
   };
   let mode = read();
   function applyMode() {

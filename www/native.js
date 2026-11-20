@@ -9,6 +9,8 @@ import { Share } from '@capacitor/share';
 const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 // Custom Android plugin (android-native/java/NoorWidgetsPlugin.java) that feeds the home-screen widgets.
 const NoorWidgets = isNative ? registerPlugin('NoorWidgets') : null;
+// Quran recitation media session (android-native/java/NaseemMediaPlugin.java + NaseemMediaService.java).
+const NaseemMedia = isNative ? registerPlugin('NaseemMedia') : null;
 
 const CH = { adhan: 'noor-adhan-v1', tone: 'noor-salah-alarm', silent: 'noor-silent-v1' };
 const ADHAN_FILE = 'adhan.mp3'; // android/app/src/main/res/raw/adhan.mp3 (copied by scripts/patch-android.mjs)
@@ -106,6 +108,13 @@ window.NoorNative = {
     async setStyle(style) { try { await NoorWidgets.setWidgetStyle({ theme: style.theme, accent: style.accent, density: style.density }); return true; } catch (_) { return false; } },
     async setCustomWidget(config) { try { await NoorWidgets.setCustomWidget(config); return true; } catch (_) { return false; } },
     async takePending() { try { return (await NoorWidgets.takePending()).count || 0; } catch (_) { return 0; } }
+  } : null,
+
+  /* ---- Quran media session: notification, lock-screen controls and background keep-alive ---- */
+  media: isNative ? {
+    async update(info) { try { await NaseemMedia.update(info); return true; } catch (_) { return false; } },
+    async stop() { try { await NaseemMedia.stop(); return true; } catch (_) { return false; } },
+    onAction(callback) { try { return NaseemMedia.addListener('action', callback); } catch (_) { return null; } }
   } : null
 };
 if (isNative) {

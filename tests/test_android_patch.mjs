@@ -30,8 +30,12 @@ try {
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/NoorWidgetsPlugin.java')));
   assert.ok(existsSync(join(main,'java/com/noor/adhkar/NaseemUpdaterPlugin.java')));
   assert.match(manifest,/REQUEST_INSTALL_PACKAGES/);
+  assert.match(manifest,/<service android:name="\.NaseemMediaService" android:exported="false" android:foregroundServiceType="mediaPlayback"/);
+  assert.match(manifest,/FOREGROUND_SERVICE_MEDIA_PLAYBACK/); assert.match(manifest,/android\.permission\.FOREGROUND_SERVICE"/); assert.match(manifest,/android\.permission\.WAKE_LOCK/);
+  assert.ok(existsSync(join(main,'java/com/noor/adhkar/NaseemMediaService.java'))); assert.ok(existsSync(join(main,'java/com/noor/adhkar/NaseemMediaPlugin.java')));
   const activity=readFileSync(join(main,'java/com/noor/adhkar/MainActivity.java'),'utf8');
   assert.match(activity,/registerPlugin\(NaseemUpdaterPlugin.class\)/);
+  assert.match(activity,/registerPlugin\(NaseemMediaPlugin.class\)/);
   assert.match(activity,/getRegistrations\(\)/);
   const updater=readFileSync(join(main,'java/com/noor/adhkar/NaseemUpdaterPlugin.java'),'utf8');
   assert.match(updater,/downloadApk/); assert.match(updater,/downloadStatus/); assert.match(updater,/installApk/); assert.match(updater,/SHA-256/); assert.match(updater,/DownloadManager/);

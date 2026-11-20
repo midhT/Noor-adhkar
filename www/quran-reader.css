@@ -458,3 +458,21 @@ body.light .qr-full-player{background:radial-gradient(ellipse at 50% 4%,color-mi
 
 .qr-mushaf-flow>.quran-ayah{padding:12px 0;border-bottom:1px solid #8a806c35;background:transparent}
 .qr-mushaf-flow>.quran-ayah .quran-arabic{color:#24221d;font-family:"Noto Naskh Arabic",serif;line-height:2.05}
+
+/* Index <-> reader slide (compositor-only). */
+.qr-in-next{animation:qrSlideNext .3s cubic-bezier(.22,.8,.24,1) both}
+.qr-in-prev{animation:qrSlidePrev .3s cubic-bezier(.22,.8,.24,1) both}
+@keyframes qrSlideNext{from{opacity:0;transform:translate3d(26px,0,0)}to{opacity:1;transform:none}}
+@keyframes qrSlidePrev{from{opacity:0;transform:translate3d(-26px,0,0)}to{opacity:1;transform:none}}
+
+/* Sleep timer */
+.qr-sleep-row{display:flex;justify-content:center;margin-top:10px}
+.qr-sleep-btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 70%,transparent);color:var(--text);font:inherit;font-size:13px;font-weight:600}
+.qr-sleep-btn svg{width:18px;height:18px}
+.qr-sleep-btn.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.qr-sleep-sheet{position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;flex-direction:column;gap:8px;max-height:74%;max-width:520px;margin:0 auto;padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 16px);border-radius:28px 28px 0 0;border:1px solid var(--line);border-bottom:0;background:color-mix(in srgb,var(--panel) 96%,transparent);transform:translateY(105%);visibility:hidden;transition:transform .45s var(--glide,cubic-bezier(.22,.8,.24,1)),visibility 0s .45s}
+.qr-sleep-open .qr-qsheet-backdrop{opacity:1;visibility:visible;transition-delay:0s}
+.qr-sleep-open .qr-sleep-sheet{transform:none;visibility:visible;transition-delay:0s}
+.qr-sleep-opt{min-height:48px;border-radius:14px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel2,var(--panel)) 80%,transparent);color:var(--text);font:inherit;font-size:14px;text-align:left;padding:0 16px}
+.qr-sleep-opt[aria-checked="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent;font-weight:700}
+body.lite .qr-sleep-sheet{transition-duration:.01ms}

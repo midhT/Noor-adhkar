@@ -1,11 +1,11 @@
 const CACHE = "noor-adhkar-cache-v4115";
 const CACHE_PREFIX = "noor-adhkar-cache-";
 const ASSETS = [
-  "./", "./index.html", "./styles.css", "./theme.css", "./features.css", "./features-v404.css", "./quran-reader.css", "./responsive.css",
+  "./", "./index.html", "./styles.css", "./theme.css", "./features.css", "./features-v404.css", "./quran-reader.css", "./responsive.css", "./glass.css",
   "./accent.js", "./intro.js", "./native.bundle.js", "./sheet.js", "./adhkar-core.js", "./adhkar-data.js",
   "./app.js", "./v3.js", "./time12.js", "./salah.js", "./prayer-dashboard.js", "./salah-experience.js", "./salah-settings.js",
-  "./reminders.js", "./profile.js", "./settings.js", "./motion.js", "./qibla-core.js", "./zakat-core.js",
-  "./features.js", "./glance-config.js", "./v404.js", "./hadith-library.js", "./quran-memory-core.js", "./quran-config.js", "./quran-reader.js", "./public-updates.js", "./manifest.json", "./icon.svg"
+  "./reminders.js", "./profile.js", "./settings.js", "./motion.js", "./glass.js", "./qibla-core.js", "./zakat-core.js",
+  "./features.js", "./glance-config.js", "./v404.js", "./hadith-library.js", "./quran-memory-core.js", "./quran-config.js", "./quran-player-core.js", "./quran-reader.js", "./public-updates.js", "./manifest.json", "./icon.svg"
 ];
 self.addEventListener("install", event => event.waitUntil(
   caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())

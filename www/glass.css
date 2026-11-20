@@ -1,0 +1,105 @@
+/* =====================================================================
+   Naseem Liquid Glass — Settings › Appearance › Liquid Glass.
+   Everything here is scoped to body.glass. Turning the switch off removes that class and the app
+   returns to its previous solid look; nothing outside body.glass is changed by this file.
+
+   Design: written for Naseem (own implementation). Frosted surfaces = translucent tint + soft edge
+   highlight + gentle shadow over a static ambient backdrop. Real blur (backdrop-filter) is limited to the
+   few fixed / overlay layers (navigation, player, sheets, toasts); long lists only get tint + edge, which
+   keeps scrolling smooth on budget phones.
+   ===================================================================== */
+body.glass{
+  --glass-blur:22px;
+  --glass-sat:1.55;
+  --panel:rgba(30,32,37,.56);
+  --panel2:rgba(46,49,55,.46);
+  --line:rgba(255,255,255,.13);
+  --glass-edge:rgba(255,255,255,.17);
+  --glass-hi:rgba(255,255,255,.20);
+  --glass-drop:rgba(0,0,0,.34);
+  --glass-spec:linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.02) 42%,rgba(255,255,255,0) 60%);
+  --glass-chrome:rgba(24,26,30,.58);
+  --nav-solid:rgba(24,26,30,.58);
+}
+body.glass.light{
+  --panel:rgba(255,255,255,.60);
+  --panel2:rgba(255,255,255,.44);
+  --line:rgba(40,60,50,.13);
+  --glass-edge:rgba(255,255,255,.85);
+  --glass-hi:rgba(255,255,255,.95);
+  --glass-drop:rgba(28,48,38,.14);
+  --glass-spec:linear-gradient(145deg,rgba(255,255,255,.55),rgba(255,255,255,.10) 45%,rgba(255,255,255,0) 62%);
+  --glass-chrome:rgba(255,255,255,.66);
+  --nav-solid:rgba(255,255,255,.66);
+}
+
+/* Static ambient backdrop: gives the glass something to refract. No animation, one fixed compositor layer. */
+body.glass::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(58% 38% at 8% -2%,color-mix(in srgb,var(--accent) 40%,transparent),transparent 72%),
+    radial-gradient(48% 34% at 104% 28%,rgba(90,120,255,.24),transparent 72%),
+    radial-gradient(40% 28% at 96% 66%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 72%),
+    radial-gradient(62% 40% at 24% 104%,color-mix(in srgb,var(--accent) 28%,transparent),transparent 72%);
+}
+body.glass.light::before{
+  background:
+    radial-gradient(58% 38% at 8% -2%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 72%),
+    radial-gradient(48% 34% at 104% 28%,rgba(120,150,255,.20),transparent 72%),
+    radial-gradient(62% 40% at 24% 104%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 72%);
+}
+
+/* The backdrop layer sits behind the page, so the body's own solid paint must step aside and html carries the base colour.
+   Browsers without :has() keep the solid body and simply skip the ambient layer (the tinted surfaces still apply). */
+@supports selector(html:has(body)){
+  html:has(body.glass){background-color:#0b0b0d}
+  html:has(body.glass.light){background-color:#efede8}
+  body.glass{background:transparent}
+}
+@supports not selector(html:has(body)){body.glass::before{display:none}}
+
+/* ---- Frosted cards, rows, inputs and controls (tint + edge + soft shadow, no per-item blur) ---- */
+body.glass :is(
+  .v3-card,.v3-tile,.v3-field,.v4-card,.v4-dua-card,.v4-list-card,.v4-glance-card,.v4-home-glance,.v4-home-hijri,.v4-setup-card,.v4-result,.v4-choice,
+  .v404-card,.home-ramadan-card,.salah-prayer-row,.salah-item,.salah-learning-details,.cycle-summary,
+  .routine-card,.stat-card,.settings-card,.progress-hero,.library-item,.achievement,.week-chart,.you-shortcut,.focus-preset,.dhikr-picker,
+  .st-group,.accent-setting,.qr-row,.qr-juz,.qrv-card,.qr-settings,.qr-search,.qr-due,.qm-stats>div,.qr-mushaf-choice,.qr-reading-modes,
+  .qr-full-identity,.qr-qari-toggle,.qr-qari-menu,.naseem-update-banner
+){
+  border-color:var(--glass-edge);
+  background-image:var(--glass-spec);
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 10px 26px -12px var(--glass-drop);
+}
+body.glass :is(.icon-button,.secondary-button,.v3-button,.qr-sleep-btn,.qr-full-side,.qr-full-secondary,.target-control button,.toggle,.st-seg,.qr-seg,.quran-tabs){
+  border-color:var(--glass-edge);
+  box-shadow:inset 0 1px 0 var(--glass-hi);
+}
+body.glass :is(input,select,textarea):not([type=range]):not([type=checkbox]):not([type=radio]){
+  background-image:var(--glass-spec);
+}
+
+/* ---- Real glass (blurred) layers: only a handful of fixed / overlay surfaces ---- */
+body.glass :is(.bottom-nav,.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet,.v4-setup-overlay){
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  background-image:var(--glass-spec);
+  border-color:var(--glass-edge);
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 14px 38px -14px var(--glass-drop);
+}
+body.glass .bottom-nav,body.glass.light .bottom-nav{background-color:var(--glass-chrome);background-image:var(--glass-spec)}
+body.glass :is(.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet){background-color:var(--glass-chrome)}
+
+/* ---- Fallbacks: no backdrop-filter / reduced transparency / Smooth mode keep a readable, more opaque tint ---- */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  body.glass{--glass-chrome:rgba(24,26,30,.92);--nav-solid:rgba(24,26,30,.92)}
+  body.glass.light{--glass-chrome:rgba(255,255,255,.94);--nav-solid:rgba(255,255,255,.94)}
+}
+@media(prefers-reduced-transparency:reduce){
+  body.glass :is(.bottom-nav,.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet,.v4-setup-overlay){-webkit-backdrop-filter:none;backdrop-filter:none}
+  body.glass{--glass-chrome:rgba(24,26,30,.94);--panel:rgba(30,32,37,.9);--nav-solid:rgba(24,26,30,.94)}
+  body.glass.light{--glass-chrome:rgba(255,255,255,.96);--panel:rgba(255,255,255,.92);--nav-solid:rgba(255,255,255,.96)}
+}
+/* Smooth mode (low-end phones): keep the tinted look, drop the blur that costs the most to paint. */
+body.glass.lite :is(.bottom-nav,.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet,.v4-setup-overlay){-webkit-backdrop-filter:none;backdrop-filter:none}
+body.glass.lite{--glass-chrome:rgba(24,26,30,.88);--nav-solid:rgba(24,26,30,.88)}
+body.glass.lite.light{--glass-chrome:rgba(255,255,255,.92);--nav-solid:rgba(255,255,255,.92)}

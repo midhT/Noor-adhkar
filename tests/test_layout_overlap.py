@@ -33,7 +33,7 @@ with sync_playwright() as p:
     for theme in ('dark', 'light'):
         for w, h in ((320, 568), (360, 640), (412, 915), (600, 960), (768, 1024), (640, 360)):
             ctx = b.new_context(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True); seed_returning_user(ctx)
-            ctx.add_init_script(f"localStorage.setItem('naseem-theme','{theme}')")
+            ctx.add_init_script(f"localStorage.setItem('naseem-theme','{theme}');localStorage.setItem('naseemGlassV1','off')")  # glass has its own test; this checks the default look
             pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
             quran_mock.install(pg); pg.goto(srv.url()); pg.wait_for_timeout(2300)
             bg = pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backgroundColor")
