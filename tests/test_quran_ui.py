@@ -71,6 +71,9 @@ with sync_playwright() as p:
     ok('word-level timing marks Quran words for follow-along', word_follow_started and pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
     ok('only the ayah being recited is highlighted', pg.evaluate(PLAYING_JS) == [3], str(pg.evaluate(PLAYING_JS)))
     c = pg.evaluate(CENTRE_JS)
+    for _ in range(30):  # the centring scroll is animated; slow CI runners need longer than a fixed delay
+        if c and abs(c['off']) < 14: break
+        pg.wait_for_timeout(150); c = pg.evaluate(CENTRE_JS)
     ok('recited ayah is centred between header and player', c and abs(c['off']) < 14, str(c))
     ok('player shows the surah and current ayah', 'Test Surah 2' in pg.inner_text('#quranNowPlaying') and 'ayah 3' in pg.inner_text('#quranPlaybackStatus'))
     ok('play icon on the ayah becomes pause', pg.evaluate("document.querySelector('[data-play-ayah=\"3\"]').classList.contains('on')"))
