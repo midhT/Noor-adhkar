@@ -9,28 +9,28 @@
    keeps scrolling smooth on budget phones.
    ===================================================================== */
 body.glass{
-  --glass-blur:22px;
-  --glass-sat:1.55;
-  --panel:rgba(30,32,37,.56);
-  --panel2:rgba(46,49,55,.46);
-  --line:rgba(255,255,255,.13);
-  --glass-edge:rgba(255,255,255,.17);
-  --glass-hi:rgba(255,255,255,.20);
-  --glass-drop:rgba(0,0,0,.34);
-  --glass-spec:linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.02) 42%,rgba(255,255,255,0) 60%);
-  --glass-chrome:rgba(24,26,30,.58);
-  --nav-solid:rgba(24,26,30,.58);
+  --glass-blur:26px;
+  --glass-sat:1.8;
+  --panel:rgba(38,42,49,.46);
+  --panel2:rgba(52,57,65,.38);
+  --line:rgba(255,255,255,.14);
+  --glass-edge:rgba(255,255,255,.22);
+  --glass-hi:rgba(255,255,255,.34);
+  --glass-drop:rgba(0,0,0,.42);
+  --glass-spec:linear-gradient(150deg,rgba(255,255,255,.17),rgba(255,255,255,.04) 38%,rgba(255,255,255,0) 58%,rgba(255,255,255,.05));
+  --glass-chrome:rgba(26,29,34,.46);
+  --nav-solid:rgba(26,29,34,.46);
 }
 body.glass.light{
-  --panel:rgba(255,255,255,.60);
-  --panel2:rgba(255,255,255,.44);
+  --panel:rgba(255,255,255,.52);
+  --panel2:rgba(255,255,255,.38);
   --line:rgba(40,60,50,.13);
-  --glass-edge:rgba(255,255,255,.85);
-  --glass-hi:rgba(255,255,255,.95);
-  --glass-drop:rgba(28,48,38,.14);
-  --glass-spec:linear-gradient(145deg,rgba(255,255,255,.55),rgba(255,255,255,.10) 45%,rgba(255,255,255,0) 62%);
-  --glass-chrome:rgba(255,255,255,.66);
-  --nav-solid:rgba(255,255,255,.66);
+  --glass-edge:rgba(255,255,255,.9);
+  --glass-hi:rgba(255,255,255,1);
+  --glass-drop:rgba(28,48,38,.16);
+  --glass-spec:linear-gradient(150deg,rgba(255,255,255,.7),rgba(255,255,255,.14) 42%,rgba(255,255,255,0) 60%,rgba(255,255,255,.18));
+  --glass-chrome:rgba(255,255,255,.52);
+  --nav-solid:rgba(255,255,255,.52);
 }
 
 /* Static ambient backdrop: gives the glass something to refract. No animation, one fixed compositor layer. */
@@ -68,7 +68,7 @@ body.glass :is(
 ){
   border-color:var(--glass-edge);
   background-image:var(--glass-spec);
-  box-shadow:inset 0 1px 0 var(--glass-hi),0 10px 26px -12px var(--glass-drop);
+  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px rgba(255,255,255,.035),inset 0 -16px 22px -20px var(--glass-hi),0 14px 30px -14px var(--glass-drop);
 }
 body.glass :is(.icon-button,.secondary-button,.v3-button,.qr-sleep-btn,.qr-full-side,.qr-full-secondary,.target-control button,.toggle,.st-seg,.qr-seg,.quran-tabs){
   border-color:var(--glass-edge);
@@ -84,10 +84,11 @@ body.glass :is(.bottom-nav,.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.q
   backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
   background-image:var(--glass-spec);
   border-color:var(--glass-edge);
-  box-shadow:inset 0 1px 0 var(--glass-hi),0 14px 38px -14px var(--glass-drop);
+  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px rgba(255,255,255,.04),inset 0 -14px 22px -18px var(--glass-hi),0 16px 40px -14px var(--glass-drop);
 }
 body.glass .bottom-nav,body.glass.light .bottom-nav{background-color:var(--glass-chrome);background-image:var(--glass-spec)}
-body.glass :is(.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet){background-color:var(--glass-chrome)}
+body.glass{--glass-strong:rgba(24,27,32,.78)}body.glass.light{--glass-strong:rgba(255,255,255,.80)}
+body.glass :is(.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet){background-color:var(--glass-strong)}
 
 /* ---- Fallbacks: no backdrop-filter / reduced transparency / Smooth mode keep a readable, more opaque tint ---- */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
@@ -103,3 +104,59 @@ body.glass :is(.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-shee
 body.glass.lite :is(.bottom-nav,.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet,.v4-setup-overlay){-webkit-backdrop-filter:none;backdrop-filter:none}
 body.glass.lite{--glass-chrome:rgba(24,26,30,.88);--nav-solid:rgba(24,26,30,.88)}
 body.glass.lite.light{--glass-chrome:rgba(255,255,255,.92);--nav-solid:rgba(255,255,255,.92)}
+
+
+/* =====================================================================
+   Glass navigation: a floating capsule with a single glass lens (glass-nav.js moves it with a transform).
+   Replaces the old flex-grow / background transitions, which re-laid out the bar on every tab change.
+   ===================================================================== */
+body.glass .bottom-nav{
+  --count:5;--lens:0;
+  position:fixed;left:50%;right:auto;transform:translateX(-50%);
+  width:min(400px,calc(100% - 28px));max-width:none;height:68px;min-height:0;padding:4px;gap:0;
+  bottom:calc(12px + env(safe-area-inset-bottom));
+  display:grid;grid-template-columns:repeat(var(--count),minmax(0,1fr));align-items:stretch;
+  border-radius:999px;
+}
+body.glass .bottom-nav .nav-item{
+  position:relative;z-index:1;flex:none;min-width:0;min-height:0;height:100%;padding:6px 0 5px;gap:3px;
+  border:0!important;border-radius:999px;background:none!important;box-shadow:none!important;transform:none!important;
+  color:rgba(240,244,248,.66);transition:color .2s ease;-webkit-tap-highlight-color:transparent;
+}
+body.glass.light .bottom-nav .nav-item{color:rgba(36,48,42,.62)}
+body.glass .bottom-nav .nav-item.active{color:#fff;flex:none}
+body.glass.light .bottom-nav .nav-item.active{color:color-mix(in srgb,var(--accent) 80%,#10201a)}
+body.glass .bottom-nav .nav-item.active:before{display:none}
+body.glass .bottom-nav .nav-item small{font-size:10px;letter-spacing:.01em;display:block!important}
+body.glass .bottom-nav .nav-item .ni{width:26px;height:24px;transition:transform .32s cubic-bezier(.3,1.5,.5,1)}
+body.glass .bottom-nav .nav-item.active .ni{transform:translateY(-1px) scale(1.08)}
+body.glass .bottom-nav .nav-pill{display:none}
+body.glass .bottom-nav.dragging{box-shadow:inset 0 1px 0 var(--glass-hi),0 20px 46px -12px var(--glass-drop)}
+
+body.glass .nav-lens{
+  position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
+  border-radius:999px;pointer-events:none;
+  transform:translate3d(calc(var(--lens) * 100%),0,0);scale:1;
+  transition:transform .5s cubic-bezier(.28,1.4,.42,1),scale .3s cubic-bezier(.3,1.55,.5,1),box-shadow .3s ease;
+  background:
+    radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.34),rgba(255,255,255,0) 55%),
+    linear-gradient(165deg,color-mix(in srgb,var(--accent) 26%,rgba(255,255,255,.14)),color-mix(in srgb,var(--accent) 10%,rgba(255,255,255,.05)));
+  border:1px solid rgba(255,255,255,.30);
+  box-shadow:inset 0 1.5px 1px rgba(255,255,255,.65),inset 0 -2px 3px rgba(255,255,255,.14),inset 0 0 16px rgba(255,255,255,.07),0 8px 18px -6px rgba(0,0,0,.42);
+  -webkit-backdrop-filter:blur(2px) saturate(1.9) brightness(1.14);backdrop-filter:blur(2px) saturate(1.9) brightness(1.14);
+  will-change:transform;
+}
+body.glass.light .nav-lens{
+  background:
+    radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.95),rgba(255,255,255,0) 58%),
+    linear-gradient(165deg,color-mix(in srgb,var(--accent) 20%,rgba(255,255,255,.55)),color-mix(in srgb,var(--accent) 9%,rgba(255,255,255,.3)));
+  border-color:rgba(255,255,255,.9);
+  box-shadow:inset 0 1.5px 1px #fff,inset 0 -2px 3px rgba(255,255,255,.6),0 8px 18px -8px rgba(28,60,44,.35);
+}
+body.glass .bottom-nav.lens-press .nav-lens{scale:1.13 1.17;box-shadow:inset 0 1.5px 1px rgba(255,255,255,.8),inset 0 -2px 4px rgba(255,255,255,.2),inset 0 0 22px rgba(255,255,255,.12),0 12px 26px -6px rgba(0,0,0,.5)}
+body.glass .bottom-nav.lens-drag .nav-lens{transition:transform .08s linear,scale .3s cubic-bezier(.3,1.55,.5,1),box-shadow .3s ease}
+body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;transition:transform .18s ease-out}
+@media(prefers-reduced-motion:reduce){body.glass .nav-lens{transition:none}body.glass .bottom-nav .nav-item .ni{transition:none}}
+
+/* The glass nav capsule is taller than the old dock, so floating layers that sit above it move up with it. */
+body.glass .qr-player{bottom:calc(94px + env(safe-area-inset-bottom))}

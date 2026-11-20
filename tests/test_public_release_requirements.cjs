@@ -12,7 +12,7 @@ const reminders = read('www/reminders.js');
 const glance = read('www/glance-config.js');
 const v404 = read('www/v404.js');
 const sw = read('www/sw.js');
-assert.match(index, /naseem-version-code\" content=\"40115/);
+assert.match(index, /naseem-version-code\" content=\"40116/);
 assert.match(index, /<script src=\"glance-config\.js\"><\/script>/);
 assert.match(tracker, /isPrayerTimeReached/);
 assert.match(tracker, /isPrayerTimeReached/);

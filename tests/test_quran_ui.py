@@ -66,6 +66,9 @@ with sync_playwright() as p:
     ok('word-level timing marks Quran words for follow-along', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
     ok('only the ayah being recited is highlighted', pg.evaluate(PLAYING_JS) == [3], str(pg.evaluate(PLAYING_JS)))
     c = pg.evaluate(CENTRE_JS)
+    for _ in range(30):  # the centring scroll is animated; slow CI runners need longer than a fixed delay
+        if c and abs(c['off']) < 14: break
+        pg.wait_for_timeout(150); c = pg.evaluate(CENTRE_JS)
     ok('recited ayah is centred between header and player', c and abs(c['off']) < 14, str(c))
     ok('player shows the surah and current ayah', 'Test Surah 2' in pg.inner_text('#quranNowPlaying') and 'ayah 3' in pg.inner_text('#quranPlaybackStatus'))
     ok('play icon on the ayah becomes pause', pg.evaluate("document.querySelector('[data-play-ayah=\"3\"]').classList.contains('on')"))
@@ -144,7 +147,9 @@ with sync_playwright() as p:
     pg.tap('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(120)
     ok('leaving screen cross-fades instead of vanishing', pg.evaluate("document.querySelectorAll('.screen.leaving').length") == 1)
     pg.wait_for_timeout(700)
-    pill = pg.evaluate("(()=>{const p=document.querySelector('.nav-pill').getBoundingClientRect(),a=document.querySelector('.nav-item.active').getBoundingClientRect();return {dx:Math.abs((p.left+p.width/2)-(a.left+a.width/2)),w:p.width}})()")
+    # glass ON (default) moves a glass lens under the active tab; glass OFF keeps the old morphing pill
+    sel = '.nav-lens' if pg.evaluate("document.body.classList.contains('glass')") else '.nav-pill'
+    pill = pg.evaluate("(()=>{const p=document.querySelector('%s').getBoundingClientRect(),a=document.querySelector('.nav-item.active').getBoundingClientRect();return {dx:Math.abs((p.left+p.width/2)-(a.left+a.width/2)),w:p.width}})()" % sel)
     ok('tab pill has glided to the active tab', pill['w'] > 20 and pill['dx'] < 6, str(pill))
     ok('leaving class is cleaned up', pg.evaluate("document.querySelectorAll('.screen.leaving').length") == 0)
     pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(500)

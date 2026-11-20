@@ -19,7 +19,7 @@ assert.match(reader,/naseem-quran-page-bookmarks-v1/);
 assert.match(reader,/quranMushafNote/);
 assert.match(reader,/qfRequest\(`lookup\?/);
 assert.match(html,/quran-config\.js/);
-assert.match(html,/content="40115"/);
+assert.match(html,/content="40116"/);
 assert.match(css,/qr-mushaf-line/);
 assert.match(config,/NASEEM_QF_PROXY_URL/);
 assert.match(worker,/QF_CLIENT_SECRET/);
