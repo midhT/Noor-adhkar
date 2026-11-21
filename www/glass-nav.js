@@ -13,7 +13,10 @@
   const tabs = () => [...nav.querySelectorAll('.nav-item')];
   let drag = false, down = false, sx = 0, pid = null, rect = null;
 
-  const setPos = p => nav.style.setProperty('--lens', p.toFixed(3));
+  let slotPx = 0;
+  const measure = () => { const n = tabs().length || 5; slotPx = Math.max(0, (nav.clientWidth - 8) / n); nav.style.setProperty('--slot', slotPx.toFixed(2) + 'px'); };
+  // --lx is the lens position in px; the capsule's blur layer has a hole at that spot so the lens can refract the crisp page.
+  const setPos = p => { nav.style.setProperty('--lens', p.toFixed(3)); nav.style.setProperty('--lx', (4 + p * slotPx).toFixed(2) + 'px'); };
   function sync() {
     const list = tabs();
     nav.style.setProperty('--count', String(list.length || 5));
@@ -26,6 +29,8 @@
     nav.classList.remove('lens-press', 'lens-drag');
     sync();
   }
+  if ('ResizeObserver' in window) new ResizeObserver(() => { measure(); sync(); }).observe(nav);
+  measure();
   new MutationObserver(sync).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] });
 
   nav.addEventListener('pointerdown', e => {

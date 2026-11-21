@@ -9,7 +9,7 @@ def ok(name, cond, detail=''):
     print(('PASS ' if cond else 'FAIL ') + name, detail if not cond else '')
     if not cond: fails.append(name)
 
-BF = "getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"
+BF = "getComputedStyle(document.querySelector('.bottom-nav'),'::before').backdropFilter"
 srv = Server(8874)
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--no-sandbox'])
@@ -20,7 +20,7 @@ with sync_playwright() as p:
     pg.goto(srv.url()); pg.wait_for_timeout(2400)
     pg.evaluate("document.body.classList.remove('lite')")
     ok('glass is on by default', pg.evaluate("document.body.classList.contains('glass')"))
-    ok('nav is blurred when glass is on', 'blur' in pg.evaluate(BF), pg.evaluate(BF))
+    ok('nav glass layer is blurred when glass is on', 'blur' in pg.evaluate(BF), pg.evaluate(BF))
     BG = "getComputedStyle(document.querySelector('.bottom-nav')).backgroundColor"
     on_bg = pg.evaluate(BG)
     ok('toggle exists in settings', pg.evaluate("!!document.getElementById('stGlassToggle')"))
@@ -29,6 +29,7 @@ with sync_playwright() as p:
     ok('toggle shows OFF', pg.evaluate("document.getElementById('stGlassToggle').textContent.trim()") == 'OFF'
        and pg.evaluate("document.getElementById('stGlassToggle').getAttribute('aria-pressed')") == 'false')
     ok('nav returns to its previous background when off', pg.evaluate(BG) != on_bg, on_bg + ' vs ' + pg.evaluate(BG))
+    ok('glass off: lens takes no space and the 5 tabs share the bar', pg.evaluate("getComputedStyle(document.querySelector('.nav-lens')).display")=='none' and pg.evaluate("[...document.querySelectorAll('.bottom-nav .nav-item')].every(e=>e.getBoundingClientRect().width>40)"))
     ok('choice stored', pg.evaluate("localStorage.getItem('naseemGlassV1')") == 'off')
     pg.reload(); pg.wait_for_timeout(2400)
     ok('off persists after reload', not pg.evaluate("document.body.classList.contains('glass')"))

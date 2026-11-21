@@ -30,6 +30,11 @@ with sync_playwright() as p:
     ok('lens follows the selected tab', float(pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).getPropertyValue('--lens')")) == idx and idx > 0, str(idx))
     box = pg.evaluate("(()=>{const l=document.querySelector('.nav-lens').getBoundingClientRect(),t=document.querySelectorAll('.bottom-nav .nav-item')[%d].getBoundingClientRect();return [l.left+l.width/2,t.left+t.width/2]})()" % idx)
     ok('lens sits under the selected tab', abs(box[0] - box[1]) < 6, str(box))
+    pg.evaluate("document.querySelector('.bottom-nav').classList.add('lens-press')"); pg.wait_for_timeout(700)
+    box2 = pg.evaluate("(()=>{const l=document.querySelector('.nav-lens').getBoundingClientRect(),t=document.querySelectorAll('.bottom-nav .nav-item')[%d].getBoundingClientRect();return [l.left+l.width/2,t.left+t.width/2]})()" % idx)
+    ok('pressed (swollen) lens stays centred on its tab', abs(box2[0] - box2[1]) < 3, str(box2))
+    ok('no ambient backdrop layer', pg.evaluate("getComputedStyle(document.body,'::before').content") in ('none','normal'))
+    pg.evaluate("document.querySelector('.bottom-nav').classList.remove('lens-press')")
     ok('nav does not animate flex-grow any more', 'flex-grow' not in pg.evaluate("getComputedStyle(document.querySelector('.nav-item.active')).transitionProperty"))
 
     # ---- wavy seek bar ----

@@ -169,7 +169,7 @@ with sync_playwright() as p:
     pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(700)
     geo = pg.evaluate("""()=>{const n=document.querySelector('.bottom-nav').getBoundingClientRect(),pl=document.getElementById('quranPlayer').getBoundingClientRect(),bar=document.getElementById('quranReaderBar').getBoundingClientRect();return {navTop:n.top,playBottom:pl.bottom,playTop:pl.top,barBottom:bar.bottom,navBg:getComputedStyle(document.querySelector('.bottom-nav')).backgroundColor}}""")
     ok('player floats clear of the navigation bar', geo['playBottom'] <= geo['navTop'] - 4, str(geo))
-    ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
+    ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::before').backdropFilter+getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
     pg.tap('#quranStop')
     for _ in range(3):
         pg.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})"); pg.wait_for_timeout(500)

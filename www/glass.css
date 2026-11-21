@@ -4,7 +4,7 @@
    returns to its previous solid look; nothing outside body.glass is changed by this file.
 
    Design: written for Naseem (own implementation). Frosted surfaces = translucent tint + soft edge
-   highlight + gentle shadow over a static ambient backdrop. Real blur (backdrop-filter) is limited to the
+   highlight + gentle shadow over the normal page background. Real blur (backdrop-filter) is limited to the
    few fixed / overlay layers (navigation, player, sheets, toasts); long lists only get tint + edge, which
    keeps scrolling smooth on budget phones.
    ===================================================================== */
@@ -32,31 +32,6 @@ body.glass.light{
   --glass-chrome:rgba(255,255,255,.52);
   --nav-solid:rgba(255,255,255,.52);
 }
-
-/* Static ambient backdrop: gives the glass something to refract. No animation, one fixed compositor layer. */
-body.glass::before{
-  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:
-    radial-gradient(58% 38% at 8% -2%,color-mix(in srgb,var(--accent) 40%,transparent),transparent 72%),
-    radial-gradient(48% 34% at 104% 28%,rgba(90,120,255,.24),transparent 72%),
-    radial-gradient(40% 28% at 96% 66%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 72%),
-    radial-gradient(62% 40% at 24% 104%,color-mix(in srgb,var(--accent) 28%,transparent),transparent 72%);
-}
-body.glass.light::before{
-  background:
-    radial-gradient(58% 38% at 8% -2%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 72%),
-    radial-gradient(48% 34% at 104% 28%,rgba(120,150,255,.20),transparent 72%),
-    radial-gradient(62% 40% at 24% 104%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 72%);
-}
-
-/* The backdrop layer sits behind the page, so the body's own solid paint must step aside and html carries the base colour.
-   Browsers without :has() keep the solid body and simply skip the ambient layer (the tinted surfaces still apply). */
-@supports selector(html:has(body)){
-  html:has(body.glass){background-color:#0b0b0d}
-  html:has(body.glass.light){background-color:#efede8}
-  body.glass{background:transparent}
-}
-@supports not selector(html:has(body)){body.glass::before{display:none}}
 
 /* ---- Frosted cards, rows, inputs and controls (tint + edge + soft shadow, no per-item blur) ---- */
 body.glass :is(
@@ -136,11 +111,12 @@ body.glass .bottom-nav.dragging{box-shadow:inset 0 1px 0 var(--glass-hi),0 20px 
 body.glass .nav-lens{
   position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
   border-radius:999px;pointer-events:none;
-  transform:translate3d(calc(var(--lens) * 100%),0,0);scale:1;
-  transition:transform .5s cubic-bezier(.28,1.4,.42,1),scale .3s cubic-bezier(.3,1.55,.5,1),box-shadow .3s ease;
+  --sx:1;--sy:1;
+  transform:translate3d(calc(var(--lens) * 100%),0,0) scale(var(--sx),var(--sy));
+  transition:transform .5s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease;
   background:
     radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.34),rgba(255,255,255,0) 55%),
-    linear-gradient(165deg,color-mix(in srgb,var(--accent) 26%,rgba(255,255,255,.14)),color-mix(in srgb,var(--accent) 10%,rgba(255,255,255,.05)));
+    linear-gradient(165deg,color-mix(in srgb,var(--accent) 15%,rgba(255,255,255,.10)),color-mix(in srgb,var(--accent) 5%,rgba(255,255,255,.03)));
   border:1px solid rgba(255,255,255,.30);
   box-shadow:inset 0 1.5px 1px rgba(255,255,255,.65),inset 0 -2px 3px rgba(255,255,255,.14),inset 0 0 16px rgba(255,255,255,.07),0 8px 18px -6px rgba(0,0,0,.42);
   -webkit-backdrop-filter:blur(2px) saturate(1.9) brightness(1.14);backdrop-filter:blur(2px) saturate(1.9) brightness(1.14);
@@ -153,10 +129,50 @@ body.glass.light .nav-lens{
   border-color:rgba(255,255,255,.9);
   box-shadow:inset 0 1.5px 1px #fff,inset 0 -2px 3px rgba(255,255,255,.6),0 8px 18px -8px rgba(28,60,44,.35);
 }
-body.glass .bottom-nav.lens-press .nav-lens{scale:1.13 1.17;box-shadow:inset 0 1.5px 1px rgba(255,255,255,.8),inset 0 -2px 4px rgba(255,255,255,.2),inset 0 0 22px rgba(255,255,255,.12),0 12px 26px -6px rgba(0,0,0,.5)}
-body.glass .bottom-nav.lens-drag .nav-lens{transition:transform .08s linear,scale .3s cubic-bezier(.3,1.55,.5,1),box-shadow .3s ease}
+body.glass .bottom-nav.lens-press .nav-lens{--sx:1.13;--sy:1.17;box-shadow:inset 0 1.5px 1px rgba(255,255,255,.8),inset 0 -2px 4px rgba(255,255,255,.2),inset 0 0 22px rgba(255,255,255,.12),0 12px 26px -6px rgba(0,0,0,.5)}
+body.glass .bottom-nav.lens-drag .nav-lens{transition:transform .09s linear,box-shadow .3s ease}
 body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;transition:transform .18s ease-out}
 @media(prefers-reduced-motion:reduce){body.glass .nav-lens{transition:none}body.glass .bottom-nav .nav-item .ni{transition:none}}
 
 /* The glass nav capsule is taller than the old dock, so floating layers that sit above it move up with it. */
 body.glass .qr-player{bottom:calc(94px + env(safe-area-inset-bottom))}
+
+/* The lens element is created by glass-nav.js for every user; it must not exist visually (or take a grid slot) with glass off. */
+.nav-lens{display:none}
+body.glass .nav-lens{display:block}
+
+/* Real refraction: Chromium (Android WebView) can run an SVG displacement map on the backdrop. Only the small moving lens uses it. */
+@supports (backdrop-filter:url(#naseem-lens)){
+  body.glass:not(.lite) .nav-lens{
+    -webkit-backdrop-filter:url(#naseem-lens) blur(1.5px) saturate(1.9) brightness(1.12);
+    backdrop-filter:url(#naseem-lens) blur(1.5px) saturate(1.9) brightness(1.12);
+  }
+  body.glass:not(.lite) .bottom-nav.lens-press .nav-lens{
+    -webkit-backdrop-filter:url(#naseem-lens-press) blur(1.5px) saturate(2) brightness(1.16);
+    backdrop-filter:url(#naseem-lens-press) blur(1.5px) saturate(2) brightness(1.16);
+  }
+}
+
+/* The capsule's blur moves onto its own layer so the lens is a sibling of it, not a descendant: a nested backdrop-filter only
+   sees its parent's content, which is why the lens could not refract the page behind the bar. */
+body.glass .bottom-nav{-webkit-backdrop-filter:none;backdrop-filter:none}
+body.glass .bottom-nav::before{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
+  -webkit-backdrop-filter:blur(9px) saturate(var(--glass-sat));backdrop-filter:blur(9px) saturate(var(--glass-sat));
+}
+body.glass.lite .bottom-nav::before{-webkit-backdrop-filter:none;backdrop-filter:none}
+@media(prefers-reduced-transparency:reduce){body.glass .bottom-nav::before{-webkit-backdrop-filter:none;backdrop-filter:none}}
+
+/* A hole in the capsule's blur layer under the lens: the lens then refracts the crisp page, not an already-blurred copy. */
+@supports (mask-composite:exclude) or (-webkit-mask-composite:xor){
+  body.glass:not(.lite) .bottom-nav::before{
+    -webkit-mask-image:linear-gradient(#000,#000),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='60' preserveAspectRatio='none'%3E%3Crect width='72' height='60' rx='30' fill='%23000'/%3E%3C/svg%3E");
+    mask-image:linear-gradient(#000,#000),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='60' preserveAspectRatio='none'%3E%3Crect width='72' height='60' rx='30' fill='%23000'/%3E%3C/svg%3E");
+    -webkit-mask-composite:xor;mask-composite:exclude;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    -webkit-mask-size:100% 100%,var(--slot,70px) calc(100% - 8px);mask-size:100% 100%,var(--slot,70px) calc(100% - 8px);
+    -webkit-mask-position:0 0,var(--lx,4px) 4px;mask-position:0 0,var(--lx,4px) 4px;
+    transition:mask-position .5s cubic-bezier(.28,1.4,.42,1);
+  }
+  body.glass .bottom-nav.lens-drag::before{transition:mask-position .08s linear}
+}
