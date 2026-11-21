@@ -1,39 +1,48 @@
 /* =====================================================================
    Naseem Liquid Glass — Settings › Appearance › Liquid Glass.
-   Everything here is scoped to body.glass. Turning the switch off removes that class and the app
-   returns to its previous solid look; nothing outside body.glass is changed by this file.
+   Everything here is scoped to body.glass. Turning the switch off removes that class and the app returns to its previous look.
 
-   Design: written for Naseem (own implementation). Frosted surfaces = translucent tint + soft edge
-   highlight + gentle shadow over the normal page background. Real blur (backdrop-filter) is limited to the
-   few fixed / overlay layers (navigation, player, sheets, toasts); long lists only get tint + edge, which
-   keeps scrolling smooth on budget phones.
+   How the material is built (own implementation, modelled on how Apple describes Liquid Glass):
+   - Glass belongs to the control layer floating above the content: navigation, player, sheets, toasts, buttons, switches.
+     Content (cards, rows) stays calm and flat and only picks up a light edge, so glass reads as glass and text stays readable.
+   - A lens, not a frosted pane: light bends at the rim (SVG displacement, see glass-refract.js), the middle stays clear.
+   - Light has a direction: thin bright rims at two opposite corners, a darker bounce on the other sides. The angle follows
+     the phone's tilt a little (glass-light.js).
+   - It behaves like a liquid: the nav lens stretches while it travels and swells under the finger, controls squash on press.
    ===================================================================== */
 body.glass{
-  --glass-blur:26px;
-  --glass-sat:1.8;
-  --panel:rgba(38,42,49,.46);
-  --panel2:rgba(52,57,65,.38);
-  --line:rgba(255,255,255,.14);
-  --glass-edge:rgba(255,255,255,.22);
-  --glass-hi:rgba(255,255,255,.34);
-  --glass-drop:rgba(0,0,0,.42);
-  --glass-spec:linear-gradient(150deg,rgba(255,255,255,.17),rgba(255,255,255,.04) 38%,rgba(255,255,255,0) 58%,rgba(255,255,255,.05));
-  --glass-chrome:rgba(26,29,34,.46);
-  --nav-solid:rgba(26,29,34,.46);
+  --glass-blur:20px;
+  --glass-sat:1.7;
+  --panel:rgba(34,38,44,.58);
+  --panel2:rgba(48,53,60,.5);
+  --line:rgba(255,255,255,.09);
+  --rim-a:rgba(255,255,255,.20);          /* light side of a card edge */
+  --rim-b:rgba(255,255,255,.05);          /* bounce side */
+  --rim-1:rgba(255,255,255,.88);          /* specular rim of floating glass */
+  --rim-0:rgba(255,255,255,.07);
+  --rim-2:rgba(255,255,255,.50);
+  --glass-fill:rgba(28,31,36,.44);
+  --glass-strong:rgba(24,27,32,.80);
+  --glass-shadow:rgba(0,0,0,.45);
+  --nav-solid:rgba(28,31,36,.44);
+  --rim-angle:-38deg;
 }
 body.glass.light{
-  --panel:rgba(255,255,255,.52);
-  --panel2:rgba(255,255,255,.38);
-  --line:rgba(40,60,50,.13);
-  --glass-edge:rgba(255,255,255,.9);
-  --glass-hi:rgba(255,255,255,1);
-  --glass-drop:rgba(28,48,38,.16);
-  --glass-spec:linear-gradient(150deg,rgba(255,255,255,.7),rgba(255,255,255,.14) 42%,rgba(255,255,255,0) 60%,rgba(255,255,255,.18));
-  --glass-chrome:rgba(255,255,255,.52);
-  --nav-solid:rgba(255,255,255,.52);
+  --panel:rgba(255,255,255,.62);
+  --panel2:rgba(255,255,255,.46);
+  --line:rgba(40,60,50,.10);
+  --rim-a:rgba(255,255,255,.95);
+  --rim-b:rgba(40,60,50,.07);
+  --rim-1:rgba(255,255,255,1);
+  --rim-0:rgba(255,255,255,.18);
+  --rim-2:rgba(255,255,255,.75);
+  --glass-fill:rgba(255,255,255,.44);
+  --glass-strong:rgba(255,255,255,.82);
+  --glass-shadow:rgba(28,48,38,.22);
+  --nav-solid:rgba(255,255,255,.44);
 }
 
-/* ---- Frosted cards, rows, inputs and controls (tint + edge + soft shadow, no per-item blur) ---- */
+/* ---- Content layer: calm, flat, a light edge only (no wash, no blur) ---- */
 body.glass :is(
   .v3-card,.v3-tile,.v3-field,.v4-card,.v4-dua-card,.v4-list-card,.v4-glance-card,.v4-home-glance,.v4-home-hijri,.v4-setup-card,.v4-result,.v4-choice,
   .v404-card,.home-ramadan-card,.salah-prayer-row,.salah-item,.salah-learning-details,.cycle-summary,
@@ -41,49 +50,56 @@ body.glass :is(
   .st-group,.accent-setting,.qr-row,.qr-juz,.qrv-card,.qr-settings,.qr-search,.qr-due,.qm-stats>div,.qr-mushaf-choice,.qr-reading-modes,
   .qr-full-identity,.qr-qari-toggle,.qr-qari-menu,.naseem-update-banner
 ){
-  border-color:var(--glass-edge);
-  background-image:var(--glass-spec);
-  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px rgba(255,255,255,.035),inset 0 -16px 22px -20px var(--glass-hi),0 14px 30px -14px var(--glass-drop);
-}
-body.glass :is(.icon-button,.secondary-button,.v3-button,.qr-sleep-btn,.qr-full-side,.qr-full-secondary,.target-control button,.toggle,.st-seg,.qr-seg,.quran-tabs){
-  border-color:var(--glass-edge);
-  box-shadow:inset 0 1px 0 var(--glass-hi);
-}
-body.glass :is(input,select,textarea):not([type=range]):not([type=checkbox]):not([type=radio]){
-  background-image:var(--glass-spec);
+  border-color:var(--line);
+  box-shadow:inset 1px 1px 0 var(--rim-a),inset -1px -1px 0 var(--rim-b),0 1px 2px -1px var(--glass-shadow);
 }
 
-/* ---- Real glass (blurred) layers: only a handful of fixed / overlay surfaces ---- */
+/* ---- Controls: a light edge and a gel-like press ---- */
+body.glass :is(.icon-button,.secondary-button,.v3-button,.qr-sleep-btn,.qr-full-side,.qr-full-secondary,.target-control button,.toggle,.st-seg,.qr-seg,.quran-tabs){
+  border-color:var(--line);
+  box-shadow:inset 1px 1px 0 var(--rim-a),inset -1px -1px 0 var(--rim-b);
+  transition:transform .32s cubic-bezier(.3,1.6,.5,1),box-shadow .25s ease,background-color .25s ease;
+}
+body.glass :is(.icon-button,.secondary-button,.v3-button,.qr-sleep-btn,.qr-full-side,.qr-full-secondary,.target-control button):active{
+  transform:scale(.955);
+  box-shadow:inset 1px 1px 0 var(--rim-a),inset -1px -1px 0 var(--rim-b),inset 0 0 18px rgba(255,255,255,.16);
+}
+
+/* ---- Floating glass: navigation, players, sheets, toasts ---- */
 body.glass :is(.bottom-nav,.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet,.v4-setup-overlay){
   -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
   backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
-  background-image:var(--glass-spec);
-  border-color:var(--glass-edge);
-  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px rgba(255,255,255,.04),inset 0 -14px 22px -18px var(--glass-hi),0 16px 40px -14px var(--glass-drop);
+  border-color:transparent;
+  box-shadow:0 1px 2px var(--glass-shadow),0 14px 34px -16px var(--glass-shadow);
 }
-body.glass .bottom-nav,body.glass.light .bottom-nav{background-color:var(--glass-chrome);background-image:var(--glass-spec)}
-body.glass{--glass-strong:rgba(24,27,32,.78)}body.glass.light{--glass-strong:rgba(255,255,255,.80)}
 body.glass :is(.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet){background-color:var(--glass-strong)}
+body.glass .bottom-nav,body.glass.light .bottom-nav{background-color:var(--glass-fill)}
+
+/* The specular rim: a 1px ring lit at two opposite corners. Its angle is --rim-angle (tilt-aware). */
+body.glass :is(.bottom-nav,.qr-player,.qr-bar,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet,.nav-lens)::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:conic-gradient(from var(--rim-angle),var(--rim-1),var(--rim-0) 20%,var(--rim-0) 48%,var(--rim-2) 70%,var(--rim-0) 90%,var(--rim-1));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+}
 
 /* ---- Fallbacks: no backdrop-filter / reduced transparency / Smooth mode keep a readable, more opaque tint ---- */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  body.glass{--glass-chrome:rgba(24,26,30,.92);--nav-solid:rgba(24,26,30,.92)}
-  body.glass.light{--glass-chrome:rgba(255,255,255,.94);--nav-solid:rgba(255,255,255,.94)}
+  body.glass{--glass-fill:rgba(24,26,30,.92);--glass-strong:rgba(24,26,30,.94);--nav-solid:rgba(24,26,30,.92)}
+  body.glass.light{--glass-fill:rgba(255,255,255,.94);--glass-strong:rgba(255,255,255,.95);--nav-solid:rgba(255,255,255,.94)}
 }
 @media(prefers-reduced-transparency:reduce){
   body.glass :is(.bottom-nav,.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet,.v4-setup-overlay){-webkit-backdrop-filter:none;backdrop-filter:none}
-  body.glass{--glass-chrome:rgba(24,26,30,.94);--panel:rgba(30,32,37,.9);--nav-solid:rgba(24,26,30,.94)}
-  body.glass.light{--glass-chrome:rgba(255,255,255,.96);--panel:rgba(255,255,255,.92);--nav-solid:rgba(255,255,255,.96)}
+  body.glass{--glass-fill:rgba(24,26,30,.94);--glass-strong:rgba(24,26,30,.96);--panel:rgba(30,32,37,.9);--nav-solid:rgba(24,26,30,.94)}
+  body.glass.light{--glass-fill:rgba(255,255,255,.96);--glass-strong:rgba(255,255,255,.97);--panel:rgba(255,255,255,.92);--nav-solid:rgba(255,255,255,.96)}
 }
-/* Smooth mode (low-end phones): keep the tinted look, drop the blur that costs the most to paint. */
+/* Smooth mode (low-end phones): keep the look, drop the blur and refraction that cost the most to paint. */
 body.glass.lite :is(.bottom-nav,.qr-bar,.qr-player,.toast,.nsheet-panel,.qr-qsheet,.qr-sleep-sheet,.v4-setup-overlay){-webkit-backdrop-filter:none;backdrop-filter:none}
-body.glass.lite{--glass-chrome:rgba(24,26,30,.88);--nav-solid:rgba(24,26,30,.88)}
-body.glass.lite.light{--glass-chrome:rgba(255,255,255,.92);--nav-solid:rgba(255,255,255,.92)}
-
+body.glass.lite{--glass-fill:rgba(24,26,30,.88);--glass-strong:rgba(24,26,30,.9);--nav-solid:rgba(24,26,30,.88)}
+body.glass.lite.light{--glass-fill:rgba(255,255,255,.92);--glass-strong:rgba(255,255,255,.94);--nav-solid:rgba(255,255,255,.92)}
 
 /* =====================================================================
    Glass navigation: a floating capsule with a single glass lens (glass-nav.js moves it with a transform).
-   Replaces the old flex-grow / background transitions, which re-laid out the bar on every tab change.
    ===================================================================== */
 body.glass .bottom-nav{
   --count:5;--lens:0;
@@ -96,9 +112,9 @@ body.glass .bottom-nav{
 body.glass .bottom-nav .nav-item{
   position:relative;z-index:1;flex:none;min-width:0;min-height:0;height:100%;padding:6px 0 5px;gap:3px;
   border:0!important;border-radius:999px;background:none!important;box-shadow:none!important;transform:none!important;
-  color:rgba(240,244,248,.66);transition:color .2s ease;-webkit-tap-highlight-color:transparent;
+  color:rgba(240,244,248,.68);transition:color .2s ease;-webkit-tap-highlight-color:transparent;
 }
-body.glass.light .bottom-nav .nav-item{color:rgba(36,48,42,.62)}
+body.glass.light .bottom-nav .nav-item{color:rgba(36,48,42,.64)}
 body.glass .bottom-nav .nav-item.active{color:#fff;flex:none}
 body.glass.light .bottom-nav .nav-item.active{color:color-mix(in srgb,var(--accent) 80%,#10201a)}
 body.glass .bottom-nav .nav-item.active:before{display:none}
@@ -106,55 +122,9 @@ body.glass .bottom-nav .nav-item small{font-size:10px;letter-spacing:.01em;displ
 body.glass .bottom-nav .nav-item .ni{width:26px;height:24px;transition:transform .32s cubic-bezier(.3,1.5,.5,1)}
 body.glass .bottom-nav .nav-item.active .ni{transform:translateY(-1px) scale(1.08)}
 body.glass .bottom-nav .nav-pill{display:none}
-body.glass .bottom-nav.dragging{box-shadow:inset 0 1px 0 var(--glass-hi),0 20px 46px -12px var(--glass-drop)}
 
-body.glass .nav-lens{
-  position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
-  border-radius:999px;pointer-events:none;
-  --sx:1;--sy:1;
-  transform:translate3d(calc(var(--lens) * 100%),0,0) scale(var(--sx),var(--sy));
-  transition:transform .5s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease;
-  background:
-    radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.34),rgba(255,255,255,0) 55%),
-    linear-gradient(165deg,color-mix(in srgb,var(--accent) 15%,rgba(255,255,255,.10)),color-mix(in srgb,var(--accent) 5%,rgba(255,255,255,.03)));
-  border:1px solid rgba(255,255,255,.30);
-  box-shadow:inset 0 1.5px 1px rgba(255,255,255,.65),inset 0 -2px 3px rgba(255,255,255,.14),inset 0 0 16px rgba(255,255,255,.07),0 8px 18px -6px rgba(0,0,0,.42);
-  -webkit-backdrop-filter:blur(2px) saturate(1.9) brightness(1.14);backdrop-filter:blur(2px) saturate(1.9) brightness(1.14);
-  will-change:transform;
-}
-body.glass.light .nav-lens{
-  background:
-    radial-gradient(120% 90% at 30% 0%,rgba(255,255,255,.95),rgba(255,255,255,0) 58%),
-    linear-gradient(165deg,color-mix(in srgb,var(--accent) 20%,rgba(255,255,255,.55)),color-mix(in srgb,var(--accent) 9%,rgba(255,255,255,.3)));
-  border-color:rgba(255,255,255,.9);
-  box-shadow:inset 0 1.5px 1px #fff,inset 0 -2px 3px rgba(255,255,255,.6),0 8px 18px -8px rgba(28,60,44,.35);
-}
-body.glass .bottom-nav.lens-press .nav-lens{--sx:1.13;--sy:1.17;box-shadow:inset 0 1.5px 1px rgba(255,255,255,.8),inset 0 -2px 4px rgba(255,255,255,.2),inset 0 0 22px rgba(255,255,255,.12),0 12px 26px -6px rgba(0,0,0,.5)}
-body.glass .bottom-nav.lens-drag .nav-lens{transition:transform .09s linear,box-shadow .3s ease}
-body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;transition:transform .18s ease-out}
-@media(prefers-reduced-motion:reduce){body.glass .nav-lens{transition:none}body.glass .bottom-nav .nav-item .ni{transition:none}}
-
-/* The glass nav capsule is taller than the old dock, so floating layers that sit above it move up with it. */
-body.glass .qr-player{bottom:calc(94px + env(safe-area-inset-bottom))}
-
-/* The lens element is created by glass-nav.js for every user; it must not exist visually (or take a grid slot) with glass off. */
-.nav-lens{display:none}
-body.glass .nav-lens{display:block}
-
-/* Real refraction: Chromium (Android WebView) can run an SVG displacement map on the backdrop. Only the small moving lens uses it. */
-@supports (backdrop-filter:url(#naseem-lens)){
-  body.glass:not(.lite) .nav-lens{
-    -webkit-backdrop-filter:url(#naseem-lens) blur(1.5px) saturate(1.9) brightness(1.12);
-    backdrop-filter:url(#naseem-lens) blur(1.5px) saturate(1.9) brightness(1.12);
-  }
-  body.glass:not(.lite) .bottom-nav.lens-press .nav-lens{
-    -webkit-backdrop-filter:url(#naseem-lens-press) blur(1.5px) saturate(2) brightness(1.16);
-    backdrop-filter:url(#naseem-lens-press) blur(1.5px) saturate(2) brightness(1.16);
-  }
-}
-
-/* The capsule's blur moves onto its own layer so the lens is a sibling of it, not a descendant: a nested backdrop-filter only
-   sees its parent's content, which is why the lens could not refract the page behind the bar. */
+/* The capsule's own blur sits on a separate layer so the lens is its sibling, not a descendant: a nested
+   backdrop-filter only sees its parent's content and could not refract the page behind the bar. */
 body.glass .bottom-nav{-webkit-backdrop-filter:none;backdrop-filter:none}
 body.glass .bottom-nav::before{
   content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
@@ -163,6 +133,42 @@ body.glass .bottom-nav::before{
 body.glass.lite .bottom-nav::before{-webkit-backdrop-filter:none;backdrop-filter:none}
 @media(prefers-reduced-transparency:reduce){body.glass .bottom-nav::before{-webkit-backdrop-filter:none;backdrop-filter:none}}
 
+/* The lens: nearly clear glass. It bends what is behind it at the rim, carries the specular ring, and behaves like liquid. */
+.nav-lens{display:none}
+body.glass .nav-lens{
+  display:block;position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
+  border-radius:999px;pointer-events:none;
+  --sx:1;--sy:1;
+  transform:translate3d(calc(var(--lens) * 100%),0,0) scale(var(--sx),var(--sy));
+  transition:transform .52s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease,background-color .3s ease;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04) 60%,rgba(255,255,255,.08));
+  box-shadow:inset 0 0 14px rgba(255,255,255,.07),0 6px 14px -8px var(--glass-shadow);
+  -webkit-backdrop-filter:blur(1px) saturate(1.7) brightness(1.1);backdrop-filter:blur(1px) saturate(1.7) brightness(1.1);
+  will-change:transform;
+}
+body.glass.light .nav-lens{
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.22) 60%,rgba(255,255,255,.4));
+  box-shadow:inset 0 0 12px rgba(255,255,255,.5),0 6px 14px -8px var(--glass-shadow);
+}
+/* stretches while it travels, then settles with the spring */
+body.glass .bottom-nav.lens-moving .nav-lens{--sx:var(--stretch,1.12);--sy:.95}
+/* swells and lights from within under the finger */
+body.glass .bottom-nav.lens-press .nav-lens{--sx:1.13;--sy:1.17;box-shadow:inset 0 0 22px rgba(255,255,255,.22),0 12px 24px -8px var(--glass-shadow)}
+body.glass .bottom-nav.lens-drag .nav-lens{transition:transform .09s linear,box-shadow .3s ease}
+body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;transition:transform .18s ease-out}
+@media(prefers-reduced-motion:reduce){body.glass .nav-lens{transition:none}body.glass .bottom-nav .nav-item .ni{transition:none}}
+
+/* Real refraction: Chromium (Android WebView) runs an SVG displacement map on the backdrop. Only the small moving lens uses it. */
+@supports (backdrop-filter:url(#naseem-lens)){
+  body.glass:not(.lite) .nav-lens{
+    -webkit-backdrop-filter:url(#naseem-lens) blur(1px) saturate(1.7) brightness(1.1);
+    backdrop-filter:url(#naseem-lens) blur(1px) saturate(1.7) brightness(1.1);
+  }
+  body.glass:not(.lite) .bottom-nav.lens-press .nav-lens{
+    -webkit-backdrop-filter:url(#naseem-lens-press) blur(1px) saturate(1.9) brightness(1.14);
+    backdrop-filter:url(#naseem-lens-press) blur(1px) saturate(1.9) brightness(1.14);
+  }
+}
 /* A hole in the capsule's blur layer under the lens: the lens then refracts the crisp page, not an already-blurred copy. */
 @supports (mask-composite:exclude) or (-webkit-mask-composite:xor){
   body.glass:not(.lite) .bottom-nav::before{
@@ -172,7 +178,10 @@ body.glass.lite .bottom-nav::before{-webkit-backdrop-filter:none;backdrop-filter
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     -webkit-mask-size:100% 100%,var(--slot,70px) calc(100% - 8px);mask-size:100% 100%,var(--slot,70px) calc(100% - 8px);
     -webkit-mask-position:0 0,var(--lx,4px) 4px;mask-position:0 0,var(--lx,4px) 4px;
-    transition:mask-position .5s cubic-bezier(.28,1.4,.42,1);
+    transition:mask-position .52s cubic-bezier(.28,1.4,.42,1);
   }
-  body.glass .bottom-nav.lens-drag::before{transition:mask-position .08s linear}
+  body.glass .bottom-nav.lens-drag::before{transition:mask-position .09s linear}
 }
+
+/* The glass nav capsule is taller than the old dock, so floating layers above it move up with it. */
+body.glass .qr-player{bottom:calc(94px + env(safe-area-inset-bottom))}

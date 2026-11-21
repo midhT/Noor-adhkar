@@ -118,13 +118,11 @@ window.NoorNative = {
   } : null
 };
 if (isNative) {
-  App.addListener('backButton', ({ canGoBack }) => {
-    const event = new CustomEvent('naseem:back', { cancelable: true });
-    window.dispatchEvent(event);
-    if (!event.defaultPrevented) {
-      if (canGoBack) window.history.back();
-      else App.exitApp();
-    }
+  App.addListener('backButton', () => {
+    // The page decides: close a sheet / player / sub-screen first. Only when nothing handled it (Home, nothing open) do we leave.
+    let handled = false;
+    try { handled = window.NaseemBack ? window.NaseemBack.press() : false; } catch (_) { handled = false; }
+    if (!handled) App.exitApp();
   }).catch(error => console.warn('Naseem back-button listener unavailable', error));
 }
 

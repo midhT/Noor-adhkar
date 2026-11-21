@@ -17,12 +17,19 @@
   const measure = () => { const n = tabs().length || 5; slotPx = Math.max(0, (nav.clientWidth - 8) / n); nav.style.setProperty('--slot', slotPx.toFixed(2) + 'px'); };
   // --lx is the lens position in px; the capsule's blur layer has a hole at that spot so the lens can refract the crisp page.
   const setPos = p => { nav.style.setProperty('--lens', p.toFixed(3)); nav.style.setProperty('--lx', (4 + p * slotPx).toFixed(2) + 'px'); };
+  let shown = 0, settle = 0;
   function sync() {
     const list = tabs();
     nav.style.setProperty('--count', String(list.length || 5));
     if (drag) return;
     const i = list.findIndex(t => t.classList.contains('active'));
-    setPos(i < 0 ? 0 : i);
+    const pos = i < 0 ? 0 : i, dist = Math.abs(pos - shown);
+    if (dist > 0.4 && !down) {                       // the lens stretches along its travel, then settles with the spring
+      nav.style.setProperty('--stretch', (1 + Math.min(0.3, dist * 0.085)).toFixed(3));
+      nav.classList.add('lens-moving'); clearTimeout(settle);
+      settle = setTimeout(() => nav.classList.remove('lens-moving'), 190);
+    }
+    shown = pos; setPos(pos);
   }
   function release() {
     down = false; drag = false; pid = null; rect = null;

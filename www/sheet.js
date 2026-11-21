@@ -39,6 +39,7 @@
       });
     });
     window.addEventListener('popstate', () => { if (open && !popping) { backPushed = false; close(true); } });
+    document.addEventListener('naseem:back', e => { if (open) { e.preventDefault(); e.stopImmediatePropagation(); close(); } }, true);
   }
 
   function labelOf(sel) { const o = sel.options[sel.selectedIndex]; return o ? o.textContent.trim() : ''; }

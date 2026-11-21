@@ -946,7 +946,10 @@
 
   // Android back button / gesture: step out of the reader or review before leaving the Quran tab.
   document.addEventListener('naseem:back',e=>{
-    if(!fullPlayer.hidden){e.preventDefault();e.stopImmediatePropagation();closeFullPlayer();return;}
+    if(!fullPlayer.hidden){e.preventDefault();e.stopImmediatePropagation();
+      if(fullPlayer.classList.contains('qr-sleep-open')){toggleSleepSheet(false);return;}
+      if(fullPlayer.classList.contains('qr-sheet-open')){toggleQariSheet(false);return;}
+      closeFullPlayer();return;}
     if(!screenActive())return;
     if(!reviewHost().hidden){e.preventDefault();e.stopImmediatePropagation();endReview();return;}
     if(readerOpen()){e.preventDefault();e.stopImmediatePropagation();showHome();}

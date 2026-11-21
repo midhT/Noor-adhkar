@@ -35,6 +35,17 @@ with sync_playwright() as p:
     ok('off persists after reload', not pg.evaluate("document.body.classList.contains('glass')"))
     pg.evaluate("document.getElementById('stGlassToggle').click()"); pg.wait_for_timeout(300)
     ok('turning on restores glass', pg.evaluate("document.body.classList.contains('glass')"))
+    pg.evaluate("document.body.classList.remove('lite')"); pg.wait_for_timeout(200)  # the reload above re-applied Smooth mode, which turns tilt off by design
+    # ---- light has a direction and follows the phone's tilt a little ----
+    ok('floating glass has a specular rim', pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').content") not in ('none', 'normal'))
+    a0 = pg.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--rim-angle').trim()")
+    pg.evaluate("window.dispatchEvent(Object.assign(new Event('deviceorientation'),{gamma:30,beta:75}))"); pg.wait_for_timeout(400)
+    a1 = pg.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--rim-angle').trim()")
+    ok('rim light moves when the phone is tilted', a1 and a1 != a0, f'{a0} -> {a1}')
+    pg.evaluate("document.getElementById('stGlassToggle').click()"); pg.wait_for_timeout(300)
+    pg.evaluate("window.dispatchEvent(Object.assign(new Event('deviceorientation'),{gamma:-30,beta:10}))"); pg.wait_for_timeout(400)
+    ok('with glass off the light does not move', pg.evaluate("document.documentElement.style.getPropertyValue('--rim-angle')") == '')
+    pg.evaluate("document.getElementById('stGlassToggle').click()"); pg.wait_for_timeout(300)
     ok('no horizontal overflow', pg.evaluate("document.documentElement.scrollWidth<=window.innerWidth+1"))
     ok('no page errors', errs == [], str(errs))
     ctx.close(); b.close()

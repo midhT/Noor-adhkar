@@ -65,6 +65,7 @@ NASEEM_FULL_MOTION=1 run_py_test tests/test_quran_ui.py
 run_py_test tests/test_sleep_timer_ui.py
 run_py_test tests/test_glass_ui.py
 run_py_test tests/test_wavy_seek_ui.py
+run_py_test tests/test_back_button_ui.py
 run_py_test tests/test_media_bridge_ui.py
 run_py_test tests/test_glance.py
 run_py_test tests/test_layout_overlap.py
