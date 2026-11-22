@@ -114,6 +114,8 @@ window.NoorNative = {
   media: isNative ? {
     async update(info) { try { await NaseemMedia.update(info); return true; } catch (_) { return false; } },
     async stop() { try { await NaseemMedia.stop(); return true; } catch (_) { return false; } },
+    async handoff(info) { try { await NaseemMedia.handoff(info); return true; } catch (_) { return false; } },
+    async reclaim() { try { return await NaseemMedia.reclaim(); } catch (_) { return null; } },
     onAction(callback) { try { return NaseemMedia.addListener('action', callback); } catch (_) { return null; } }
   } : null
 };

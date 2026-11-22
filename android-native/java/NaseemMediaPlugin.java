@@ -7,6 +7,7 @@ import android.os.Build;
 
 import androidx.core.content.ContextCompat;
 
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
@@ -69,6 +70,58 @@ public class NaseemMediaPlugin extends Plugin {
         } catch (Exception e) {
             call.reject(String.valueOf(e.getMessage()));
         }
+    }
+
+    /** The app is going to the background: the service plays the rest of the recitation natively. */
+    @PluginMethod
+    public void handoff(PluginCall call) {
+        try {
+            JSArray urlArray = call.getArray("urls");
+            if (urlArray == null || urlArray.length() == 0) { call.reject("no audio"); return; }
+            String[] urls = new String[urlArray.length()];
+            for (int i = 0; i < urls.length; i++) urls[i] = String.valueOf(urlArray.get(i));
+            JSArray artistArray = call.getArray("artists");
+            String[] artists = new String[artistArray == null ? 0 : artistArray.length()];
+            for (int i = 0; i < artists.length; i++) artists[i] = String.valueOf(artistArray.get(i));
+            JSArray markArray = call.getArray("marks");
+            long[] marks = new long[markArray == null ? 0 : markArray.length()];
+            for (int i = 0; i < marks.length; i++) marks[i] = markArray.getLong(i);
+            Context context = getContext();
+            Intent intent = new Intent(context, NaseemMediaService.class).setAction(NaseemMediaService.A_HANDOFF);
+            intent.putExtra("urls", urls);
+            intent.putExtra("artists", artists);
+            intent.putExtra("marks", marks);
+            intent.putExtra("index", call.getInt("index", 0));
+            Double position = call.getDouble("positionMs", 0d);
+            intent.putExtra("positionMs", position == null ? 0L : position.longValue());
+            Double stopAt = call.getDouble("stopAtMs", -1d);
+            intent.putExtra("stopAtMs", stopAt == null ? -1L : stopAt.longValue());
+            Double sleepAt = call.getDouble("sleepAtMs", -1d);
+            intent.putExtra("sleepAtMs", sleepAt == null ? -1L : sleepAt.longValue());
+            intent.putExtra("sleepAtEnd", call.getBoolean("sleepAtEnd", false));
+            intent.putExtra("playing", call.getBoolean("playing", true));
+            intent.putExtra("title", call.getString("title", ""));
+            intent.putExtra("artText", call.getString("artText", ""));
+            if (NaseemMediaService.running) context.startService(intent);
+            else ContextCompat.startForegroundService(context, intent);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject(String.valueOf(e.getMessage()));
+        }
+    }
+
+    /** The app is back in front: native playback stops and reports its position so the web player can continue. */
+    @PluginMethod
+    public void reclaim(PluginCall call) {
+        long[] r = NaseemMediaService.reclaim();
+        JSObject out = new JSObject();
+        out.put("active", r[0] == 1);
+        out.put("index", r[1]);
+        out.put("positionMs", r[2]);
+        out.put("playing", r[3] == 1);
+        out.put("ended", r[4] == 1);
+        out.put("reason", r[5] == 1 ? "queue" : r[5] == 2 ? "sleep" : r[5] == 3 ? "error" : "");
+        call.resolve(out);
     }
 
     @PluginMethod

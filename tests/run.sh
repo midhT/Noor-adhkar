@@ -67,6 +67,7 @@ run_py_test tests/test_glass_ui.py
 run_py_test tests/test_wavy_seek_ui.py
 run_py_test tests/test_back_button_ui.py
 run_py_test tests/test_media_bridge_ui.py
+run_py_test tests/test_background_handoff_ui.py
 run_py_test tests/test_glance.py
 run_py_test tests/test_layout_overlap.py
 run_py_test tests/test_onboarding_responsive.py

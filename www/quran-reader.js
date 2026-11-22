@@ -575,7 +575,7 @@
 
   /* ---------- Native media session: notification, lock-screen / headset buttons, background keep-alive ----------
      Only active inside the Android app (window.NoorNative.media comes from native.js); the browser build is unaffected. */
-  let mediaListening=false,mediaLastAt=0;
+  let mediaListening=false,mediaLastAt=0,handedOff=null;
   const nativeMedia=()=>window.NoorNative&&window.NoorNative.media||null;
   function mediaOnAction(e){
     const a=e&&e.action;
@@ -587,7 +587,7 @@
     else if(a==='seek'&&Number.isFinite(Number(e.positionMs))&&Number.isFinite(recitation.duration)){recitation.currentTime=Math.max(0,Math.min(recitation.duration,Number(e.positionMs)/1000));}
   }
   function mediaPush(force){
-    const m=nativeMedia();if(!m||!audioQueue.length)return;
+    const m=nativeMedia();if(!m||!audioQueue.length||handedOff)return;
     clearTimeout(mediaStopTimer);
     const now=Date.now();if(!force&&now-mediaLastAt<1000)return;mediaLastAt=now;
     if(!mediaListening){mediaListening=true;m.onAction(mediaOnAction);}
@@ -596,8 +596,93 @@
   }
   let mediaStopTimer=0;
   /* delayMs>0: internal reloads (e.g. auto-continue to the next surah) wait so the service is not torn down between surahs while the app is in the background. */
-  function mediaStop(delayMs){const m=nativeMedia();if(!m)return;clearTimeout(mediaStopTimer);if(delayMs>0)mediaStopTimer=setTimeout(()=>{if(!audioQueue.length)m.stop();},delayMs);else m.stop();}
-  function userStop(){sleepCancel();stopRecitation();mediaStop();}
+  function mediaStop(delayMs){handedOff=null;const m=nativeMedia();if(!m)return;clearTimeout(mediaStopTimer);if(delayMs>0)mediaStopTimer=setTimeout(()=>{if(!audioQueue.length)m.stop();},delayMs);else m.stop();}
+  function userStop(){sleepCancel();stopRecitation();mediaStop();clearResume();}
+
+  /* ---------- Background hand-off ----------
+     A WebView stops (or silently mutes) its own audio once the app is in the background, while the media notification
+     keeps saying "playing". So when the app is hidden the rest of the recitation is handed to the native service,
+     which plays it with a real MediaPlayer; when the app is shown again the native player stops and the web player
+     continues from the exact position it reached. */
+  let handoffChain=Promise.resolve();
+  const inChain=fn=>{handoffChain=handoffChain.then(fn,fn);return handoffChain;};
+  function buildHandoff(){
+    const item=audioQueue[audioIndex];if(!item||!item.audio||recitation.paused)return null;
+    const posMs=Math.round((recitation.currentTime||0)*1000),single=playMode==='single';
+    const tail=sleepState&&sleepState.kind==='time'?sleepState.endsAt:-1;
+    const atEnd=!!sleepState&&sleepState.kind==='surah';
+    const ayahSleep=!!sleepState&&sleepState.kind==='ayah';
+    const base={title:`${Number(item.surah)||current}. ${surahName(Number(item.surah)||current)}`,artText:surahs[(Number(item.surah)||current)-1]?.name||'',playing:true,sleepAtMs:tail,sleepAtEnd:atEnd};
+    if(item.wordSynced){
+      const stopAt=single||ayahSleep?Number(item.timestamp_to)||-1:-1;
+      return {meta:{kind:'file',base:0},args:{...base,urls:[item.audio],artists:[`${qari().name}`],marks:single?[]:audioQueue.map(x=>Number(x.timestamp_from)||0),index:0,positionMs:posMs,stopAtMs:stopAt,sleepAtEnd:atEnd||(ayahSleep&&stopAt>0)}};
+    }
+    const list=(single||ayahSleep?audioQueue.slice(audioIndex,audioIndex+1):audioQueue.slice(audioIndex));
+    return {meta:{kind:'ayahs',base:audioIndex},args:{...base,urls:list.map(x=>x.audio),artists:list.map(x=>`Ayah ${x.numberInSurah} · ${qari().name}`),marks:[],index:0,positionMs:posMs,stopAtMs:-1,sleepAtEnd:atEnd||ayahSleep}};
+  }
+  function handoffNow(){
+    return inChain(async()=>{
+      const m=nativeMedia();if(!m||!m.handoff||handedOff||!audioQueue.length||recitation.paused||!document.hidden)return;
+      saveResume();
+      const plan=buildHandoff();if(!plan)return;
+      handedOff=plan.meta;
+      const ok=await m.handoff(plan.args);
+      if(!ok){handedOff=null;return;}
+      recitation.pause();
+    });
+  }
+  function reclaimNow(){
+    return inChain(async()=>{
+      const m=nativeMedia();if(!m||!m.reclaim||!handedOff)return;
+      const meta=handedOff,r=await m.reclaim();handedOff=null;
+      if(!r||!r.active||!audioQueue.length)return;
+      const pos=Math.max(0,Number(r.positionMs)||0);
+      if(meta.kind==='file'){
+        let idx=-1;for(let i=audioQueue.length-1;i>=0;i--){if(pos>=Number(audioQueue[i].timestamp_from)-60){idx=i;break;}}
+        audioIndex=Math.max(0,idx);
+        const t=pos/1000;try{recitation.currentTime=t;}catch(_){}
+        highlightPlayingAyah(Number(audioQueue[audioIndex].numberInSurah),true);
+      }else{
+        audioIndex=Math.max(0,Math.min(audioQueue.length-1,meta.base+(Number(r.index)||0)));
+        if(!r.ended||r.reason==='sleep'||r.reason==='error'){
+          await playQueueItem(true);
+          try{recitation.currentTime=pos/1000;}catch(_){}
+        }
+      }
+      if(r.ended){
+        if(r.reason==='sleep'){sleepCancel();recitation.pause();setPlayIcon(false);sleepNote();saveResume();return;}
+        if(r.reason==='queue'){
+          if(playMode==='surah')continueToNextSurah();else finishQueue();return;
+        }
+        recitation.pause();setPlayIcon(false);saveResume();return;
+      }
+      if(r.playing){try{await recitation.play();}catch(_){setPlayIcon(false);}}
+      else{recitation.pause();setPlayIcon(false);}
+      mediaPush(true);saveResume();
+    });
+  }
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)handoffNow();else reclaimNow();});
+  window.addEventListener('pagehide',()=>{saveResume();});
+
+  /* ---------- Resume point: where the recitation was, so it comes back after the app is closed ---------- */
+  const RESUME_KEY='naseemQuranResumeV1';let resumeAt=0;
+  function saveResume(force){
+    if(!audioQueue.length||handedOff&&!force)return;
+    const now=Date.now();if(!force&&now-resumeAt<2500)return;resumeAt=now;
+    const item=audioQueue[audioIndex];if(!item)return;
+    writeJSON(RESUME_KEY,{surah:Number(item.surah)||current,ayah:Number(item.numberInSurah)||1,timeMs:Math.round((recitation.currentTime||0)*1000),qari:selectedQari,mode:playMode,savedAt:now});
+  }
+  function clearResume(){try{localStorage.removeItem(RESUME_KEY);}catch(_){}resumeAt=0;}
+  async function restoreResume(){
+    const r=readJSON(RESUME_KEY,null);
+    if(!r||!Number.isFinite(Number(r.surah))||r.qari!==selectedQari||Date.now()-Number(r.savedAt||0)>30*86400000)return;
+    if(audioQueue.length||busy)return;
+    try{
+      const ok=await loadSurah(Number(r.surah),Number(r.ayah)||1);if(!ok)return;
+      await startPlayback(Number(r.ayah)||1,{paused:true,seekMs:Number(r.timeMs)||0});
+    }catch(_){}
+  }
+  window.addEventListener('naseem:restore-recitation',()=>restoreResume());
 
   async function chooseQari(next){
     if(!QARIS.some(q=>q.id===next)||next===selectedQari)return;
@@ -624,7 +709,7 @@
   }
   function showPlayer(){player.hidden=false;updatePlayerVisibility();syncFullPlayer();}
   function updatePlayerVisibility(){player.classList.toggle('qr-player-away',fullPlayer.hidden===false||!audioQueue.length);syncImmersive();}
-  async function playQueueItem(force=true){
+  async function playQueueItem(force=true,opts={}){
     const item=audioQueue[audioIndex];if(!item?.audio){finishQueue();return;}
     const token=++playToken;
     const sameSource=recitation.dataset.wordAudioUrl===item.audio;
@@ -633,20 +718,22 @@
     try{
       if(recitation.readyState<1){await new Promise((resolve,reject)=>{const ok=()=>{cleanup();resolve();},bad=()=>{cleanup();reject(new Error('Audio metadata unavailable'));},cleanup=()=>{recitation.removeEventListener('loadedmetadata',ok);recitation.removeEventListener('error',bad);};recitation.addEventListener('loadedmetadata',ok,{once:true});recitation.addEventListener('error',bad,{once:true});});}
       if(token!==playToken)return;
-      recitation.currentTime=Math.max(0,Number(item.timestamp_from||0)/1000);
+      recitation.currentTime=Math.max(0,(opts.seekMs!=null?Number(opts.seekMs):Number(item.timestamp_from||0))/1000);
+      if(handedOff)return;
+      if(opts.paused){recitation.pause();showPlayer();setPlayIcon(false);status('');syncFullPlayer();return;}
       await recitation.play();
       if(token!==playToken)return;
       showPlayer();setPlayIcon(true);status(`Playing recitation · ${item.surah||current}:${item.numberInSurah}`);
     }catch(_){if(token!==playToken)return;setPlayIcon(false);status('Recitation could not start. Check your connection and audio settings.');$('quranPlaybackStatus').textContent='Playback could not start.';}
   }
-  function finishQueue(){sleepCancel();audioQueue=[];audioIndex=0;playToken++;mediaStop();recitation.pause();player.hidden=true;setPlayIcon(false);$('quranPlaybackStatus').textContent='Recitation finished.';$('quranFullStatus').textContent='Recitation finished.';closeFullPlayer();clearPlaying();}
+  function finishQueue(){clearResume();sleepCancel();audioQueue=[];audioIndex=0;playToken++;mediaStop();recitation.pause();player.hidden=true;setPlayIcon(false);$('quranPlaybackStatus').textContent='Recitation finished.';$('quranFullStatus').textContent='Recitation finished.';closeFullPlayer();clearPlaying();}
   function stopRecitation(){if(!recitation)return;mediaStop(20000);playToken++;recitation.pause();recitation.removeAttribute('src');delete recitation.dataset.wordAudioUrl;recitation.load();audioQueue=[];audioIndex=0;lyricsSurah=0;if(player)player.hidden=true;try{setPlayIcon(false);}catch(_){}closeFullPlayer();clearPlaying();}
   async function loadWordTimingSurah(surah){
     const key=`word-timing:${surah}`;let data=cache[key];
     if(!data){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),18000);try{const response=await fetch(`${WORD_TIMING_BASE}/${String(surah).padStart(3,'0')}.json`,{headers:{Accept:'application/json'},signal:controller.signal,cache:'force-cache'});if(!response.ok)throw new Error(`Timing data HTTP ${response.status}`);data=await response.json();if(Number(data.surah)!==Number(surah)||!data.audio_url||!Array.isArray(data.verse_timings))throw new Error('Invalid word timing data');saveCache(key,data);}finally{clearTimeout(timer);}}
     return data;
   }
-  async function startPlayback(from=1){
+  async function startPlayback(from=1,opts={}){
     const surah=current;status(qari().wordSync?'Loading word-synchronised recitation…':`Loading ${qari().name} recitation…`);
     if(qari().wordSync){
       let timing;try{timing=await loadWordTimingSurah(surah);}catch(_){status('Word-synchronised recitation is unavailable right now. Choose another reciter or try again.');return false;}
@@ -659,7 +746,7 @@
     }
     playMode='surah';audioIndex=Math.max(0,audioQueue.findIndex(x=>x.numberInSurah>=from));
     if(!audioQueue.length){status('No word timing segments were found for this surah.');return false;}
-    showPlayer();await playQueueItem(true);return true;
+    showPlayer();await playQueueItem(true,opts);return true;
   }
   async function playSingleAyah(surah,ayah){
     if(qari().wordSync){
@@ -678,15 +765,16 @@
   }
   async function continueToNextSurah(){const next=current+1;if(next>114||playMode!=='surah'){finishQueue();return;}const ok=await loadSurah(next,1);if(ok)await startPlayback(1);else finishQueue();}
   function stepAyah(d){if(!audioQueue.length){startPlayback(Math.max(1,progress.surah===current?progress.ayah:1));return;}const i=audioIndex+d;if(i<0){audioIndex=0;}else if(i>=audioQueue.length){if(playMode==='single'){finishQueue();return;}continueToNextSurah();return;}else audioIndex=i;lastUserScroll=0;playQueueItem(true);}
-  recitation.addEventListener('ended',()=>{if(playMode==='single'){finishQueue();return;}if(audioQueue.length&&audioIndex<audioQueue.length-1){if(sleepEvent('ayah-end'))return;audioIndex++;playQueueItem(false);}else if(audioQueue.length){if(sleepEvent('ayah-end')||sleepEvent('surah-end'))return;continueToNextSurah();}});
-  recitation.addEventListener('pause',()=>{if(audioQueue.length){setPlayIcon(false);mediaPush(true);}});
+  recitation.addEventListener('ended',()=>{if(handedOff)return;if(playMode==='single'){finishQueue();return;}if(audioQueue.length&&audioIndex<audioQueue.length-1){if(sleepEvent('ayah-end'))return;audioIndex++;playQueueItem(false);}else if(audioQueue.length){if(sleepEvent('ayah-end')||sleepEvent('surah-end'))return;continueToNextSurah();}});
+  recitation.addEventListener('pause',()=>{if(audioQueue.length){setPlayIcon(false);mediaPush(true);if(!handedOff)saveResume(true);}});
   recitation.addEventListener('play',()=>{if(window.NaseemWave)window.NaseemWave.playing(true);setPlayIcon(true);if(!fullPlayer.hidden)syncFullPlayer();mediaPush(true);});
   recitation.addEventListener('seeked',()=>mediaPush(true));
   recitation.addEventListener('loadedmetadata',()=>{$('quranFullDuration').textContent=fmtTime(recitation.duration);mediaPush(true);});
   recitation.addEventListener('pause',()=>{if(window.NaseemWave)window.NaseemWave.playing(false);if(!fullPlayer.hidden)syncFullPlayer();});
   let lastWordKey='';
   recitation.addEventListener('timeupdate',()=>{
-    if(!audioQueue.length)return;
+    if(!audioQueue.length||handedOff)return;
+    saveResume();
     const ms=recitation.currentTime*1000;
     if(Number.isFinite(recitation.duration)&&recitation.duration>0){const frac=recitation.currentTime/recitation.duration;setWaveSeek('quranSeek',frac);setWaveSeek('quranFullSeek',frac);$('quranFullElapsed').textContent=fmtTime(recitation.currentTime);$('quranFullDuration').textContent=fmtTime(recitation.duration);if(activeEl)activeEl.style.setProperty('--qp',`${(frac*100).toFixed(1)}%`);}
     if(!audioQueue[audioIndex]?.wordSynced)return;
@@ -989,5 +1077,6 @@
   });
   // Also cover app builds whose screen switch event is emitted before this module attaches.
   const duaEntry=document.querySelector('[data-open-v404="duas"]');duaEntry?.addEventListener('click',()=>setTimeout(loadQuranDuas,0));
-  window.NaseemQuran={loadSurah,loadSurahList,loadQuranDuas,openReader,startPlayback,scrollToAyah,source:'Muhammad Al-Luhaidan · CC0 word timings',state:()=>({current,audioIndex,queue:audioQueue.length,playMode,memory:Object.keys(memory).length})};
+  setTimeout(()=>{try{restoreResume();}catch(_){}},1800);
+  window.NaseemQuran={restoreResume,loadSurah,loadSurahList,loadQuranDuas,openReader,startPlayback,scrollToAyah,source:'Muhammad Al-Luhaidan · CC0 word timings',state:()=>({current,audioIndex,queue:audioQueue.length,playMode,memory:Object.keys(memory).length})};
 })();

@@ -18,34 +18,24 @@ with sync_playwright() as p:
     pg = ctx.new_page(); errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto(srv.url()); pg.wait_for_timeout(2400)
-    pg.evaluate("document.body.classList.remove('lite')")
-    ok('glass is on by default', pg.evaluate("document.body.classList.contains('glass')"))
-    ok('nav glass layer is blurred when glass is on', 'blur' in pg.evaluate(BF), pg.evaluate(BF))
-    BG = "getComputedStyle(document.querySelector('.bottom-nav')).backgroundColor"
-    on_bg = pg.evaluate(BG)
-    ok('toggle exists in settings', pg.evaluate("!!document.getElementById('stGlassToggle')"))
-    pg.evaluate("document.getElementById('stGlassToggle').click()"); pg.wait_for_timeout(300)
-    ok('turning off removes glass class', not pg.evaluate("document.body.classList.contains('glass')"))
-    ok('toggle shows OFF', pg.evaluate("document.getElementById('stGlassToggle').textContent.trim()") == 'OFF'
-       and pg.evaluate("document.getElementById('stGlassToggle').getAttribute('aria-pressed')") == 'false')
-    ok('nav returns to its previous background when off', pg.evaluate(BG) != on_bg, on_bg + ' vs ' + pg.evaluate(BG))
-    ok('glass off: lens takes no space and the 5 tabs share the bar', pg.evaluate("getComputedStyle(document.querySelector('.nav-lens')).display")=='none' and pg.evaluate("[...document.querySelectorAll('.bottom-nav .nav-item')].every(e=>e.getBoundingClientRect().width>40)"))
-    ok('choice stored', pg.evaluate("localStorage.getItem('naseemGlassV1')") == 'off')
-    pg.reload(); pg.wait_for_timeout(2400)
-    ok('off persists after reload', not pg.evaluate("document.body.classList.contains('glass')"))
-    pg.evaluate("document.getElementById('stGlassToggle').click()"); pg.wait_for_timeout(300)
-    ok('turning on restores glass', pg.evaluate("document.body.classList.contains('glass')"))
-    pg.evaluate("document.body.classList.remove('lite')"); pg.wait_for_timeout(200)  # the reload above re-applied Smooth mode, which turns tilt off by design
-    # ---- light has a direction and follows the phone's tilt a little ----
-    ok('floating glass has a specular rim', pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').content") not in ('none', 'normal'))
-    a0 = pg.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--rim-angle').trim()")
-    pg.evaluate("window.dispatchEvent(Object.assign(new Event('deviceorientation'),{gamma:30,beta:75}))"); pg.wait_for_timeout(400)
-    a1 = pg.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--rim-angle').trim()")
-    ok('rim light moves when the phone is tilted', a1 and a1 != a0, f'{a0} -> {a1}')
-    pg.evaluate("document.getElementById('stGlassToggle').click()"); pg.wait_for_timeout(300)
-    pg.evaluate("window.dispatchEvent(Object.assign(new Event('deviceorientation'),{gamma:-30,beta:10}))"); pg.wait_for_timeout(400)
-    ok('with glass off the light does not move', pg.evaluate("document.documentElement.style.getPropertyValue('--rim-angle')") == '')
-    pg.evaluate("document.getElementById('stGlassToggle').click()"); pg.wait_for_timeout(300)
+    pg.evaluate("document.body.classList.remove('lite')"); pg.wait_for_timeout(200)
+    # ---- navigation bar only: nothing else is glass, and there is no edge lighting ----
+    NAV = "document.querySelector('.bottom-nav')"
+    ok('nav rim is blurred (edge ring), not lit', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').backdropFilter") and 'gradient' not in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').backgroundImage"))
+    for sel in ['.settings-card', '.st-group', '.v3-card', '.toast', '.qr-player', '.nsheet-panel']:
+        has = pg.evaluate("(s=>{const e=document.querySelector(s);if(!e)return 'none';const c=getComputedStyle(e);return (c.backdropFilter||'none')})(%r)" % sel)
+        ok(f'{sel} is not glass', has in ('none', ''), has)
+    ok('no white rim shadows on content cards', 'inset 1px 1px' not in pg.evaluate("(e=>e?getComputedStyle(e).boxShadow:'')(document.querySelector('.v3-card,.settings-card,.st-group'))"))
+    for theme in ['dark', 'light']:
+        pg.evaluate("t=>document.body.classList.toggle('light',t==='light')", theme); pg.wait_for_timeout(250)
+        bg = pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backgroundColor")
+        nums = [float(x) for x in bg[bg.index('(') + 1:-1].split(',')]
+        lum = (nums[0] + nums[1] + nums[2]) / 3
+        alpha = nums[3] if len(nums) > 3 else 1.0
+        ok(f'{theme}: nav is translucent', alpha < 0.6, bg)
+        ok(f'{theme}: nav is not white', lum < 170 or theme == 'dark', bg)
+        ok(f'{theme}: lens has no light fill', pg.evaluate("getComputedStyle(document.querySelector('.nav-lens')).backgroundImage") == 'none')
+    pg.evaluate("document.body.classList.remove('light')")
     ok('no horizontal overflow', pg.evaluate("document.documentElement.scrollWidth<=window.innerWidth+1"))
     ok('no page errors', errs == [], str(errs))
     ctx.close(); b.close()
