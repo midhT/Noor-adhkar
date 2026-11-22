@@ -11,35 +11,41 @@
    - While a recitation player is on screen, scrolling down collapses the pill into a round button holding the
      current tab's icon; the mini player docks beside it. Tapping the button brings the pill back.
    ===================================================================== */
+/* Monochrome ink: text and buttons are white on the dark theme and near-black on the light theme. They never take the
+   accent colour. Used by the navigation bar, the mini player and the full player, with or without Liquid Glass. */
+body{--gi:#fff;--gi-dim:rgba(255,255,255,.62);--gi-inv:#111214;--gfill:rgba(255,255,255,.13);--gfill2:rgba(255,255,255,.22);--gline:rgba(255,255,255,.18);
+  --dock:56px;--dock-gap:8px;--dock-left:14px;--dock-bottom:calc(15px + env(safe-area-inset-bottom))}
+body.light{--gi:#15171a;--gi-dim:rgba(21,23,26,.6);--gi-inv:#fff;--gfill:rgba(0,0,0,.075);--gfill2:rgba(0,0,0,.13);--gline:rgba(0,0,0,.16)}
+
 body.glass{
-  --glass-sat:1.12;
-  --nav-h:64px;--nav-bottom:20px;--dock:56px;--dock-gap:8px;--dock-left:14px;
-  --nav-tint:rgba(16,19,24,.58);
-  --nav-edge:rgba(255,255,255,.07);
+  --glass-sat:1.35;
+  --nav-h:64px;--nav-bottom:20px;
+  --dock-bottom:calc(24px + env(safe-area-inset-bottom));
+  /* Real glass: only a light tint, so the page behind shows through, blurred, in its own colours. */
+  --nav-tint:rgba(22,24,30,.30);
+  --nav-rim:rgba(255,255,255,.16);
   --nav-shadow:rgba(0,0,0,.55);
-  --ink:rgba(255,255,255,.88);--ink-on:#fff;
   --rim-a:.68;--rim-b:.28;--shade-a:.13;
   --drop-cast:rgba(0,0,0,.45);
 }
 body.glass.light{
-  --nav-tint:rgba(78,92,86,.40);
-  --nav-edge:rgba(255,255,255,.22);
-  --nav-shadow:rgba(20,40,30,.50);
-  --ink:rgba(255,255,255,.90);--ink-on:#fff;
-  --rim-a:.80;--rim-b:.34;--shade-a:.18;
-  --drop-cast:rgba(20,40,30,.45);
+  --nav-tint:rgba(255,255,255,.34);
+  --nav-rim:rgba(255,255,255,.85);
+  --nav-shadow:rgba(60,48,36,.42);
+  --rim-a:.85;--rim-b:.40;--shade-a:.16;
+  --drop-cast:rgba(60,48,36,.40);
 }
 /* Fallbacks: no backdrop-filter / reduced transparency / Smooth mode keep a readable, more opaque tint. */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  body.glass{--nav-tint:rgba(18,21,26,.94)}
-  body.glass.light{--nav-tint:rgba(70,84,78,.92)}
+  body.glass{--nav-tint:rgba(24,26,32,.94)}
+  body.glass.light{--nav-tint:rgba(246,245,241,.96)}
 }
 @media(prefers-reduced-transparency:reduce){
-  body.glass{--nav-tint:rgba(18,21,26,.95)}
-  body.glass.light{--nav-tint:rgba(70,84,78,.94)}
+  body.glass{--nav-tint:rgba(24,26,32,.95)}
+  body.glass.light{--nav-tint:rgba(246,245,241,.97)}
 }
-body.glass.lite{--nav-tint:rgba(18,21,26,.90)}
-body.glass.lite.light{--nav-tint:rgba(70,84,78,.90)}
+body.glass.lite{--nav-tint:rgba(24,26,32,.90)}
+body.glass.lite.light{--nav-tint:rgba(246,245,241,.93)}
 
 /* ---------------------------------------------------------------- the pill */
 body.glass .bottom-nav{
@@ -49,8 +55,8 @@ body.glass .bottom-nav{
   bottom:calc(var(--nav-bottom) + env(safe-area-inset-bottom));
   display:grid;grid-template-columns:repeat(var(--count),minmax(0,1fr));align-items:stretch;
   border:0!important;border-radius:999px;
-  background:var(--nav-tint)!important;
-  box-shadow:inset 0 0 0 1px var(--nav-edge),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
+  background:transparent!important;
+  box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
   -webkit-backdrop-filter:none;backdrop-filter:none;
   transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear,visibility 0s;
 }
@@ -58,7 +64,8 @@ body.glass .bottom-nav{
    only sees its parent's content and could not refract the page behind the bar. */
 body.glass .bottom-nav::before{
   content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
-  -webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat));
+  background:var(--nav-tint);
+  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));backdrop-filter:blur(16px) saturate(var(--glass-sat));
 }
 /* A little more blur around the rim, so the edge reads as softness and not as a drawn line. */
 body.glass .bottom-nav::after,body.glass .nav-dock::after{
@@ -75,9 +82,10 @@ body.glass .bottom-nav .nav-item{
   position:relative;z-index:1;flex:none;min-width:0;min-height:0;height:100%;padding:0 2px;gap:0;
   display:flex;flex-direction:row;align-items:center;justify-content:center;overflow:visible;
   border:0!important;border-radius:999px;background:none!important;box-shadow:none!important;transform:none!important;
-  color:var(--ink);transition:color .2s ease;-webkit-tap-highlight-color:transparent;
+  color:var(--gi)!important;transition:color .2s ease;-webkit-tap-highlight-color:transparent;
 }
-body.glass .bottom-nav .nav-item.active{color:var(--ink-on)}
+body.glass .bottom-nav .nav-item small,body.glass .bottom-nav .nav-item.active,body.glass .bottom-nav .nav-item.active small,body.glass .bottom-nav .nav-item .ni{color:var(--gi)!important}
+body.glass .bottom-nav .nav-item:not(.active) .ni{opacity:.82}
 body.glass .bottom-nav .nav-item.active:before{display:none}
 body.glass .bottom-nav .nav-item .ni{display:grid;place-items:center;flex:none;width:26px;height:26px;font-size:24px;line-height:1;transition:transform .4s cubic-bezier(.3,1.5,.5,1)}
 body.glass .bottom-nav .nav-item .ni svg{width:24px;height:24px}
@@ -92,7 +100,7 @@ body.glass .bottom-nav .nav-item.active small{max-width:44px;margin-left:4px;opa
 body.glass .bottom-nav .nav-pill{display:none}
 
 /* ---------------------------------------------------------------- the lens */
-.nav-lens,.nav-dock{display:none}
+.nav-lens{display:none}
 body.glass .nav-lens{
   display:block;position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
   border-radius:999px;pointer-events:none;--sx:1;--sy:1;--ty:0px;--hl:.25;
@@ -125,7 +133,7 @@ body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;tran
   body.glass:not(.lite) .nav-lens{-webkit-backdrop-filter:url(#naseem-lens) saturate(1.15);backdrop-filter:url(#naseem-lens) saturate(1.15)}
   body.glass:not(.lite) .bottom-nav.lens-press .nav-lens{-webkit-backdrop-filter:url(#naseem-lens-press) saturate(1.2);backdrop-filter:url(#naseem-lens-press) saturate(1.2)}
 }
-/* A hole in the pill's blur layer under the lens: the lens then refracts the crisp page, not an already-blurred copy. */
+/* A hole in the pill's blur layer AND its tint under the lens: the drop then shows the real page, not a tinted, blurred copy of it. */
 @supports (mask-composite:exclude) or (-webkit-mask-composite:xor){
   body.glass:not(.lite) .bottom-nav::before{
     -webkit-mask-image:linear-gradient(#000,#000),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='60' preserveAspectRatio='none'%3E%3Crect width='72' height='60' rx='30' fill='%23000'/%3E%3C/svg%3E");
@@ -139,39 +147,97 @@ body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;tran
   body.glass .bottom-nav.lens-drag::before{transition:mask-position .09s linear}
 }
 
-/* ---------------------------------------------------------------- collapsed: a round button with the current tab's icon */
-body.glass .nav-dock{
+/* ---------------------------------------------------------------- collapsed: a round button with the current tab's icon
+   (works with and without Liquid Glass) */
+.nav-dock{
   display:grid;place-items:center;position:fixed;z-index:21;
-  left:calc(var(--dock-left) + env(safe-area-inset-left));bottom:calc(var(--nav-bottom) + env(safe-area-inset-bottom));
-  width:var(--dock);height:var(--dock);padding:0;border:0;border-radius:50%;
-  background:var(--nav-tint);color:var(--ink-on);
-  box-shadow:inset 0 0 0 1px var(--nav-edge),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow);
+  left:calc(var(--dock-left) + env(safe-area-inset-left));bottom:var(--dock-bottom);
+  width:var(--dock);height:var(--dock);padding:0;border-radius:50%;
+  background:var(--panel);border:1px solid var(--line);color:var(--gi);
+  box-shadow:0 10px 26px -10px rgba(0,0,0,.45);
   opacity:0;visibility:hidden;pointer-events:none;transform:scale(.6);transform-origin:50% 50%;
   transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .08s,visibility 0s .46s;
   -webkit-tap-highlight-color:transparent;
 }
-body.glass .nav-dock::before{
-  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
-  -webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat));
+.nav-dock .ni{display:grid;place-items:center;width:28px;height:28px;font-size:26px;line-height:1;color:var(--gi)}
+.nav-dock .ni svg{width:26px;height:26px}
+body.glass .nav-dock{
+  background:var(--nav-tint);border:0;
+  box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow);
+  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));backdrop-filter:blur(16px) saturate(var(--glass-sat));
 }
-body.glass .nav-dock .ni{display:grid;place-items:center;width:28px;height:28px;font-size:26px;line-height:1}
-body.glass .nav-dock .ni svg{width:26px;height:26px}
-body.glass.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .1s,visibility 0s}
-body.glass.nav-collapsed .nav-dock:active{transform:scale(.94)}
-body.glass.nav-collapsed .bottom-nav{opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-50%) scale(.7);transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .2s linear,visibility 0s .46s}
+body.glass.lite .nav-dock{-webkit-backdrop-filter:none;backdrop-filter:none}
+body.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .1s,visibility 0s}
+body.nav-collapsed .nav-dock:active{transform:scale(.94)}
+body.nav-collapsed .bottom-nav{opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-50%) scale(.7);transform-origin:0 100%;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .2s linear,visibility 0s .46s}
+@media(prefers-reduced-motion:reduce){.nav-dock,body.nav-collapsed .bottom-nav{transition:none}}
 
 /* ---------------------------------------------------------------- things that sit above the pill move up with it */
 body.glass .app-shell{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
 body.glass .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
-body.glass .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(safe-area-inset-bottom));transition:scale .35s var(--spring,ease),left .46s cubic-bezier(.2,.8,.2,1),bottom .46s cubic-bezier(.2,.8,.2,1)}
-/* the mini player slides down into the row beside the round button */
+body .qr-player{transition:scale .35s var(--spring,ease),left .46s cubic-bezier(.2,.8,.2,1),bottom .46s cubic-bezier(.2,.8,.2,1)}
+body.glass .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(safe-area-inset-bottom))}
+/* the mini player slides down into the row beside the round button, keeping artwork, title, play and next */
 @media(max-width:520px){
-  body.glass.nav-collapsed .qr-player{
+  body.nav-collapsed .qr-player{
     left:calc(var(--dock-left) + var(--dock) + var(--dock-gap) + env(safe-area-inset-left));
-    bottom:calc(var(--nav-bottom) + env(safe-area-inset-bottom));
+    bottom:var(--dock-bottom);
   }
+  body.nav-collapsed .qr-player #quranLocate,body.nav-collapsed .qr-player #quranPrevAyah,body.nav-collapsed .qr-player #quranStop{display:none}
 }
-/* docked beside the round button the player keeps only artwork, title, play and next (stop and the rest are in the full player) */
-@media(max-width:520px){
-  body.glass.nav-collapsed .qr-player #quranLocate,body.glass.nav-collapsed .qr-player #quranPrevAyah,body.glass.nav-collapsed .qr-player #quranStop{display:none}
+
+/* ---------------------------------------------------------------- mini player: monochrome ink, both modes */
+.qr-player .qr-player-info strong,.qr-player .qr-player-main .qr-player-info strong{color:var(--gi)}
+.qr-player .qr-player-info small,.qr-player .qr-player-main .qr-player-info small{color:var(--gi-dim)}
+.qr-player .qr-pbtn{color:var(--gi)}
+.qr-player .qr-pbtn:not(.qr-pmain){background:var(--gfill);border-radius:50%}
+.qr-player .qr-pbtn.qr-pmain{background:var(--gi);color:var(--gi-inv)}
+.qr-player .qr-pbtn.qr-pmain svg{color:var(--gi-inv)}
+
+/* ---------------------------------------------------------------- mini player + header buttons: the same glass as the bar */
+body.glass .qr-player{
+  background:var(--nav-tint)!important;border:0!important;border-radius:30px;
+  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));backdrop-filter:blur(16px) saturate(var(--glass-sat));
+  box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
 }
+body.glass.lite .qr-player{-webkit-backdrop-filter:none;backdrop-filter:none}
+body.glass .qr-player .qr-mini-avatar{background:var(--gfill);border:0}
+body.glass .topbar .brand-mark,body.glass .topbar .icon-button{
+  background:var(--nav-tint)!important;border:0!important;
+  box-shadow:inset 0 0 0 1px var(--nav-rim),0 8px 20px -8px var(--nav-shadow)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));backdrop-filter:blur(16px) saturate(var(--glass-sat));
+}
+body.glass .topbar .icon-button{color:var(--gi)}
+body.glass.lite .topbar .brand-mark,body.glass.lite .topbar .icon-button{-webkit-backdrop-filter:none;backdrop-filter:none}
+
+/* ===== Full player: ink colours, flat + glass buttons, surah-name artwork, Up next ===== */
+.qr-full-player{--art-h:160;color:var(--gi)}
+.qr-full-player .qr-full-icon,.qr-full-player .qr-full-secondary,.qr-full-player .qr-full-side,.qr-full-player .qr-sleep-btn{background:var(--gfill);color:var(--gi);border:0;box-shadow:none}
+.qr-full-player .qr-full-side[aria-pressed="true"],.qr-full-player .qr-sleep-btn.on{background:var(--gfill2);color:var(--gi);box-shadow:inset 0 0 0 1.5px var(--gi)}
+.qr-full-player .qr-full-play{background:var(--gi);color:var(--gi-inv);box-shadow:0 10px 26px rgba(0,0,0,.22)}
+.qr-full-player .qr-full-top strong,.qr-full-player .qr-full-track h2{color:var(--gi)}
+body.glass .qr-full-player .qr-full-icon,body.glass .qr-full-player .qr-full-secondary,body.glass .qr-full-player .qr-full-side,body.glass .qr-full-player .qr-sleep-btn{background:var(--nav-tint);box-shadow:inset 0 0 0 1px var(--gline);-webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat))}
+body.glass .qr-full-player .qr-full-side[aria-pressed="true"],body.glass .qr-full-player .qr-sleep-btn.on{box-shadow:inset 0 0 0 1.5px var(--gi)}
+body.glass .qr-full-player .qr-full-play{background:var(--nav-tint);color:var(--gi);box-shadow:inset 0 0 0 1.5px var(--gi),0 10px 26px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat))}
+.qr-full-player.qr-art-names .qr-full-art{background:linear-gradient(145deg,hsl(var(--art-h) 55% 34%),hsl(calc(var(--art-h) + 50) 60% 18%));border:0;box-shadow:0 24px 60px hsla(var(--art-h),70%,40%,.35);overflow:hidden}
+.qr-full-player.qr-art-names .qr-art-mark{font-size:clamp(44px,14vw,68px);line-height:1.5;color:#fff;opacity:1;text-align:center;padding:0 10px;text-shadow:0 4px 18px rgba(0,0,0,.35)}
+.qr-full-player.qr-art-names .qr-art-caption{color:rgba(255,255,255,.78)}
+.qr-full-player.qr-art-names{background:radial-gradient(120% 60% at 50% 0%,hsla(var(--art-h),60%,35%,.38),transparent 70%),var(--bg)}
+.qr-queue{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;background:var(--bg);padding:calc(10px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom))}
+.qr-queue[hidden]{display:none}
+.qr-queue .qr-top-spacer{width:44px}
+.qr-queue-note{margin:6px 4px 10px;font-size:12px;color:var(--gi-dim);text-align:center}
+.qr-queue-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
+.qr-queue-row{display:flex;align-items:center;gap:12px;width:100%;padding:8px 12px 8px 8px;border:0;border-radius:18px;background:var(--gfill);color:var(--gi);text-align:left;font:inherit}
+.qr-queue-row.current{background:var(--gfill2);box-shadow:inset 0 0 0 1.5px var(--gi)}
+.qr-queue-tile{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:linear-gradient(145deg,hsl(var(--art-h) 55% 34%),hsl(calc(var(--art-h) + 50) 60% 18%));color:#fff;font-weight:700;font-size:14px}
+.qr-queue-copy{flex:1;min-width:0;display:flex;flex-direction:column}
+.qr-queue-copy strong{font-size:15px;color:var(--gi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qr-queue-copy small{font-size:12px;color:var(--gi-dim)}
+.qr-queue-ar{font-family:var(--arabic);font-size:20px;color:var(--gi)}
+.qr-sleep-row{gap:10px;flex-wrap:wrap}
+.qr-queue{overflow:hidden}.qr-queue-list{min-height:0}
+
+/* compositor hints: keep nav/dock/lens/player on their own layers so they animate at the display's refresh rate */
+.bottom-nav,.nav-dock,.nav-lens,.qr-player{will-change:transform,opacity}
+.qr-full-player.qr-opening,.qr-full-player.qr-closing{will-change:clip-path,opacity}

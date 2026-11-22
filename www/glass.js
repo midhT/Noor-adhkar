@@ -25,6 +25,15 @@
     doc.dispatchEvent(new CustomEvent('naseem:navcollapse-changed', { detail: { on } }));
   }
   doc.addEventListener('click', e => { if (e.target.closest('#stNavCollapseToggle')) { try { localStorage.setItem(CKEY, cRead() === 'on' ? 'off' : 'on'); } catch (_) {} cApply(); } });
+  // Surah-name artwork in the full player.
+  const AKEY = 'naseemArtV1';
+  const aRead = () => { try { return localStorage.getItem(AKEY) === 'off' ? 'off' : 'on'; } catch (_) { return 'on'; } };
+  function aApply() {
+    const on = aRead() === 'on', t = doc.getElementById('stArtToggle');
+    if (t) { t.setAttribute('aria-pressed', String(on)); t.textContent = on ? 'ON' : 'OFF'; }
+    doc.dispatchEvent(new CustomEvent('naseem:art-changed', { detail: { on } }));
+  }
+  doc.addEventListener('click', e => { if (e.target.closest('#stArtToggle')) { try { localStorage.setItem(AKEY, aRead() === 'on' ? 'off' : 'on'); } catch (_) {} aApply(); } });
   window.NaseemGlass = { get: () => mode, set };
-  apply(); cApply();
+  apply(); cApply(); aApply();
 })();

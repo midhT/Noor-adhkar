@@ -118,14 +118,14 @@
   fullPlayer.innerHTML=`<div class="qr-full-sheet"><span class="qr-full-handle" aria-hidden="true"></span>
     <header class="qr-full-top"><button type="button" class="qr-full-icon" id="quranFullClose" aria-label="Close player">${ICON.down}</button><div><small>NOW PLAYING</small><strong>QURAN RECITATION</strong></div><button type="button" class="qr-full-icon" id="quranFullStop" aria-label="Stop recitation">${ICON.close}</button></header>
     <div class="qr-full-content"><div class="qr-full-stage">
-      <div class="qr-full-hero"><div class="qr-full-art" aria-hidden="true"><span class="qr-art-mark">۞</span><span class="qr-art-caption">NASEEM · QURAN</span></div>
+      <div class="qr-full-hero"><div class="qr-full-art" aria-hidden="true"><span class="qr-art-mark" id="quranArtName">۞</span><span class="qr-art-caption" id="quranArtCaption">NASEEM · QURAN</span></div>
         <div class="qr-full-track"><span class="eyebrow">NOW RECITING</span><h2 id="quranFullTitle">Al-Quran</h2><p class="qr-full-reference" id="quranFullReference">Ready when you are</p>
           <div class="qr-full-identity"><span id="quranFullAvatar"></span><span class="qr-full-identity-copy"><small>RECITER</small><strong id="quranFullReciter">Muhammad Al-Luhaidan</strong></span><b id="quranFullMode" class="qr-mode">Word by word</b></div>
           <span id="quranFullStatus" class="qr-sr" aria-live="polite">Choose a surah to begin.</span></div></div>
       <div class="qr-lyrics-wrap" id="quranLyricsWrap"><div class="qr-lyrics-head"><strong id="quranLyricsTitle">Al-Quran</strong><small>Tap a verse to recite from it</small></div><div class="qr-lyrics" id="quranLyrics" role="list" aria-label="Verse by verse lyrics"></div></div>
     </div><div class="qr-full-transport">${waveSeekHTML("quranFullSeek")}<div class="qr-full-times"><span id="quranFullElapsed">0:00</span><span id="quranFullDuration">0:00</span></div>
       <div class="qr-full-controls"><button type="button" class="qr-full-side" id="quranLyricsToggle" aria-pressed="false" aria-label="Show verse by verse lyrics">${ICON.lyrics}</button><button type="button" class="qr-full-secondary" id="quranFullPrev" aria-label="Previous ayah">${ICON.prev}</button><button type="button" class="qr-full-play" id="quranFullToggle" aria-label="Play">${ICON.play}</button><button type="button" class="qr-full-secondary" id="quranFullNext" aria-label="Next ayah">${ICON.next}</button><button type="button" class="qr-full-side qr-full-qari" id="quranFullReciterBtn" aria-expanded="false" aria-label="Choose reciter"><span id="quranFullAvatarButton"></span></button></div>
-      <div class="qr-sleep-row"><button type="button" class="qr-sleep-btn" id="quranSleepBtn" aria-haspopup="dialog" aria-expanded="false" aria-pressed="false">${ICON.moon}<span id="quranSleepLabel">Sleep</span></button></div>
+      <div class="qr-sleep-row"><button type="button" class="qr-sleep-btn" id="quranSleepBtn" aria-haspopup="dialog" aria-expanded="false" aria-pressed="false">${ICON.moon}<span id="quranSleepLabel">Sleep</span></button><button type="button" class="qr-sleep-btn" id="quranQueueBtn" aria-haspopup="dialog" aria-expanded="false">${ICON.lyrics}<span>Up next</span></button></div>
       <p class="qr-full-note">Playback continues while you browse Naseem.</p></div></div>
     <div class="qr-qsheet-backdrop" id="quranQSheetBackdrop"></div><div class="qr-qsheet" id="quranFullQariSheet" role="dialog" aria-label="Choose reciter"><span class="qr-full-handle" aria-hidden="true"></span><strong class="qr-qsheet-title">Choose a reciter</strong><div class="qr-qsheet-list" id="quranFullQariList" role="listbox">${QARIS.map(qariOptionHTML).join('')}</div></div>
     <div class="qr-sleep-sheet" id="quranSleepSheet" role="dialog" aria-label="Sleep timer"><span class="qr-full-handle" aria-hidden="true"></span><strong class="qr-qsheet-title">Sleep timer</strong><div class="qr-qsheet-list" id="quranSleepList" role="radiogroup" aria-label="Stop recitation after">${(window.NaseemPlayerCore?window.NaseemPlayerCore.SLEEP_OPTIONS:[{id:'off',label:'Off'}]).map(o=>`<button type="button" class="qr-sleep-opt" role="radio" aria-checked="false" data-sleep="${o.id}">${o.label}</button>`).join('')}</div></div></div>`
@@ -256,7 +256,7 @@
   }
   function closeFullPlayer(animated=false){
     if(fullPlayer.hidden)return;
-    const finish=()=>{if(fullAnim){fullAnim.cancel();fullAnim=null;}fullPlayer.hidden=true;fullPlayer.setAttribute('aria-hidden','true');fullPlayer.classList.remove('qr-closing','qr-opening','qr-sheet-open','qr-sleep-open');fullPlayer.style.transform='';document.body.classList.remove('qr-full-player-open');updatePlayerVisibility();};
+    const finish=()=>{if(fullAnim){fullAnim.cancel();fullAnim=null;}fullPlayer.hidden=true;queueEl.hidden=true;fullPlayer.classList.remove('qr-queue-open');fullPlayer.setAttribute('aria-hidden','true');fullPlayer.classList.remove('qr-closing','qr-opening','qr-sheet-open','qr-sleep-open');fullPlayer.style.transform='';document.body.classList.remove('qr-full-player-open');updatePlayerVisibility();};
     if(fullAnim){fullAnim.cancel();fullAnim=null;}
     if(!animated||reduceMotion()||!fullPlayer.animate||!audioQueue.length){finish();return;}
     player.classList.remove('qr-player-away');const to=miniInset();
@@ -267,7 +267,33 @@
   }
   const fmtTime=value=>{const n=Math.max(0,Math.floor(Number(value)||0));return `${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;};
   function syncReciterUI(){const q=qari(),mode=$('quranFullMode');$('quranFullReciter').textContent=q.name;if(mode){mode.textContent=q.wordSync?'Word by word':'Verse by verse';mode.classList.toggle('is-word',q.wordSync);}$('quranFullAvatar').innerHTML=qariAvatarHTML(q,true);$('quranFullAvatarButton').innerHTML=qariAvatarHTML(q);$('quranMiniAvatar').innerHTML=qariAvatarHTML(q);$('quranMiniAvatar').setAttribute('aria-label',q.name);}
-  function syncFullPlayer(){const item=audioQueue[audioIndex];if(!item)return;syncReciterUI();const surahNo=Number(item.surah)||current,ayahNo=Number(item.numberInSurah)||progress.ayah||1,total=surahs[surahNo-1]?.numberOfAyahs;$('quranFullTitle').textContent=`${surahNo}. ${surahName(surahNo)}`;$('quranLyricsTitle').textContent=`${surahNo}. ${surahName(surahNo)}`;$('quranFullReference').textContent=`Ayah ${ayahNo}${total?` of ${total}`:''}`;$('quranFullStatus').textContent=recitation.paused?'Paused':'Now reciting';morph($('quranFullToggle'),!recitation.paused);$('quranFullToggle').setAttribute('aria-label',recitation.paused?'Play':'Pause');}
+  function syncFullPlayer(){const item=audioQueue[audioIndex];if(!item)return;syncReciterUI();const surahNo=Number(item.surah)||current,ayahNo=Number(item.numberInSurah)||progress.ayah||1,total=surahs[surahNo-1]?.numberOfAyahs;$('quranFullTitle').textContent=`${surahNo}. ${surahName(surahNo)}`;$('quranLyricsTitle').textContent=`${surahNo}. ${surahName(surahNo)}`;$('quranFullReference').textContent=`Ayah ${ayahNo}${total?` of ${total}`:''}`;$('quranFullStatus').textContent=recitation.paused?'Paused':'Now reciting';morph($('quranFullToggle'),!recitation.paused);$('quranFullToggle').setAttribute('aria-label',recitation.paused?'Play':'Pause');syncArt(surahNo);renderQueue(surahNo);}
+  /* ---------- artwork: the surah's own name over a per-surah gradient ---------- */
+  const artOn=()=>{try{return localStorage.getItem('naseemArtV1')!=='off';}catch(_){return true;}};
+  const artHue=n=>(140+((n*47)%100))%360;
+  const plainName=n=>String(surahs[n-1]?.name||'').replace(/^\s*سُورَةُ\s*/,'').replace(/^\s*سورة\s*/,'').trim();
+  function syncArt(n){const art=document.querySelector('.qr-full-art'),nm=$('quranArtName'),cap=$('quranArtCaption');if(!art||!nm)return;
+    const on=artOn()&&plainName(n);fullPlayer.classList.toggle('qr-art-names',!!on);fullPlayer.style.setProperty('--art-h',artHue(n));
+    nm.textContent=on?plainName(n):'۞';cap.textContent=on?`SURAH ${n} · ${surahs[n-1]?.numberOfAyahs||''} AYAHS`:'NASEEM · QURAN';}
+  document.addEventListener('naseem:art-changed',()=>{const it=audioQueue[audioIndex];if(it)syncArt(Number(it.surah)||current);});
+  /* ---------- Up next: the surahs that follow the current one ---------- */
+  const queueEl=document.createElement('section');queueEl.className='qr-queue';queueEl.id='quranQueue';queueEl.hidden=true;queueEl.setAttribute('aria-label','Up next');
+  queueEl.innerHTML=`<header class="qr-full-top"><button type="button" class="qr-full-icon" id="quranQueueClose" aria-label="Close queue">${ICON.back}</button><div><small>PLAYING QUEUE</small><strong id="quranQueueTitle">Up next</strong></div><span class="qr-top-spacer"></span></header><p class="qr-queue-note" id="quranQueueNote"></p><div class="qr-queue-list" id="quranQueueList" role="list"></div>`;
+  fullPlayer.appendChild(queueEl);
+  function renderQueue(n){const list=$('quranQueueList');if(!list)return;n=n||Number((audioQueue[audioIndex]||{}).surah)||current;
+    const upto=Math.min(114,n+30),rows=[];
+    for(let i=n;i<=upto;i++){const s=surahs[i-1]||{};const cur=i===n;
+      rows.push(`<button type="button" class="qr-queue-row${cur?' current':''}" data-n="${i}" role="listitem" style="--art-h:${artHue(i)}"><span class="qr-queue-tile">${i}</span><span class="qr-queue-copy"><strong>${s.englishName||'Surah '+i}</strong><small>${cur?'Now playing · ':''}${s.numberOfAyahs||''} ayahs${s.revelationType?' · '+s.revelationType:''}</small></span><span class="qr-queue-ar">${plainName(i)}</span></button>`);}
+    list.innerHTML=rows.join('');
+    const left=114-n;$('quranQueueTitle').textContent=left>0?`Up next · ${left} surah${left===1?'':'s'}`:'Last surah';
+    $('quranQueueNote').textContent=playMode==='surah'?(left>0?'Each surah continues into the next.':'End of the Quran.'):'Playing one verse at a time; the list shows what comes next in surah order.';}
+  function toggleQueue(on){queueEl.hidden=!on;fullPlayer.classList.toggle('qr-queue-open',on);$('quranQueueBtn').setAttribute('aria-expanded',String(on));
+    if(on){renderQueue();$('quranQueueList').scrollTop=0;}}
+  $('quranQueueBtn').addEventListener('click',()=>toggleQueue(true));
+  $('quranQueueClose').addEventListener('click',()=>toggleQueue(false));
+  $('quranQueueList').addEventListener('click',async e=>{const r=e.target.closest('.qr-queue-row');if(!r)return;const n=Number(r.dataset.n);toggleQueue(false);
+    if(r.classList.contains('current'))return;const ok=await loadSurah(n);if(ok!==false){await startPlayback(1);if(fullPlayer.hidden&&audioQueue.length)openFullPlayer();}});
+
   /* Short slide-in when moving between the surah index and the reader (transform + opacity only; skipped in Smooth / reduced-motion). */
   function qrSlideIn(el,back){if(!el)return;el.classList.remove('qr-in-next','qr-in-prev');if(reduceMotion())return;void el.offsetWidth;el.classList.add(back?'qr-in-prev':'qr-in-next');setTimeout(()=>el.classList.remove('qr-in-next','qr-in-prev'),340);}
   function showHome(){$('quranReader').hidden=true;$('quranReview').hidden=true;$('quranHome').hidden=false;syncImmersive();window.scrollTo(0,0);renderMemory();qrSlideIn($('quranHome'),true);}
@@ -1035,6 +1061,7 @@
   // Android back button / gesture: step out of the reader or review before leaving the Quran tab.
   document.addEventListener('naseem:back',e=>{
     if(!fullPlayer.hidden){e.preventDefault();e.stopImmediatePropagation();
+      if(!queueEl.hidden){toggleQueue(false);return;}
       if(fullPlayer.classList.contains('qr-sleep-open')){toggleSleepSheet(false);return;}
       if(fullPlayer.classList.contains('qr-sheet-open')){toggleQariSheet(false);return;}
       closeFullPlayer();return;}

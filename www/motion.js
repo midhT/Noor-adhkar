@@ -100,6 +100,7 @@
       }
     };
     nav.addEventListener('pointerdown', e => {
+      if (!body.classList.contains('glass')) return;          // press-and-drag across the bar belongs to Liquid Glass only
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       if (!(e.target.closest && e.target.closest('.nav-item'))) return;
       down = true; dragging = false; sx = e.clientX; pid = e.pointerId; peek = null;

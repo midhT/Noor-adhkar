@@ -41,6 +41,7 @@
   new MutationObserver(sync).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] });
 
   nav.addEventListener('pointerdown', e => {
+    if (!document.body.classList.contains('glass')) return;   // the lens (and dragging it) exists only with Liquid Glass
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (!(e.target.closest && e.target.closest('.nav-item'))) return;
     down = true; drag = false; sx = e.clientX; pid = e.pointerId;
@@ -79,7 +80,7 @@
     dock.setAttribute('aria-label', 'Show navigation (' + (a.dataset.navLabel || 'menu') + ')');
   }
   function setCollapsed(on) {
-    on = !!on && collapseOn() && playerOn() && body.classList.contains('glass');
+    on = !!on && collapseOn() && playerOn();
     travel = 0;
     if (on === collapsed) return;
     collapsed = on; syncDock();
@@ -105,7 +106,7 @@
   function onScroll(e) {
     if (!(fingerDown || performance.now() < userUntil)) return;
     if (document.body.classList.contains('qr-full-player-open') || document.body.classList.contains('qr-sheet-open') || document.body.classList.contains('qr-sleep-open')) return;
-    if (!collapseOn() || !playerOn() || !body.classList.contains('glass')) { if (collapsed) setCollapsed(false); return; }
+    if (!collapseOn() || !playerOn()) { if (collapsed) setCollapsed(false); return; }
     const t = e.target, el = (t === document || t === document.documentElement || t === document.body) ? (document.scrollingElement || document.documentElement) : t;
     if (!el || el.nodeType !== 1) return;
     const y = el.scrollTop, prev = lastY.has(el) ? lastY.get(el) : y; lastY.set(el, y);
@@ -118,7 +119,6 @@
   document.addEventListener('scroll', onScroll, { capture: true, passive: true });
   dock.addEventListener('click', () => setCollapsed(false));
   document.addEventListener('noor:screen', () => setCollapsed(false));
-  document.addEventListener('naseem:glass-changed', () => { if (!body.classList.contains('glass')) setCollapsed(false); });
   document.addEventListener('naseem:navcollapse-changed', () => { if (!collapseOn()) setCollapsed(false); });
   const player = document.getElementById('quranPlayer');
   if (player) new MutationObserver(() => { if (!playerOn()) setCollapsed(false); }).observe(player, { attributes: true, attributeFilter: ['hidden', 'class'] });

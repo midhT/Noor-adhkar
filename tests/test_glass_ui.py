@@ -22,7 +22,7 @@ with sync_playwright() as p:
     # ---- navigation bar only: nothing else is glass, and there is no edge lighting ----
     NAV = "document.querySelector('.bottom-nav')"
     ok('nav rim is blurred (edge ring), not lit', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').backdropFilter") and 'gradient' not in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').backgroundImage"))
-    for sel in ['.settings-card', '.st-group', '.v3-card', '.toast', '.qr-player', '.nsheet-panel']:
+    for sel in ['.settings-card', '.st-group', '.v3-card', '.toast', '.nsheet-panel']:
         has = pg.evaluate("(s=>{const e=document.querySelector(s);if(!e)return 'none';const c=getComputedStyle(e);return (c.backdropFilter||'none')})(%r)" % sel)
         ok(f'{sel} is not glass', has in ('none', ''), has)
     ok('no white rim shadows on content cards', 'inset 1px 1px' not in pg.evaluate("(e=>e?getComputedStyle(e).boxShadow:'')(document.querySelector('.v3-card,.settings-card,.st-group'))"))

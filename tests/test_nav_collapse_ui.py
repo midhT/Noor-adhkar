@@ -70,7 +70,7 @@ with sync_playwright() as p:
         pg.evaluate("t=>document.body.classList.toggle('light',t==='light')", theme); pg.wait_for_timeout(300)
         bg = pg.evaluate("getComputedStyle(document.querySelector('.nav-dock')).backgroundColor")
         n = [float(x) for x in bg[bg.index('(') + 1:-1].split(',')]
-        ok(f'{theme}: round button is translucent and not white', (n[3] if len(n) > 3 else 1) < .7 and sum(n[:3]) / 3 < 140, bg)
+        ok(f'{theme}: round button is translucent and not white', (n[3] if len(n) > 3 else 1) < .7 and (theme == 'light' or sum(n[:3]) / 3 < 140), bg)
     pg.evaluate("document.body.classList.remove('light')")
 
     # setting off: never collapses

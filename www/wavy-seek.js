@@ -7,7 +7,7 @@
 (function () {
   'use strict';
   const TAU = Math.PI * 2;
-  const FRAME_MS = 33;
+  const FRAME_MS = 8; // follow the display (up to ~120 Hz); the canvas is tiny
   const bars = new Set();
   let isPlaying = false, visibleDoc = !document.hidden, raf = 0, last = 0;
   const reduce = () => {
