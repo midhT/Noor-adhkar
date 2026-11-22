@@ -25,7 +25,7 @@
     const i = list.findIndex(t => t.classList.contains('active'));
     const pos = i < 0 ? 0 : i, dist = Math.abs(pos - shown);
     if (dist > 0.4 && !down) {                       // the lens stretches along its travel, then settles with the spring
-      nav.style.setProperty('--stretch', (1 + Math.min(0.3, dist * 0.085)).toFixed(3));
+      nav.style.setProperty('--stretch', (1 + Math.min(0.22, dist * 0.06)).toFixed(3));
       nav.classList.add('lens-moving'); clearTimeout(settle);
       settle = setTimeout(() => nav.classList.remove('lens-moving'), 190);
     }
@@ -58,4 +58,74 @@
   nav.addEventListener('pointercancel', release);
   document.addEventListener('noor:screen', sync);
   sync();
+
+  /* ---- Collapse: only while a recitation player is on screen. Scrolling down ~28px turns the pill into a round
+     button holding the current tab's icon (the mini player docks beside it); scrolling back up the same distance,
+     reaching the top, changing tab, or tapping the button brings the pill back. ---- */
+  const COLLAPSE_KEY = 'naseemNavCollapseV1', THRESHOLD = 28;
+  const dock = document.createElement('button');
+  dock.type = 'button'; dock.className = 'nav-dock'; dock.setAttribute('aria-label', 'Show navigation');
+  nav.parentNode.insertBefore(dock, nav.nextSibling);
+  const body = document.body;
+  const collapseOn = () => { try { return localStorage.getItem(COLLAPSE_KEY) !== 'off'; } catch (_) { return true; } };
+  const playerOn = () => { const p = document.getElementById('quranPlayer'); return !!p && !p.hidden && !p.classList.contains('qr-player-away'); };
+  let collapsed = false, travel = 0;
+  const lastY = new WeakMap();
+  function syncDock() {
+    const a = nav.querySelector('.nav-item.active') || tabs()[0]; if (!a) return;
+    const ni = a.querySelector('.ni'); if (!ni) return;
+    const html = ni.outerHTML;
+    if (dock.__html !== html) { dock.__html = html; dock.innerHTML = html; }
+    dock.setAttribute('aria-label', 'Show navigation (' + (a.dataset.navLabel || 'menu') + ')');
+  }
+  function setCollapsed(on) {
+    on = !!on && collapseOn() && playerOn() && body.classList.contains('glass');
+    travel = 0;
+    if (on === collapsed) return;
+    collapsed = on; syncDock();
+    body.classList.toggle('nav-collapsed', on);
+    nav.setAttribute('aria-hidden', String(on));
+    document.dispatchEvent(new CustomEvent('naseem:nav-collapsed', { detail: { collapsed: on } }));
+  }
+  // Only the user's own scrolling counts. The reader also scrolls by itself to follow the recited ayah, and that
+  // must never fold the bar. A finger drag (and its fling afterwards) or the wheel marks the scroll as user-driven.
+  let userUntil = 0, fingerDown = false, t0y = 0, t0x = 0, moved = false;
+  const SLOP = 14;                                   // a tap that jitters a few px is not a scroll
+  document.addEventListener('touchstart', e => { const t = e.touches[0]; if (t) { t0y = t.clientY; t0x = t.clientX; } moved = false; fingerDown = false; }, { passive: true, capture: true });
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0]; if (!t) return;
+    if (!moved && Math.abs(t.clientY - t0y) > SLOP && Math.abs(t.clientY - t0y) >= Math.abs(t.clientX - t0x)) moved = true;
+    if (moved) { fingerDown = true; userUntil = Infinity; }
+  }, { passive: true, capture: true });
+  const released = () => { if (moved) userUntil = performance.now() + 1200; fingerDown = false; moved = false; };
+  document.addEventListener('touchend', released, { passive: true, capture: true });
+  document.addEventListener('touchcancel', released, { passive: true, capture: true });
+  document.addEventListener('wheel', () => { userUntil = performance.now() + 450; }, { passive: true, capture: true });
+  document.addEventListener('keydown', e => { if (/^(PageDown|PageUp|ArrowDown|ArrowUp|Home|End| )$/.test(e.key)) userUntil = performance.now() + 450; }, true);
+  function onScroll(e) {
+    if (!(fingerDown || performance.now() < userUntil)) return;
+    if (document.body.classList.contains('qr-full-player-open') || document.body.classList.contains('qr-sheet-open') || document.body.classList.contains('qr-sleep-open')) return;
+    if (!collapseOn() || !playerOn() || !body.classList.contains('glass')) { if (collapsed) setCollapsed(false); return; }
+    const t = e.target, el = (t === document || t === document.documentElement || t === document.body) ? (document.scrollingElement || document.documentElement) : t;
+    if (!el || el.nodeType !== 1) return;
+    const y = el.scrollTop, prev = lastY.has(el) ? lastY.get(el) : y; lastY.set(el, y);
+    if (y <= 2) { setCollapsed(false); return; }          // at the top: always the full bar
+    const d = y - prev; if (!d) return;
+    if (travel * d < 0) travel = 0;                        // direction change restarts the count
+    travel += d;
+    if (Math.abs(travel) >= THRESHOLD) setCollapsed(travel > 0);
+  }
+  document.addEventListener('scroll', onScroll, { capture: true, passive: true });
+  dock.addEventListener('click', () => setCollapsed(false));
+  document.addEventListener('noor:screen', () => setCollapsed(false));
+  document.addEventListener('naseem:glass-changed', () => { if (!body.classList.contains('glass')) setCollapsed(false); });
+  document.addEventListener('naseem:navcollapse-changed', () => { if (!collapseOn()) setCollapsed(false); });
+  const player = document.getElementById('quranPlayer');
+  if (player) new MutationObserver(() => { if (!playerOn()) setCollapsed(false); }).observe(player, { attributes: true, attributeFilter: ['hidden', 'class'] });
+  // a tab change always brings the full bar back
+  let lastActive = -1;
+  new MutationObserver(() => { syncDock(); const i = tabs().findIndex(t => t.classList.contains('active')); if (i !== lastActive) { if (lastActive !== -1) setCollapsed(false); lastActive = i; } })
+    .observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  syncDock();
+  window.NaseemNav = { collapse: setCollapsed, isCollapsed: () => collapsed };
 })();

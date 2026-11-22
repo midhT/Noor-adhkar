@@ -1,123 +1,131 @@
 /* =====================================================================
-   Naseem Liquid Glass (navigation bar only) — Settings › Appearance › Liquid Glass.
+   Naseem Liquid Glass — navigation bar only (Settings › Appearance).
    Scoped to body.glass; switching it off returns the bar to its previous look.
 
-   The idea is a drop of water on paper, not a lit pane of glass:
-   - The bar is a translucent, frosted capsule. It is tinted, never white, so it keeps its contrast on the light theme too.
-   - Blur is strongest at the rim of the capsule and lighter in the middle: the edge is shown by blur, not by a highlight.
-   - The selected item is a water drop: clear in the middle (the page stays sharp and is slightly magnified by an SVG
-     displacement map, see glass-refract.js), a thin darker meniscus at its edge, a soft shadow on the "paper" beneath.
-   - It behaves like liquid: it stretches while it travels, swells under the finger and settles with a spring.
-   There are no rim lights, no specular rings and no tilt effects.
+   Modelled on the structure used by LastWave's navigation bar (visual reference only, no code copied):
+   - A 64px pill with 24px icons. Only the selected tab shows its name, inside the lens.
+   - The pill is a dark frosted surface: a strong blur of the page under a tint, so page content never shows
+     through as a smear. It is tinted, never white, so it keeps its contrast on the light theme too.
+   - The selected tab sits under a clear "lens" that follows the finger, swells under it (uniform scale so its
+     ends stay round), refracts the page, and carries a faint curved rim light on its upper-left edge.
+   - While a recitation player is on screen, scrolling down collapses the pill into a round button holding the
+     current tab's icon; the mini player docks beside it. Tapping the button brings the pill back.
    ===================================================================== */
 body.glass{
-  --glass-sat:1.5;
-  --nav-tint:rgba(100,112,124,.26);          /* dark theme: a cool grey tint over the page */
-  --nav-edge:rgba(0,0,0,.34);
+  --glass-sat:1.12;
+  --nav-h:64px;--nav-bottom:20px;--dock:56px;--dock-gap:8px;--dock-left:14px;
+  --nav-tint:rgba(16,19,24,.58);
+  --nav-edge:rgba(255,255,255,.07);
   --nav-shadow:rgba(0,0,0,.55);
-  --drop-meniscus:rgba(0,0,0,.30);
-  --drop-shade:rgba(0,0,0,.22);
-  --drop-cast:rgba(0,0,0,.50);
+  --ink:rgba(255,255,255,.88);--ink-on:#fff;
+  --rim-a:.68;--rim-b:.28;--shade-a:.13;
+  --drop-cast:rgba(0,0,0,.45);
 }
 body.glass.light{
-  --nav-tint:rgba(96,112,104,.22);        /* light theme: a soft grey-green tint, deliberately not white */
-  --nav-edge:rgba(30,52,42,.20);
-  --nav-shadow:rgba(24,44,34,.42);
-  --drop-meniscus:rgba(20,44,34,.28);
-  --drop-shade:rgba(20,44,34,.16);
-  --drop-cast:rgba(24,44,34,.38);
+  --nav-tint:rgba(78,92,86,.40);
+  --nav-edge:rgba(255,255,255,.22);
+  --nav-shadow:rgba(20,40,30,.50);
+  --ink:rgba(255,255,255,.90);--ink-on:#fff;
+  --rim-a:.80;--rim-b:.34;--shade-a:.18;
+  --drop-cast:rgba(20,40,30,.45);
 }
-
 /* Fallbacks: no backdrop-filter / reduced transparency / Smooth mode keep a readable, more opaque tint. */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  body.glass{--nav-tint:rgba(28,32,36,.92)}
-  body.glass.light{--nav-tint:rgba(214,220,214,.95)}
+  body.glass{--nav-tint:rgba(18,21,26,.94)}
+  body.glass.light{--nav-tint:rgba(70,84,78,.92)}
 }
 @media(prefers-reduced-transparency:reduce){
-  body.glass{--nav-tint:rgba(28,32,36,.94)}
-  body.glass.light{--nav-tint:rgba(214,220,214,.96)}
+  body.glass{--nav-tint:rgba(18,21,26,.95)}
+  body.glass.light{--nav-tint:rgba(70,84,78,.94)}
 }
-body.glass.lite{--nav-tint:rgba(28,32,36,.88)}
-body.glass.lite.light{--nav-tint:rgba(214,220,214,.92)}
+body.glass.lite{--nav-tint:rgba(18,21,26,.90)}
+body.glass.lite.light{--nav-tint:rgba(70,84,78,.90)}
 
-/* =====================================================================
-   Glass navigation: a floating capsule with a single glass lens (glass-nav.js moves it with a transform).
-   ===================================================================== */
+/* ---------------------------------------------------------------- the pill */
 body.glass .bottom-nav{
   --count:5;--lens:0;
-  background:var(--nav-tint)!important;border:0!important;
-  box-shadow:inset 0 0 0 1px var(--nav-edge),0 14px 30px -12px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
-  position:fixed;left:50%;right:auto;transform:translateX(-50%);
-  width:min(400px,calc(100% - 28px));max-width:none;height:68px;min-height:0;padding:4px;gap:0;
-  bottom:calc(12px + env(safe-area-inset-bottom));
+  position:fixed;left:50%;right:auto;transform:translateX(-50%);transform-origin:0 100%;
+  width:min(392px,calc(100% - 20px));max-width:none;height:var(--nav-h);min-height:0;padding:4px;gap:0;
+  bottom:calc(var(--nav-bottom) + env(safe-area-inset-bottom));
   display:grid;grid-template-columns:repeat(var(--count),minmax(0,1fr));align-items:stretch;
-  border-radius:999px;
+  border:0!important;border-radius:999px;
+  background:var(--nav-tint)!important;
+  box-shadow:inset 0 0 0 1px var(--nav-edge),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear,visibility 0s;
 }
-body.glass .bottom-nav .nav-item{
-  position:relative;z-index:1;flex:none;min-width:0;min-height:0;height:100%;padding:6px 0 5px;gap:3px;
-  border:0!important;border-radius:999px;background:none!important;box-shadow:none!important;transform:none!important;
-  color:rgba(240,244,248,.74);transition:color .2s ease;-webkit-tap-highlight-color:transparent;
-}
-body.glass.light .bottom-nav .nav-item{color:rgba(28,40,34,.78)}
-body.glass .bottom-nav .nav-item.active{color:#fff;flex:none}
-body.glass.light .bottom-nav .nav-item.active{color:color-mix(in srgb,var(--accent) 80%,#10201a)}
-body.glass .bottom-nav .nav-item.active:before{display:none}
-body.glass .bottom-nav .nav-item small{font-size:10px;letter-spacing:.01em;display:block!important}
-body.glass .bottom-nav .nav-item .ni{width:26px;height:24px;transition:transform .32s cubic-bezier(.3,1.5,.5,1)}
-body.glass .bottom-nav .nav-item.active .ni{transform:translateY(-1px) scale(1.08)}
-body.glass .bottom-nav .nav-pill{display:none}
-
-/* The capsule's own blur sits on a separate layer so the lens is its sibling, not a descendant: a nested
-   backdrop-filter only sees its parent's content and could not refract the page behind the bar. */
-body.glass .bottom-nav{-webkit-backdrop-filter:none;backdrop-filter:none}
+/* The pill's own blur lives on a sibling layer, so the lens is not its descendant: a nested backdrop-filter
+   only sees its parent's content and could not refract the page behind the bar. */
 body.glass .bottom-nav::before{
   content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
-  -webkit-backdrop-filter:blur(8px) saturate(var(--glass-sat));backdrop-filter:blur(8px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat));
 }
-/* Heavier blur around the rim: the edge of the bar is felt as softness, not drawn as a line. */
-body.glass .bottom-nav::after{
-  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:7px;pointer-events:none;
-  -webkit-backdrop-filter:blur(22px) saturate(var(--glass-sat));backdrop-filter:blur(22px) saturate(var(--glass-sat));
+/* A little more blur around the rim, so the edge reads as softness and not as a drawn line. */
+body.glass .bottom-nav::after,body.glass .nav-dock::after{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:6px;pointer-events:none;
+  -webkit-backdrop-filter:blur(24px) saturate(var(--glass-sat));backdrop-filter:blur(24px) saturate(var(--glass-sat));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
   mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
 }
-body.glass.lite .bottom-nav::after{-webkit-backdrop-filter:none;backdrop-filter:none}
-body.glass.lite .bottom-nav::before{-webkit-backdrop-filter:none;backdrop-filter:none}
-@media(prefers-reduced-transparency:reduce){body.glass .bottom-nav::before,body.glass .bottom-nav::after{-webkit-backdrop-filter:none;backdrop-filter:none}}
+body.glass.lite .bottom-nav::before,body.glass.lite .bottom-nav::after,body.glass.lite .nav-dock::before,body.glass.lite .nav-dock::after{-webkit-backdrop-filter:none;backdrop-filter:none}
+@media(prefers-reduced-transparency:reduce){body.glass .bottom-nav::before,body.glass .bottom-nav::after,body.glass .nav-dock::before,body.glass .nav-dock::after{-webkit-backdrop-filter:none;backdrop-filter:none}}
 
-/* The drop: clear in the middle, a thin darker meniscus at the edge, a soft shadow on the paper below. No light, no ring. */
-.nav-lens{display:none}
+/* ---------------------------------------------------------------- tabs: bigger icons, only the selected name */
+body.glass .bottom-nav .nav-item{
+  position:relative;z-index:1;flex:none;min-width:0;min-height:0;height:100%;padding:0 2px;gap:0;
+  display:flex;flex-direction:row;align-items:center;justify-content:center;overflow:visible;
+  border:0!important;border-radius:999px;background:none!important;box-shadow:none!important;transform:none!important;
+  color:var(--ink);transition:color .2s ease;-webkit-tap-highlight-color:transparent;
+}
+body.glass .bottom-nav .nav-item.active{color:var(--ink-on)}
+body.glass .bottom-nav .nav-item.active:before{display:none}
+body.glass .bottom-nav .nav-item .ni{display:grid;place-items:center;flex:none;width:26px;height:26px;font-size:24px;line-height:1;transition:transform .4s cubic-bezier(.3,1.5,.5,1)}
+body.glass .bottom-nav .nav-item .ni svg{width:24px;height:24px}
+body.glass .bottom-nav .nav-item.active .ni{transform:scale(1.04)}
+body.glass .bottom-nav .nav-item small{
+  display:block!important;flex:none;max-width:0;margin-left:0;overflow:hidden;white-space:nowrap;
+  font-size:11.5px;font-weight:650;letter-spacing:0;line-height:1;opacity:0;
+  transform:translateX(-6px) scale(.86);transform-origin:left center;
+  transition:max-width .42s cubic-bezier(.3,1.3,.5,1),margin .42s cubic-bezier(.3,1.3,.5,1),opacity .2s ease,transform .42s cubic-bezier(.3,1.5,.5,1);
+}
+body.glass .bottom-nav .nav-item.active small{max-width:44px;margin-left:4px;opacity:1;transform:none}
+body.glass .bottom-nav .nav-pill{display:none}
+
+/* ---------------------------------------------------------------- the lens */
+.nav-lens,.nav-dock{display:none}
 body.glass .nav-lens{
   display:block;position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
-  border-radius:999px;pointer-events:none;
-  --sx:1;--sy:1;
-  transform:translate3d(calc(var(--lens) * 100%),0,0) scale(var(--sx),var(--sy));
+  border-radius:999px;pointer-events:none;--sx:1;--sy:1;--ty:0px;--hl:.25;
+  transform:translate3d(calc(var(--lens) * 100%),var(--ty),0) scale(var(--sx),var(--sy));
   transition:transform .52s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease;
-  background:none;
-  box-shadow:inset 0 0 0 1px var(--drop-meniscus),inset 0 -5px 8px -4px var(--drop-shade),inset 0 4px 8px -6px var(--drop-shade),0 7px 12px -6px var(--drop-cast);
-  -webkit-backdrop-filter:saturate(1.2);backdrop-filter:saturate(1.2);
+  /* a whisper of top light, and a soft lower inner shade */
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.006) 38%,transparent 64%,rgba(255,255,255,.012));
+  box-shadow:inset 0 -6px 6px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 2px 5px -1px var(--drop-cast);
+  -webkit-backdrop-filter:saturate(1.15);backdrop-filter:saturate(1.15);
   will-change:transform;
 }
-/* stretches while it travels, then settles with the spring */
-body.glass .bottom-nav.lens-moving .nav-lens{--sx:var(--stretch,1.12);--sy:.95}
-/* swells and lights from within under the finger */
-body.glass .bottom-nav.lens-press .nav-lens{--sx:1.13;--sy:1.17;box-shadow:inset 0 0 0 1px var(--drop-meniscus),inset 0 -7px 10px -4px var(--drop-shade),inset 0 5px 10px -6px var(--drop-shade),0 12px 18px -8px var(--drop-cast)}
+/* curved rim light, upper-left strong and lower-right faint, strongest while the finger is down */
+body.glass .nav-lens::before,body.glass .nav-lens::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:var(--hl);transition:opacity .25s ease;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+}
+body.glass .nav-lens::before{padding:.7px;background:linear-gradient(135deg,rgba(255,255,255,var(--rim-a)) 0,rgba(255,255,255,.30) 24%,transparent 52%)}
+body.glass .nav-lens::after{padding:.45px;background:linear-gradient(135deg,transparent 62%,rgba(255,255,255,.06) 84%,rgba(255,255,255,var(--rim-b)) 100%)}
+/* stretches a touch along its travel, then settles with the spring */
+body.glass .bottom-nav.lens-moving .nav-lens{--sx:var(--stretch,1.1);--sy:.97}
+/* swells under the finger: uniform scale so the ends stay round and its radius matches the pill's */
+body.glass .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--hl:1;box-shadow:inset 0 -7px 7px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 6px 12px -3px var(--drop-cast)}
 body.glass .bottom-nav.lens-drag .nav-lens{transition:transform .09s linear,box-shadow .3s ease}
 body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;transition:transform .18s ease-out}
-@media(prefers-reduced-motion:reduce){body.glass .nav-lens{transition:none}body.glass .bottom-nav .nav-item .ni{transition:none}}
+@media(prefers-reduced-motion:reduce){body.glass .nav-lens,body.glass .bottom-nav,body.glass .nav-dock,body.glass .bottom-nav .nav-item small,body.glass .bottom-nav .nav-item .ni{transition:none}}
 
 /* Real refraction: Chromium (Android WebView) runs an SVG displacement map on the backdrop. Only the small moving lens uses it. */
 @supports (backdrop-filter:url(#naseem-lens)){
-  body.glass:not(.lite) .nav-lens{
-    -webkit-backdrop-filter:url(#naseem-lens) saturate(1.2);
-    backdrop-filter:url(#naseem-lens) saturate(1.2);
-  }
-  body.glass:not(.lite) .bottom-nav.lens-press .nav-lens{
-    -webkit-backdrop-filter:url(#naseem-lens-press) saturate(1.25);
-    backdrop-filter:url(#naseem-lens-press) saturate(1.25);
-  }
+  body.glass:not(.lite) .nav-lens{-webkit-backdrop-filter:url(#naseem-lens) saturate(1.15);backdrop-filter:url(#naseem-lens) saturate(1.15)}
+  body.glass:not(.lite) .bottom-nav.lens-press .nav-lens{-webkit-backdrop-filter:url(#naseem-lens-press) saturate(1.2);backdrop-filter:url(#naseem-lens-press) saturate(1.2)}
 }
-/* A hole in the capsule's blur layer under the lens: the lens then refracts the crisp page, not an already-blurred copy. */
+/* A hole in the pill's blur layer under the lens: the lens then refracts the crisp page, not an already-blurred copy. */
 @supports (mask-composite:exclude) or (-webkit-mask-composite:xor){
   body.glass:not(.lite) .bottom-nav::before{
     -webkit-mask-image:linear-gradient(#000,#000),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='60' preserveAspectRatio='none'%3E%3Crect width='72' height='60' rx='30' fill='%23000'/%3E%3C/svg%3E");
@@ -131,5 +139,39 @@ body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;tran
   body.glass .bottom-nav.lens-drag::before{transition:mask-position .09s linear}
 }
 
-/* The glass nav capsule is taller than the old dock, so floating layers above it move up with it. */
-body.glass .qr-player{bottom:calc(94px + env(safe-area-inset-bottom))}
+/* ---------------------------------------------------------------- collapsed: a round button with the current tab's icon */
+body.glass .nav-dock{
+  display:grid;place-items:center;position:fixed;z-index:21;
+  left:calc(var(--dock-left) + env(safe-area-inset-left));bottom:calc(var(--nav-bottom) + env(safe-area-inset-bottom));
+  width:var(--dock);height:var(--dock);padding:0;border:0;border-radius:50%;
+  background:var(--nav-tint);color:var(--ink-on);
+  box-shadow:inset 0 0 0 1px var(--nav-edge),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow);
+  opacity:0;visibility:hidden;pointer-events:none;transform:scale(.6);transform-origin:50% 50%;
+  transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .08s,visibility 0s .46s;
+  -webkit-tap-highlight-color:transparent;
+}
+body.glass .nav-dock::before{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
+  -webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat));
+}
+body.glass .nav-dock .ni{display:grid;place-items:center;width:28px;height:28px;font-size:26px;line-height:1}
+body.glass .nav-dock .ni svg{width:26px;height:26px}
+body.glass.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .1s,visibility 0s}
+body.glass.nav-collapsed .nav-dock:active{transform:scale(.94)}
+body.glass.nav-collapsed .bottom-nav{opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-50%) scale(.7);transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .2s linear,visibility 0s .46s}
+
+/* ---------------------------------------------------------------- things that sit above the pill move up with it */
+body.glass .app-shell{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+body.glass .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
+body.glass .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(safe-area-inset-bottom));transition:scale .35s var(--spring,ease),left .46s cubic-bezier(.2,.8,.2,1),bottom .46s cubic-bezier(.2,.8,.2,1)}
+/* the mini player slides down into the row beside the round button */
+@media(max-width:520px){
+  body.glass.nav-collapsed .qr-player{
+    left:calc(var(--dock-left) + var(--dock) + var(--dock-gap) + env(safe-area-inset-left));
+    bottom:calc(var(--nav-bottom) + env(safe-area-inset-bottom));
+  }
+}
+/* docked beside the round button the player keeps only artwork, title, play and next (stop and the rest are in the full player) */
+@media(max-width:520px){
+  body.glass.nav-collapsed .qr-player #quranLocate,body.glass.nav-collapsed .qr-player #quranPrevAyah,body.glass.nav-collapsed .qr-player #quranStop{display:none}
+}

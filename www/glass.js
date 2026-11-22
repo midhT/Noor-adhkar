@@ -16,6 +16,15 @@
   }
   function set(value) { mode = value === 'off' ? 'off' : 'on'; try { localStorage.setItem(KEY, mode); } catch (_) {} apply(); }
   doc.addEventListener('click', e => { if (e.target.closest('#stGlassToggle')) set(mode === 'on' ? 'off' : 'on'); });
+  // Collapse the navigation bar into a round button while scrolling with the player open.
+  const CKEY = 'naseemNavCollapseV1';
+  const cRead = () => { try { return localStorage.getItem(CKEY) === 'off' ? 'off' : 'on'; } catch (_) { return 'on'; } };
+  function cApply() {
+    const on = cRead() === 'on', t = doc.getElementById('stNavCollapseToggle');
+    if (t) { t.setAttribute('aria-pressed', String(on)); t.textContent = on ? 'ON' : 'OFF'; }
+    doc.dispatchEvent(new CustomEvent('naseem:navcollapse-changed', { detail: { on } }));
+  }
+  doc.addEventListener('click', e => { if (e.target.closest('#stNavCollapseToggle')) { try { localStorage.setItem(CKEY, cRead() === 'on' ? 'off' : 'on'); } catch (_) {} cApply(); } });
   window.NaseemGlass = { get: () => mode, set };
-  apply();
+  apply(); cApply();
 })();

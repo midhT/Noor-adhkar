@@ -34,7 +34,10 @@ with sync_playwright() as p:
         alpha = nums[3] if len(nums) > 3 else 1.0
         ok(f'{theme}: nav is translucent', alpha < 0.6, bg)
         ok(f'{theme}: nav is not white', lum < 170 or theme == 'dark', bg)
-        ok(f'{theme}: lens has no light fill', pg.evaluate("getComputedStyle(document.querySelector('.nav-lens')).backgroundImage") == 'none')
+        geo = pg.evaluate("(()=>{const n=document.querySelector('.bottom-nav').getBoundingClientRect();const act=document.querySelector('.bottom-nav .nav-item.active small').getBoundingClientRect();const off=[...document.querySelectorAll('.bottom-nav .nav-item:not(.active) small')].map(e=>e.getBoundingClientRect().width);const ic=document.querySelector('.bottom-nav .nav-item .ni svg,.bottom-nav .nav-item .ni').getBoundingClientRect();return {h:n.height,bottom:innerHeight-n.bottom,act:act.width,off:Math.max(...off),icon:ic.width}})()")
+        ok(f'{theme}: pill is 64px tall, raised off the bottom', abs(geo['h'] - 64) < 1.5 and geo['bottom'] >= 18, str(geo))
+        ok(f'{theme}: only the selected tab shows its name', geo['act'] > 15 and geo['off'] < 1, str(geo))
+        ok(f'{theme}: icons are 24px or larger', geo['icon'] >= 23.5, str(geo))
     pg.evaluate("document.body.classList.remove('light')")
     ok('no horizontal overflow', pg.evaluate("document.documentElement.scrollWidth<=window.innerWidth+1"))
     ok('no page errors', errs == [], str(errs))
