@@ -7,7 +7,7 @@
 (function () {
   'use strict';
   const TAU = Math.PI * 2;
-  const FRAME_MS = 8; // follow the display (up to ~120 Hz); the canvas is tiny
+  const FRAME_MS = 33; // every redraw re-runs the glass blur behind it, so keep animated waves at ~30 fps
   const bars = new Set();
   let isPlaying = false, visibleDoc = !document.hidden, raf = 0, last = 0;
   const reduce = () => {
@@ -41,8 +41,21 @@
     st.w = r.width; st.h = r.height; st.dpr = dpr;
   }
 
+  /* Flat variant (mini player): a plain 3px progress line, redrawn at most about once a second, because every
+     repaint makes the glass blur behind it render again. */
+  function drawFlat(st) {
+    const { w, h, dpr } = st, ctx = st.ctx, c = colors(st);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    const cy = h / 2, f = Math.max(0, Math.min(1, st.f)), x1 = w * f;
+    ctx.lineCap = 'round'; ctx.lineWidth = 3;
+    ctx.strokeStyle = alpha(c.text, 0.22); ctx.beginPath(); ctx.moveTo(1.5, cy); ctx.lineTo(w - 1.5, cy); ctx.stroke();
+    if (x1 > 1) { ctx.strokeStyle = c.accent; ctx.beginPath(); ctx.moveTo(1.5, cy); ctx.lineTo(Math.max(1.5, x1 - 1.5), cy); ctx.stroke(); }
+    if (st.drag) { ctx.fillStyle = c.accent; ctx.beginPath(); ctx.arc(Math.max(5, Math.min(w - 5, x1)), cy, 5, 0, TAU); ctx.fill(); }
+  }
+
   function draw(st, t) {
     if (!st.w || !st.h) size(st);
+    if (st.el.dataset.flat) { if (st.w && st.h) drawFlat(st); return; }
     const { w, h, dpr } = st; if (!w || !h) return;
     const ctx = st.ctx, c = colors(st);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -91,6 +104,7 @@
   }
 
   function animating(st) {
+    if (st.el.dataset.flat) return false;
     return isPlaying && visibleDoc && st.onscreen && !st.drag && !reduce();
   }
   function loop(now) {
@@ -123,7 +137,13 @@
     kick();
     return st;
   }
-  function set(el, f) { const st = el && (el.__wave || attach(el)); if (!st) return; const v = Math.max(0, Math.min(1, Number(f) || 0)); if (v !== st.f) { st.f = v; st.dirty = true; kick(); } }
+  function set(el, f) { const st = el && (el.__wave || attach(el)); if (!st) return; const v = Math.max(0, Math.min(1, Number(f) || 0)); if (v === st.f) return;
+    if (st.el.dataset.flat && !st.drag) {            // flat line: move about once a second, jump at once on a seek
+      const now = performance.now();
+      if (now - (st.flatAt || 0) < 1000 && Math.abs(v - st.f) < 0.02) return;
+      st.flatAt = now;
+    }
+    st.f = v; st.dirty = true; kick(); }
   function dragging(el, on) { const st = el && el.__wave; if (!st) return; st.drag = !!on; st.dirty = true; kick(); }
   function playing(on) { isPlaying = !!on; for (const s of bars) s.dirty = true; kick(); }
 

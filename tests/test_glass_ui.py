@@ -21,7 +21,7 @@ with sync_playwright() as p:
     pg.evaluate("document.body.classList.remove('lite')"); pg.wait_for_timeout(200)
     # ---- navigation bar only: nothing else is glass, and there is no edge lighting ----
     NAV = "document.querySelector('.bottom-nav')"
-    ok('nav rim is blurred (edge ring), not lit', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').backdropFilter") and 'gradient' not in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').backgroundImage"))
+    ok('nav has one uniform blur layer (no separate edge ring)', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::before').backdropFilter") and 'blur' not in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::after').backdropFilter"))
     for sel in ['.settings-card', '.st-group', '.v3-card', '.toast', '.nsheet-panel']:
         has = pg.evaluate("(s=>{const e=document.querySelector(s);if(!e)return 'none';const c=getComputedStyle(e);return (c.backdropFilter||'none')})(%r)" % sel)
         ok(f'{sel} is not glass', has in ('none', ''), has)
