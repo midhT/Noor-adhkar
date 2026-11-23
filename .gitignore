@@ -16,3 +16,6 @@ signing/
 
 __pycache__/
 *.py[cod]
+
+# fixed CI debug signing key (not a secret; lets builds update in place)
+!ci/debug.keystore

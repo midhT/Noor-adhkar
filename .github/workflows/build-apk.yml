@@ -53,6 +53,10 @@ jobs:
         run: node scripts/patch-icons.mjs
       - name: Integrate native Android widgets and back handling
         run: node scripts/patch-android.mjs
+      - name: Use the fixed debug signing key
+        # Without this every CI run signs with a brand-new random key, so Android refuses to update
+        # over the previous build ("App not installed"). One fixed key lets new builds install in place.
+        run: mkdir -p ~/.android && cp ci/debug.keystore ~/.android/debug.keystore
       - name: Build debug APK
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug
