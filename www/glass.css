@@ -44,8 +44,6 @@ body.glass.light{
   body.glass{--nav-tint:rgba(24,26,32,.95)}
   body.glass.light{--nav-tint:rgba(246,245,241,.97)}
 }
-body.glass.lite{--nav-tint:rgba(24,26,32,.90)}
-body.glass.lite.light{--nav-tint:rgba(246,245,241,.93)}
 
 /* ---------------------------------------------------------------- the pill */
 body.glass .bottom-nav{
@@ -74,7 +72,6 @@ body.glass .bottom-nav::after,body.glass .nav-dock::after{
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
   mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
 }
-body.glass.lite .bottom-nav::before,body.glass.lite .bottom-nav::after,body.glass.lite .nav-dock::before,body.glass.lite .nav-dock::after{-webkit-backdrop-filter:none;backdrop-filter:none}
 @media(prefers-reduced-transparency:reduce){body.glass .bottom-nav::before,body.glass .bottom-nav::after,body.glass .nav-dock::before,body.glass .nav-dock::after{-webkit-backdrop-filter:none;backdrop-filter:none}}
 
 /* ---------------------------------------------------------------- tabs: bigger icons, only the selected name */
@@ -125,7 +122,8 @@ body.glass .bottom-nav.lens-moving .nav-lens{--sx:var(--stretch,1.1);--sy:.97}
 /* swells under the finger: uniform scale so the ends stay round and its radius matches the pill's */
 body.glass .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--hl:1;box-shadow:inset 0 -7px 7px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 6px 12px -3px var(--drop-cast)}
 body.glass .bottom-nav.lens-drag .nav-lens{transition:transform .09s linear,box-shadow .3s ease}
-body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;transition:transform .18s ease-out}
+/* Smooth mode keeps the real blur (that is what makes it glass); it only drops the costly lens refraction and shortens motion. */
+body.glass.lite .nav-lens{transition:transform .18s ease-out}
 @media(prefers-reduced-motion:reduce){body.glass .nav-lens,body.glass .bottom-nav,body.glass .nav-dock,body.glass .bottom-nav .nav-item small,body.glass .bottom-nav .nav-item .ni{transition:none}}
 
 /* Real refraction: Chromium (Android WebView) runs an SVG displacement map on the backdrop. Only the small moving lens uses it. */
@@ -135,7 +133,7 @@ body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;tran
 }
 /* A hole in the pill's blur layer AND its tint under the lens: the drop then shows the real page, not a tinted, blurred copy of it. */
 @supports (mask-composite:exclude) or (-webkit-mask-composite:xor){
-  body.glass:not(.lite) .bottom-nav::before{
+  body.glass .bottom-nav::before{
     -webkit-mask-image:linear-gradient(#000,#000),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='60' preserveAspectRatio='none'%3E%3Crect width='72' height='60' rx='30' fill='%23000'/%3E%3C/svg%3E");
     mask-image:linear-gradient(#000,#000),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='60' preserveAspectRatio='none'%3E%3Crect width='72' height='60' rx='30' fill='%23000'/%3E%3C/svg%3E");
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -166,7 +164,6 @@ body.glass .nav-dock{
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow);
   -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
 }
-body.glass.lite .nav-dock{-webkit-backdrop-filter:none;backdrop-filter:none}
 body.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .1s,visibility 0s}
 body.nav-collapsed .nav-dock:active{transform:scale(.94)}
 body.nav-collapsed .bottom-nav{opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-50%) scale(.7);transform-origin:0 100%;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .2s linear,visibility 0s .46s}
@@ -200,7 +197,6 @@ body.glass .qr-player{
   -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
 }
-body.glass.lite .qr-player{-webkit-backdrop-filter:none;backdrop-filter:none}
 body.glass .qr-player .qr-mini-avatar{background:var(--gfill);border:0}
 body.glass .topbar .brand-mark,body.glass .topbar .icon-button{
   background:var(--nav-tint)!important;border:0!important;
@@ -208,7 +204,6 @@ body.glass .topbar .brand-mark,body.glass .topbar .icon-button{
   -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
 }
 body.glass .topbar .icon-button{color:var(--gi)}
-body.glass.lite .topbar .brand-mark,body.glass.lite .topbar .icon-button{-webkit-backdrop-filter:none;backdrop-filter:none}
 
 /* ===== Full player: ink colours, flat + glass buttons, surah-name artwork, Up next ===== */
 .qr-full-player{--art-h:160;color:var(--gi)}
@@ -239,5 +234,20 @@ body.glass .qr-full-player .qr-full-play{background:var(--nav-tint);color:var(--
 .qr-queue{overflow:hidden}.qr-queue-list{min-height:0}
 
 /* compositor hints: keep nav/dock/lens/player on their own layers so they animate at the display's refresh rate */
-.bottom-nav,.nav-dock,.nav-lens,.qr-player{will-change:transform}
+.nav-dock,.nav-lens,.qr-player{will-change:transform} /* NOT .bottom-nav: will-change makes it a backdrop root and the lens would stop seeing the page */
 .qr-full-player.qr-opening,.qr-full-player.qr-closing{will-change:clip-path,opacity}
+
+/* ===== Tonal accent (ported from LastWave's Material-3 approach): containers and tints take the accent's hue ===== */
+body{--ac-cont:color-mix(in srgb,var(--accent) 34%,#fff);--ac-on:color-mix(in srgb,var(--accent) 30%,#000);--ac-soft:color-mix(in srgb,var(--accent) 16%,transparent);--ac-line:color-mix(in srgb,var(--accent) 32%,transparent)}
+body.light{--ac-cont:color-mix(in srgb,var(--accent) 24%,#fff);--ac-on:color-mix(in srgb,var(--accent) 62%,#000)}
+body.glass{--nav-tint:color-mix(in srgb,var(--accent) 7%,rgba(22,24,30,.30));--nav-rim:color-mix(in srgb,var(--accent) 22%,rgba(255,255,255,.14))}
+body.glass.light{--nav-tint:color-mix(in srgb,var(--accent) 8%,rgba(255,255,255,.34));--nav-rim:rgba(255,255,255,.85)}
+.qr-player .qr-pbtn.qr-pmain,.qr-full-player .qr-full-play{background:var(--ac-cont);color:var(--ac-on);box-shadow:none}
+.qr-player .qr-pbtn.qr-pmain svg,.qr-full-player .qr-full-play svg{color:var(--ac-on)}
+body.glass .qr-full-player .qr-full-play{background:var(--ac-cont);color:var(--ac-on);box-shadow:0 10px 26px -6px var(--ac-line)}
+.qr-player .qr-pbtn:not(.qr-pmain){background:color-mix(in srgb,var(--accent) 14%,var(--gfill))}
+.qr-full-player .qr-full-icon,.qr-full-player .qr-full-secondary,.qr-full-player .qr-full-side,.qr-full-player .qr-sleep-btn{background:color-mix(in srgb,var(--accent) 12%,var(--gfill))}
+.qr-queue-row.current,.qr-full-player .qr-full-side[aria-pressed="true"],.qr-full-player .qr-sleep-btn.on{background:var(--ac-soft);box-shadow:inset 0 0 0 1.5px var(--ac-line)}
+
+/* The page-bottom fade (main::after) painted the background colour over everything behind the bar, so glass had nothing to show. */
+body.glass main::after{display:none}

@@ -69,7 +69,10 @@ with sync_playwright() as p:
     for theme in ['dark', 'light']:
         pg.evaluate("t=>document.body.classList.toggle('light',t==='light')", theme); pg.wait_for_timeout(300)
         bg = pg.evaluate("getComputedStyle(document.querySelector('.nav-dock')).backgroundColor")
-        n = [float(x) for x in bg[bg.index('(') + 1:-1].split(',')]
+        import re
+        n = [float(x) for x in re.findall(r'[\d.]+', bg.split('(')[1])]
+        if bg.startswith('color('):  # srgb 0..1 channels with an optional "/ alpha"
+            rgb = [v * 255 for v in n[:3]]; n = rgb + ([n[3]] if len(n) > 3 else [])
         ok(f'{theme}: round button is translucent and not white', (n[3] if len(n) > 3 else 1) < .7 and (theme == 'light' or sum(n[:3]) / 3 < 140), bg)
     pg.evaluate("document.body.classList.remove('light')")
 
