@@ -18,7 +18,7 @@ body{--gi:#fff;--gi-dim:rgba(255,255,255,.62);--gi-inv:#111214;--gfill:rgba(255,
 body.light{--gi:#15171a;--gi-dim:rgba(21,23,26,.6);--gi-inv:#fff;--gfill:rgba(0,0,0,.075);--gfill2:rgba(0,0,0,.13);--gline:rgba(0,0,0,.16)}
 
 body.glass{
-  --glass-sat:1.35;
+  --glass-sat:1.6;
   --nav-h:64px;--nav-bottom:20px;
   --dock-bottom:calc(24px + env(safe-area-inset-bottom));
   /* Real glass: only a light tint, so the page behind shows through, blurred, in its own colours. */
@@ -65,7 +65,7 @@ body.glass .bottom-nav{
 body.glass .bottom-nav::before{
   content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
   background:var(--nav-tint);
-  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));backdrop-filter:blur(16px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
 }
 /* A little more blur around the rim, so the edge reads as softness and not as a drawn line. */
 body.glass .bottom-nav::after,body.glass .nav-dock::after{
@@ -164,7 +164,7 @@ body.glass.lite .nav-lens{-webkit-backdrop-filter:none;backdrop-filter:none;tran
 body.glass .nav-dock{
   background:var(--nav-tint);border:0;
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow);
-  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));backdrop-filter:blur(16px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
 }
 body.glass.lite .nav-dock{-webkit-backdrop-filter:none;backdrop-filter:none}
 body.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .1s,visibility 0s}
@@ -197,7 +197,7 @@ body.glass .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(
 /* ---------------------------------------------------------------- mini player + header buttons: the same glass as the bar */
 body.glass .qr-player{
   background:var(--nav-tint)!important;border:0!important;border-radius:30px;
-  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));backdrop-filter:blur(16px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
 }
 body.glass.lite .qr-player{-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -205,7 +205,7 @@ body.glass .qr-player .qr-mini-avatar{background:var(--gfill);border:0}
 body.glass .topbar .brand-mark,body.glass .topbar .icon-button{
   background:var(--nav-tint)!important;border:0!important;
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 8px 20px -8px var(--nav-shadow)!important;
-  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));backdrop-filter:blur(16px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
 }
 body.glass .topbar .icon-button{color:var(--gi)}
 body.glass.lite .topbar .brand-mark,body.glass.lite .topbar .icon-button{-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -219,10 +219,10 @@ body.glass.lite .topbar .brand-mark,body.glass.lite .topbar .icon-button{-webkit
 body.glass .qr-full-player .qr-full-icon,body.glass .qr-full-player .qr-full-secondary,body.glass .qr-full-player .qr-full-side,body.glass .qr-full-player .qr-sleep-btn{background:var(--nav-tint);box-shadow:inset 0 0 0 1px var(--gline);-webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat))}
 body.glass .qr-full-player .qr-full-side[aria-pressed="true"],body.glass .qr-full-player .qr-sleep-btn.on{box-shadow:inset 0 0 0 1.5px var(--gi)}
 body.glass .qr-full-player .qr-full-play{background:var(--nav-tint);color:var(--gi);box-shadow:inset 0 0 0 1.5px var(--gi),0 10px 26px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat))}
-.qr-full-player.qr-art-names .qr-full-art{background:linear-gradient(145deg,hsl(var(--art-h) 55% 34%),hsl(calc(var(--art-h) + 50) 60% 18%));border:0;box-shadow:0 24px 60px hsla(var(--art-h),70%,40%,.35);overflow:hidden}
+.qr-full-player.qr-art-names .qr-full-art{background:radial-gradient(120% 80% at 18% 0%,rgba(255,255,255,.28),transparent 58%),linear-gradient(calc(var(--art-h) * 1deg),color-mix(in srgb,var(--accent) 82%,#000),color-mix(in srgb,var(--accent) 34%,#000));border:0;box-shadow:0 24px 60px color-mix(in srgb,var(--accent) 38%,transparent),inset 0 0 0 1px rgba(255,255,255,.14);overflow:hidden}
 .qr-full-player.qr-art-names .qr-art-mark{font-size:clamp(44px,14vw,68px);line-height:1.5;color:#fff;opacity:1;text-align:center;padding:0 10px;text-shadow:0 4px 18px rgba(0,0,0,.35)}
 .qr-full-player.qr-art-names .qr-art-caption{color:rgba(255,255,255,.78)}
-.qr-full-player.qr-art-names{background:radial-gradient(120% 60% at 50% 0%,hsla(var(--art-h),60%,35%,.38),transparent 70%),var(--bg)}
+.qr-full-player.qr-art-names{background:radial-gradient(120% 60% at 50% 0%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 70%),var(--bg)}
 .qr-queue{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;background:var(--bg);padding:calc(10px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom))}
 .qr-queue[hidden]{display:none}
 .qr-queue .qr-top-spacer{width:44px}
@@ -230,7 +230,7 @@ body.glass .qr-full-player .qr-full-play{background:var(--nav-tint);color:var(--
 .qr-queue-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
 .qr-queue-row{display:flex;align-items:center;gap:12px;width:100%;padding:8px 12px 8px 8px;border:0;border-radius:18px;background:var(--gfill);color:var(--gi);text-align:left;font:inherit}
 .qr-queue-row.current{background:var(--gfill2);box-shadow:inset 0 0 0 1.5px var(--gi)}
-.qr-queue-tile{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:linear-gradient(145deg,hsl(var(--art-h) 55% 34%),hsl(calc(var(--art-h) + 50) 60% 18%));color:#fff;font-weight:700;font-size:14px}
+.qr-queue-tile{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:linear-gradient(calc(var(--art-h) * 1deg),color-mix(in srgb,var(--accent) 82%,#000),color-mix(in srgb,var(--accent) 34%,#000));color:#fff;font-weight:700;font-size:14px}
 .qr-queue-copy{flex:1;min-width:0;display:flex;flex-direction:column}
 .qr-queue-copy strong{font-size:15px;color:var(--gi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qr-queue-copy small{font-size:12px;color:var(--gi-dim)}
@@ -239,5 +239,5 @@ body.glass .qr-full-player .qr-full-play{background:var(--nav-tint);color:var(--
 .qr-queue{overflow:hidden}.qr-queue-list{min-height:0}
 
 /* compositor hints: keep nav/dock/lens/player on their own layers so they animate at the display's refresh rate */
-.bottom-nav,.nav-dock,.nav-lens,.qr-player{will-change:transform,opacity}
+.bottom-nav,.nav-dock,.nav-lens,.qr-player{will-change:transform}
 .qr-full-player.qr-opening,.qr-full-player.qr-closing{will-change:clip-path,opacity}

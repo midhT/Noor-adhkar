@@ -64,7 +64,7 @@
         if (download.dataset.action === 'install') {
           const state = readState();
           const result = await updater.installApk({ downloadId: String(state.downloadId), sha256: release.sha256 || '' });
-          status(result?.needsPermission ? 'Allow Naseem to install unknown apps in Android settings, return here, then tap Install update again.' : 'Android package installer opened. Confirm the update there.');
+          status(result?.needsPermission ? 'Allow Naseem to install unknown apps in Android settings, return here, then tap Install update again.' : 'Android package installer opened. Confirm the update there. If it says the app was not installed, the signature or version does not match this copy.');
         } else {
           status('Downloading the official Naseem APK…');
           if (!/^[a-f0-9]{64}$/i.test(String(release.sha256 || ''))) throw new Error('The release feed has no valid APK SHA-256 checksum yet.');
@@ -101,7 +101,7 @@
         const key = releaseKey(release);
         if (state.notifiedBuild !== key) { state.notifiedBuild = key; writeState(state); if (state.dismissedBuild !== key) show(release, true); }
         else if (state.dismissedBuild !== key && !$('naseemUpdateBanner')) show(release);
-        status(`Naseem ${release.version} (build ${buildOf(release)}) is available. Download the APK, then confirm Android's update prompt.`);
+        status(`Installed: ${CURRENT} (build ${CURRENT_BUILD}). Newer public release: ${release.version} (build ${buildOf(release)}). Download the APK, then confirm Android's update prompt. If Android says the app was not installed, this copy is signed differently from the public release; uninstall once, then install the public APK.`);
       } else {
         status(release.version === CURRENT && buildOf(release) <= CURRENT_BUILD
           ? `Naseem is up to date (${CURRENT}, build ${CURRENT_BUILD}).`
