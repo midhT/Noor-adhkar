@@ -244,3 +244,17 @@ body.light{--ac-cont:color-mix(in srgb,var(--accent) 24%,#fff);--ac-on:color-mix
 
 /* The page-bottom fade (main::after) painted the background colour over everything behind the bar, so glass had nothing to show. */
 body.glass main::after{display:none}
+
+/* ===== LastWave-style mini player: one compact row (artwork, title, play, next) with a thin seek wave along the bottom ===== */
+body .qr-player{border-radius:32px}
+body .qr-player .qr-player-main{padding:9px 14px 20px 9px;gap:10px;align-items:center}
+body .qr-player .qr-mini-avatar{width:58px;height:58px;border-radius:18px;flex:none}
+body .qr-player .qr-player-main .qr-player-info{padding:0}
+body .qr-player .qr-player-main .qr-player-info strong{font-size:16px;font-weight:700}
+body .qr-player .qr-player-main .qr-player-info small{font-size:12.5px}
+body .qr-player #quranPrevAyah,body .qr-player #quranStop{display:none}
+body:not(.qr-immersive) .qr-player #quranLocate{display:none}
+body .qr-player .qr-pbtn{flex:none}
+body .qr-player .qr-pbtn:not(.qr-pmain){width:44px;height:44px;border-radius:50%}
+body .qr-player .qr-pbtn.qr-pmain{width:54px;height:54px;border-radius:50%}
+body .qr-player .qr-wave-seek{position:absolute!important;left:80px;right:22px;bottom:4px;height:16px!important;padding:0!important;z-index:2}
