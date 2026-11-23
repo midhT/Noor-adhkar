@@ -70,8 +70,13 @@ with sync_playwright() as p:
     pg.tap('#quranExpandPlayer'); pg.wait_for_timeout(500)
     pg.evaluate("document.getElementById('quranAudio').pause()")
     pg.tap('#quranSleepBtn'); pg.wait_for_timeout(600); pg.tap('#quranSleepList [data-sleep="ayah"]'); pg.wait_for_timeout(600)
-    pg.evaluate("document.getElementById('quranAudio').play()"); pg.wait_for_timeout(2600)
-    ok('sleep timer pause reaches the notification', pg.evaluate(AUDIO_PAUSED) is True and pg.evaluate("window.__stops") >= 1 or pg.evaluate(LAST)['playing'] is False)
+    pg.evaluate("document.getElementById('quranAudio').play()")
+    reached = False
+    for _ in range(40):  # poll up to ~12 s: slow CI runners need longer than a fixed wait
+        pg.wait_for_timeout(300)
+        if (pg.evaluate(AUDIO_PAUSED) is True and pg.evaluate("window.__stops") >= 1) or pg.evaluate(LAST)['playing'] is False:
+            reached = True; break
+    ok('sleep timer pause reaches the notification', reached)
 
     # ---- explicit stop closes the media session immediately ----
     pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(600)
