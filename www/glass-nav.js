@@ -23,7 +23,8 @@
     nav.style.setProperty('--count', String(list.length || 5));
     if (drag) return;
     const i = list.findIndex(t => t.classList.contains('active'));
-    const pos = i < 0 ? 0 : i, dist = Math.abs(pos - shown);
+    nav.classList.toggle('no-active', i < 0);         // e.g. on Settings, which is not a tab: the lens fades out
+    const pos = i < 0 ? shown : i, dist = Math.abs(pos - shown);
     if (dist > 0.4 && !down) {                       // the lens stretches along its travel, then settles with the spring
       nav.style.setProperty('--stretch', (1 + Math.min(0.22, dist * 0.06)).toFixed(3));
       nav.classList.add('lens-moving'); clearTimeout(settle);

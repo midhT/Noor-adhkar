@@ -34,7 +34,7 @@
   if (cb && cv) cb.addEventListener('click', () => { cv.classList.remove('pop'); void cv.offsetWidth; cv.classList.add('pop'); });
 
   /* Swipe between tabs */
-  const TABS = ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'settingsScreen'];
+  const TABS = ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen'];
   const PANELS = ['counterScreen', 'libraryScreen'];
   const EDGE = 24, MIN_DX = 56;
   let sx = 0, sy = 0, st = 0, track = false, tgt = null;

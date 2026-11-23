@@ -13,7 +13,30 @@
 
   // ---------- groups ----------
   const groups = [...document.querySelectorAll('.st-group')];
-  groups.forEach(g => g.addEventListener('toggle', () => { if (g.open) groups.forEach(o => { if (o !== g) o.open = false; }); }));
+  // Each group is a sub-page: opening slides a full-screen page in, back slides it out.
+  const reduce = () => document.body.classList.contains('lite') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const holders = new Map();
+  const closeGroup = g => {
+    if (!g.open || g.classList.contains('st-closing')) return;
+    const done = () => { g.classList.remove('st-closing'); g.open = false; document.body.classList.remove('st-page-open'); holders.get(g)?.remove(); holders.delete(g); };
+    if (reduce()) return done();
+    g.classList.add('st-closing');
+    let fin = false; const once = () => { if (fin) return; fin = true; done(); };
+    g.addEventListener('animationend', once, { once: true }); setTimeout(once, 380);
+  };
+  groups.forEach(g => {
+    g.addEventListener('toggle', () => {
+      if (g.open) {
+        groups.forEach(o => { if (o !== g && o.open) { o.classList.remove('st-closing'); o.open = false; holders.get(o)?.remove(); holders.delete(o); } });
+        if (!holders.has(g)) { const h = document.createElement('div'); h.className = 'st-holder'; h.style.height = '74px'; g.before(h); holders.set(g, h); }
+        document.body.classList.add('st-page-open');
+        g.scrollTop = 0;
+      }
+    });
+    g.querySelector(':scope > summary')?.addEventListener('click', e => { if (g.open) { e.preventDefault(); closeGroup(g); } });
+  });
+  document.addEventListener('naseem:back', e => { const g = groups.find(x => x.open); if (g) { e.preventDefault(); e.stopImmediatePropagation(); closeGroup(g); } }, true);
+  document.addEventListener('naseem:screen-changed', () => groups.forEach(g => { if (g.open) { g.classList.remove('st-closing'); g.open = false; document.body.classList.remove('st-page-open'); holders.get(g)?.remove(); holders.delete(g); } }));
   $('stVersion').textContent = `Naseem ${VERSION}`;
 
   // ---------- Theme ----------

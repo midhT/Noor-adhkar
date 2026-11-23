@@ -17,24 +17,26 @@ body{--gi:#fff;--gi-dim:rgba(255,255,255,.62);--gi-inv:#111214;--gfill:rgba(255,
   --dock:56px;--dock-gap:8px;--dock-left:14px;--dock-bottom:calc(15px + env(safe-area-inset-bottom))}
 body.light{--gi:#15171a;--gi-dim:rgba(21,23,26,.6);--gi-inv:#fff;--gfill:rgba(0,0,0,.075);--gfill2:rgba(0,0,0,.13);--gline:rgba(0,0,0,.16)}
 
-body.glass{
+body.navpill{
   --glass-sat:1.4;
   --nav-h:64px;--nav-bottom:20px;
   --dock-bottom:calc(24px + env(safe-area-inset-bottom));
   /* Real glass: only a light tint, so the page behind shows through, blurred, in its own colours. */
-  --nav-tint:rgba(22,24,30,.30);
+  --nav-tint:rgba(22,24,30,var(--tint-a,.30));
   --nav-rim:rgba(255,255,255,.16);
   --nav-shadow:rgba(0,0,0,.55);
   --rim-a:.68;--rim-b:.28;--shade-a:.13;
   --drop-cast:rgba(0,0,0,.45);
 }
-body.glass.light{
-  --nav-tint:rgba(255,255,255,.34);
+body.navpill.light{
+  --nav-tint:rgba(255,255,255,var(--tint-a,.34));
   --nav-rim:rgba(255,255,255,.85);
   --nav-shadow:rgba(60,48,36,.42);
   --rim-a:.85;--rim-b:.40;--shade-a:.16;
   --drop-cast:rgba(60,48,36,.40);
 }
+body.navpill:not(.glass){--nav-tint:rgba(24,26,32,.97)}
+body.navpill.light:not(.glass){--nav-tint:rgba(247,245,240,.98)}
 /* Fallbacks: no backdrop-filter / reduced transparency / Smooth mode keep a readable, more opaque tint. */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   body.glass{--nav-tint:rgba(24,26,32,.94)}
@@ -46,7 +48,7 @@ body.glass.light{
 }
 
 /* ---------------------------------------------------------------- the pill */
-body.glass .bottom-nav{
+body.navpill .bottom-nav{
   --count:5;--lens:0;
   position:fixed;left:50%;right:auto;transform:translateX(-50%);transform-origin:0 100%;
   width:min(392px,calc(100% - 20px));max-width:none;height:var(--nav-h);min-height:0;padding:4px;gap:0;
@@ -63,35 +65,35 @@ body.glass .bottom-nav{
 body.glass .bottom-nav::before{
   content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
   background:var(--nav-tint);
-  -webkit-backdrop-filter:blur(12px) saturate(var(--glass-sat));backdrop-filter:blur(12px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat));
 }
-@media(prefers-reduced-transparency:reduce){body.glass .bottom-nav::before,body.glass .bottom-nav::after,body.glass .nav-dock::before,body.glass .nav-dock::after{-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(prefers-reduced-transparency:reduce){body.navpill .bottom-nav::before,body.navpill .bottom-nav::after,body.glass .nav-dock::before,body.glass .nav-dock::after{-webkit-backdrop-filter:none;backdrop-filter:none}}
 
 /* ---------------------------------------------------------------- tabs: bigger icons, only the selected name */
-body.glass .bottom-nav .nav-item{
+body.navpill .bottom-nav .nav-item{
   position:relative;z-index:1;flex:none;min-width:0;min-height:0;height:100%;padding:0 2px;gap:0;
   display:flex;flex-direction:row;align-items:center;justify-content:center;overflow:visible;
   border:0!important;border-radius:999px;background:none!important;box-shadow:none!important;transform:none!important;
   color:var(--gi)!important;transition:color .2s ease;-webkit-tap-highlight-color:transparent;
 }
-body.glass .bottom-nav .nav-item small,body.glass .bottom-nav .nav-item.active,body.glass .bottom-nav .nav-item.active small,body.glass .bottom-nav .nav-item .ni{color:var(--gi)!important}
-body.glass .bottom-nav .nav-item:not(.active) .ni{opacity:.82}
-body.glass .bottom-nav .nav-item.active:before{display:none}
-body.glass .bottom-nav .nav-item .ni{display:grid;place-items:center;flex:none;width:26px;height:26px;font-size:24px;line-height:1;transition:transform .4s cubic-bezier(.3,1.5,.5,1)}
-body.glass .bottom-nav .nav-item .ni svg{width:24px;height:24px}
-body.glass .bottom-nav .nav-item.active .ni{transform:scale(1.04)}
-body.glass .bottom-nav .nav-item small{
+body.navpill .bottom-nav .nav-item small,body.navpill .bottom-nav .nav-item.active,body.navpill .bottom-nav .nav-item.active small,body.navpill .bottom-nav .nav-item .ni{color:var(--gi)!important}
+body.navpill .bottom-nav .nav-item:not(.active) .ni{opacity:.82}
+body.navpill .bottom-nav .nav-item.active:before{display:none}
+body.navpill .bottom-nav .nav-item .ni{display:grid;place-items:center;flex:none;width:26px;height:26px;font-size:24px;line-height:1;transition:transform .4s cubic-bezier(.3,1.5,.5,1)}
+body.navpill .bottom-nav .nav-item .ni svg{width:24px;height:24px}
+body.navpill .bottom-nav .nav-item.active .ni{transform:scale(1.04)}
+body.navpill .bottom-nav .nav-item small{
   display:block!important;flex:none;max-width:0;margin-left:0;overflow:hidden;white-space:nowrap;
   font-size:11.5px;font-weight:650;letter-spacing:0;line-height:1;opacity:0;
   transform:translateX(-6px) scale(.86);transform-origin:left center;
   transition:max-width .42s cubic-bezier(.3,1.3,.5,1),margin .42s cubic-bezier(.3,1.3,.5,1),opacity .2s ease,transform .42s cubic-bezier(.3,1.5,.5,1);
 }
-body.glass .bottom-nav .nav-item.active small{max-width:44px;margin-left:4px;opacity:1;transform:none}
-body.glass .bottom-nav .nav-pill{display:none}
+body.navpill .bottom-nav .nav-item.active small{max-width:44px;margin-left:4px;opacity:1;transform:none}
+body.navpill .bottom-nav .nav-pill{display:none}
 
 /* ---------------------------------------------------------------- the lens */
 .nav-lens{display:none}
-body.glass .nav-lens{
+body.navpill .nav-lens{
   display:block;position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
   border-radius:999px;pointer-events:none;--sx:1;--sy:1;--ty:0px;--hl:.25;
   transform:translate3d(calc(var(--lens) * 100%),var(--ty),0) scale(var(--sx),var(--sy));
@@ -103,21 +105,21 @@ body.glass .nav-lens{
   will-change:transform;
 }
 /* curved rim light, upper-left strong and lower-right faint, strongest while the finger is down */
-body.glass .nav-lens::before,body.glass .nav-lens::after{
+body.navpill .nav-lens::before,body.navpill .nav-lens::after{
   content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:var(--hl);transition:opacity .25s ease;
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
   mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
 }
-body.glass .nav-lens::before{padding:.7px;background:linear-gradient(135deg,rgba(255,255,255,var(--rim-a)) 0,rgba(255,255,255,.30) 24%,transparent 52%)}
-body.glass .nav-lens::after{padding:.45px;background:linear-gradient(135deg,transparent 62%,rgba(255,255,255,.06) 84%,rgba(255,255,255,var(--rim-b)) 100%)}
+body.navpill .nav-lens::before{padding:.7px;background:linear-gradient(135deg,rgba(255,255,255,var(--rim-a)) 0,rgba(255,255,255,.30) 24%,transparent 52%)}
+body.navpill .nav-lens::after{padding:.45px;background:linear-gradient(135deg,transparent 62%,rgba(255,255,255,.06) 84%,rgba(255,255,255,var(--rim-b)) 100%)}
 /* stretches a touch along its travel, then settles with the spring */
-body.glass .bottom-nav.lens-moving .nav-lens{--sx:var(--stretch,1.1);--sy:.97}
+body.navpill .bottom-nav.lens-moving .nav-lens{--sx:var(--stretch,1.1);--sy:.97}
 /* swells under the finger: uniform scale so the ends stay round and its radius matches the pill's */
-body.glass .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--hl:1;box-shadow:inset 0 -7px 7px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 6px 12px -3px var(--drop-cast)}
-body.glass .bottom-nav.lens-drag .nav-lens{transition:transform .09s linear,box-shadow .3s ease}
+body.navpill .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--hl:1;box-shadow:inset 0 -7px 7px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 6px 12px -3px var(--drop-cast)}
+body.navpill .bottom-nav.lens-drag .nav-lens{transition:transform .09s linear,box-shadow .3s ease}
 /* Smooth mode keeps the real blur (that is what makes it glass); it only drops the costly lens refraction and shortens motion. */
 body.glass.lite .nav-lens{transition:transform .18s ease-out}
-@media(prefers-reduced-motion:reduce){body.glass .nav-lens,body.glass .bottom-nav,body.glass .nav-dock,body.glass .bottom-nav .nav-item small,body.glass .bottom-nav .nav-item .ni{transition:none}}
+@media(prefers-reduced-motion:reduce){body.glass .nav-lens,body.navpill .bottom-nav,body.glass .nav-dock,body.navpill .bottom-nav .nav-item small,body.navpill .bottom-nav .nav-item .ni{transition:none}}
 
 /* Real refraction: Chromium (Android WebView) runs an SVG displacement map on the backdrop. Only the small moving lens uses it. */
 @supports (backdrop-filter:url(#naseem-lens)){
@@ -155,7 +157,7 @@ body.glass.lite .nav-lens{transition:transform .18s ease-out}
 body.glass .nav-dock{
   background:var(--nav-tint);border:0;
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow);
-  -webkit-backdrop-filter:blur(12px) saturate(var(--glass-sat));backdrop-filter:blur(12px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat));
 }
 body.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .1s,visibility 0s}
 body.nav-collapsed .nav-dock:active{transform:scale(.94)}
@@ -163,10 +165,10 @@ body.nav-collapsed .bottom-nav{opacity:0;visibility:hidden;pointer-events:none;t
 @media(prefers-reduced-motion:reduce){.nav-dock,body.nav-collapsed .bottom-nav{transition:none}}
 
 /* ---------------------------------------------------------------- things that sit above the pill move up with it */
-body.glass .app-shell{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
-body.glass .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
+body.navpill .app-shell{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+body.navpill .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
 body .qr-player{transition:scale .35s var(--spring,ease),left .46s cubic-bezier(.2,.8,.2,1),bottom .46s cubic-bezier(.2,.8,.2,1)}
-body.glass .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(safe-area-inset-bottom))}
+body.navpill .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(safe-area-inset-bottom))}
 /* the mini player slides down into the row beside the round button, keeping artwork, title, play and next */
 @media(max-width:520px){
   body.nav-collapsed .qr-player{
@@ -185,17 +187,12 @@ body.glass .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(
 .qr-player .qr-pbtn.qr-pmain svg{color:var(--gi-inv)}
 
 /* ---------------------------------------------------------------- mini player + header buttons: the same glass as the bar */
-body.glass .qr-player{
+body.navpill .qr-player{
   background:var(--nav-tint)!important;border:0!important;border-radius:30px;
-  -webkit-backdrop-filter:blur(12px) saturate(var(--glass-sat));backdrop-filter:blur(12px) saturate(var(--glass-sat));
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
 }
-body.glass .qr-player .qr-mini-avatar{background:var(--gfill);border:0}
-body.glass .topbar .brand-mark,body.glass .topbar .icon-button{
-  background:var(--nav-tint)!important;border:0!important;
-  box-shadow:inset 0 0 0 1px var(--nav-rim),0 8px 20px -8px var(--nav-shadow)!important;
-  -webkit-backdrop-filter:blur(12px) saturate(var(--glass-sat));backdrop-filter:blur(12px) saturate(var(--glass-sat));
-}
+body.glass .qr-player{-webkit-backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat))}
+body.navpill .qr-player .qr-mini-avatar{background:var(--gfill);border:0}
 body.glass .topbar .icon-button{color:var(--gi)}
 
 /* ===== Full player: ink colours, flat + glass buttons, surah-name artwork, Up next ===== */
@@ -206,7 +203,7 @@ body.glass .topbar .icon-button{color:var(--gi)}
 .qr-full-player .qr-full-top strong,.qr-full-player .qr-full-track h2{color:var(--gi)}
 body.glass .qr-full-player .qr-full-icon,body.glass .qr-full-player .qr-full-secondary,body.glass .qr-full-player .qr-full-side,body.glass .qr-full-player .qr-sleep-btn{background:var(--nav-tint);box-shadow:inset 0 0 0 1px var(--gline);-webkit-backdrop-filter:blur(12px) saturate(var(--glass-sat));backdrop-filter:blur(12px) saturate(var(--glass-sat))}
 body.glass .qr-full-player .qr-full-side[aria-pressed="true"],body.glass .qr-full-player .qr-sleep-btn.on{box-shadow:inset 0 0 0 1.5px var(--gi)}
-body.glass .qr-full-player .qr-full-play{background:var(--nav-tint);color:var(--gi);box-shadow:inset 0 0 0 1.5px var(--gi),0 10px 26px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(12px) saturate(var(--glass-sat));backdrop-filter:blur(12px) saturate(var(--glass-sat))}
+body.glass .qr-full-player .qr-full-play{background:var(--nav-tint);color:var(--gi);box-shadow:inset 0 0 0 1.5px var(--gi),0 10px 26px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat))}
 .qr-full-player.qr-art-names .qr-full-art{background:radial-gradient(120% 80% at 18% 0%,rgba(255,255,255,.28),transparent 58%),linear-gradient(calc(var(--art-h) * 1deg),color-mix(in srgb,var(--accent) 82%,#000),color-mix(in srgb,var(--accent) 34%,#000));border:0;box-shadow:0 24px 60px color-mix(in srgb,var(--accent) 38%,transparent),inset 0 0 0 1px rgba(255,255,255,.14);overflow:hidden}
 .qr-full-player.qr-art-names .qr-art-mark{font-size:clamp(44px,14vw,68px);line-height:1.5;color:#fff;opacity:1;text-align:center;padding:0 10px;text-shadow:0 4px 18px rgba(0,0,0,.35)}
 .qr-full-player.qr-art-names .qr-art-caption{color:rgba(255,255,255,.78)}
@@ -251,3 +248,43 @@ body .qr-player .qr-pbtn{flex:none}
 body .qr-player .qr-pbtn:not(.qr-pmain){width:40px;height:40px;border-radius:50%;margin-left:6px;background:transparent;box-shadow:inset 0 0 0 1.2px var(--gline)}
 body .qr-player .qr-pbtn.qr-pmain{width:42px;height:42px;border-radius:50%}
 body .qr-player .qr-wave-seek{position:absolute!important;left:28px;right:28px;bottom:7px;height:12px!important;padding:0!important;z-index:2}
+
+/* ===== Header: stays on top while scrolling. Glass = one blur layer behind it (24px like LastWave's header), buttons as small lenses ===== */
+.topbar{position:sticky;top:0;z-index:40;margin-top:calc(-1 * env(safe-area-inset-top,0px));padding-top:calc(12px + env(safe-area-inset-top,0px));height:auto;min-height:calc(68px + env(safe-area-inset-top,0px));
+  background:color-mix(in srgb,var(--bg) 96%,transparent);-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom:1px solid var(--gline)}
+body.glass .topbar{background:transparent;border-bottom:0;border-radius:0 0 28px 28px;box-shadow:0 10px 28px -14px var(--nav-shadow),inset 0 -1px 0 var(--nav-rim)}
+body.glass .topbar::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:var(--nav-tint);
+  -webkit-backdrop-filter:blur(var(--hdr-blur,24px)) saturate(var(--glass-sat));backdrop-filter:blur(var(--hdr-blur,24px)) saturate(var(--glass-sat))}
+body.glass .topbar .brand-mark,body.glass .topbar .icon-button{background:transparent;-webkit-backdrop-filter:blur(3px) saturate(1.5) brightness(1.08);backdrop-filter:blur(3px) saturate(1.5) brightness(1.08);
+  box-shadow:inset 0 0 0 1px var(--nav-rim),inset 1px 1.5px 1px -.5px rgba(255,255,255,.55),inset -1px -1.5px 1px -.5px rgba(255,255,255,.18),0 6px 16px -8px var(--nav-shadow)}
+body.glass .topbar .brand-mark{color:var(--gi)}
+body.qr-immersive .topbar{display:none}
+/* overflow-x:hidden on <body> turned it into a (non-scrolling) scroll container and broke position:sticky; clip does the same job without that. */
+html,body{overflow-x:clip!important;overflow-y:visible!important}
+body.intro-pending{overflow:hidden!important}
+
+/* ===== Without Liquid Glass: same pill, same size, same lens movement; only the material is flat ===== */
+body.navpill:not(.glass) .bottom-nav::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:var(--nav-tint)}
+body.navpill:not(.glass) .nav-lens{background:var(--gfill);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 0 0 1px var(--gline)}
+body.navpill:not(.glass) .nav-lens::before,body.navpill:not(.glass) .nav-lens::after{display:none}
+body.navpill:not(.glass) .nav-dock{background:var(--nav-tint)}
+
+.bottom-nav .nav-lens{transition:transform .52s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease,opacity .25s ease}
+.bottom-nav.no-active .nav-lens{opacity:0}
+
+/* ---------- Settings sub-pages ---------- */
+.st-group>summary .st-chev{transform:rotate(-45deg)}
+.st-group[open]>summary .st-chev{transform:rotate(135deg)}
+.st-group[open]{position:fixed;inset:0;z-index:60;margin:0;border:0;border-radius:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  background:var(--bg,#0b1210);box-shadow:none;animation:stPageIn .34s cubic-bezier(.22,.9,.3,1) both;padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+.st-group.st-closing{animation:stPageOut .3s cubic-bezier(.4,0,.8,.4) both}
+.st-group[open]>summary{position:sticky;top:0;z-index:2;min-height:64px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:var(--bg,#0b1210);border-bottom:1px solid var(--hair);flex-direction:row-reverse;justify-content:flex-end}
+.st-group[open]>summary .st-title{flex:1}
+.st-group[open]>summary .st-chev{margin:0 6px 0 2px;width:11px;height:11px}
+.st-group[open]>.st-body{border-top:0;padding:8px 18px 24px;max-width:640px;margin:0 auto}
+@keyframes stPageIn{from{transform:translate3d(36%,0,0);opacity:0}to{transform:none;opacity:1}}
+@keyframes stPageOut{from{transform:none;opacity:1}to{transform:translate3d(36%,0,0);opacity:0}}
+body.lite .st-group[open],body.lite .st-group.st-closing{animation-duration:.01s}
+#settingsScreen{contain:none}
+#settingsScreen.active{animation-fill-mode:backwards!important;will-change:auto}
+body.st-page-open .topbar{visibility:hidden}

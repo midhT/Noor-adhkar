@@ -33,7 +33,7 @@ function today(){return new Date().toLocaleDateString("en-CA");}
 function prettyDate(iso){return new Date(iso+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});}
 function getDhikr(){if(state.selected==="custom")return {name:state.customName||"Custom dhikr",arabic:"ذِكْر",meaning:"Your personal remembrance",target:state.target};return DHIKR[state.selected]||DHIKR.istighfar;}
 function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2100);}
-const TABS=["homeScreen","dhikrScreen","salahScreen","quranReaderScreen","settingsScreen"];
+const TABS=["homeScreen","dhikrScreen","salahScreen","quranReaderScreen"];
 let curScreen="homeScreen";
 window.curScreen=curScreen;
 function setDhikrPanel(p){const panels=["counterScreen","libraryScreen"];panels.forEach(id=>{const el=$(id),on=id===p;if(on&&el.hidden){el.hidden=false;el.classList.remove("enter");void el.offsetWidth;el.classList.add("enter");}el.hidden=!on;el.classList.toggle("active",on);});document.querySelectorAll(".seg-switch [data-panel]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.panel===p)));const sw=document.querySelector(".seg-switch");if(sw)sw.dataset.p=p==="libraryScreen"?"1":"0";}
