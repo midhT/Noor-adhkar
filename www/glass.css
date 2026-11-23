@@ -18,7 +18,7 @@ body{--gi:#fff;--gi-dim:rgba(255,255,255,.62);--gi-inv:#111214;--gfill:rgba(255,
 body.light{--gi:#15171a;--gi-dim:rgba(21,23,26,.6);--gi-inv:#fff;--gfill:rgba(0,0,0,.075);--gfill2:rgba(0,0,0,.13);--gline:rgba(0,0,0,.16)}
 
 body.glass{
-  --glass-sat:1.6;
+  --glass-sat:1.4;
   --nav-h:64px;--nav-bottom:20px;
   --dock-bottom:calc(24px + env(safe-area-inset-bottom));
   /* Real glass: only a light tint, so the page behind shows through, blurred, in its own colours. */
@@ -63,7 +63,7 @@ body.glass .bottom-nav{
 body.glass .bottom-nav::before{
   content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
   background:var(--nav-tint);
-  -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat));
 }
 /* A little more blur around the rim, so the edge reads as softness and not as a drawn line. */
 body.glass .bottom-nav::after,body.glass .nav-dock::after{
@@ -162,7 +162,7 @@ body.glass.lite .nav-lens{transition:transform .18s ease-out}
 body.glass .nav-dock{
   background:var(--nav-tint);border:0;
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow);
-  -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat));
 }
 body.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .1s,visibility 0s}
 body.nav-collapsed .nav-dock:active{transform:scale(.94)}
@@ -194,14 +194,14 @@ body.glass .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(
 /* ---------------------------------------------------------------- mini player + header buttons: the same glass as the bar */
 body.glass .qr-player{
   background:var(--nav-tint)!important;border:0!important;border-radius:30px;
-  -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat));
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow)!important;
 }
 body.glass .qr-player .qr-mini-avatar{background:var(--gfill);border:0}
 body.glass .topbar .brand-mark,body.glass .topbar .icon-button{
   background:var(--nav-tint)!important;border:0!important;
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 8px 20px -8px var(--nav-shadow)!important;
-  -webkit-backdrop-filter:blur(26px) saturate(var(--glass-sat));backdrop-filter:blur(26px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(14px) saturate(var(--glass-sat));backdrop-filter:blur(14px) saturate(var(--glass-sat));
 }
 body.glass .topbar .icon-button{color:var(--gi)}
 
@@ -240,13 +240,6 @@ body.glass .qr-full-player .qr-full-play{background:var(--nav-tint);color:var(--
 /* ===== Tonal accent (ported from LastWave's Material-3 approach): containers and tints take the accent's hue ===== */
 body{--ac-cont:color-mix(in srgb,var(--accent) 34%,#fff);--ac-on:color-mix(in srgb,var(--accent) 30%,#000);--ac-soft:color-mix(in srgb,var(--accent) 16%,transparent);--ac-line:color-mix(in srgb,var(--accent) 32%,transparent)}
 body.light{--ac-cont:color-mix(in srgb,var(--accent) 24%,#fff);--ac-on:color-mix(in srgb,var(--accent) 62%,#000)}
-body.glass{--nav-tint:color-mix(in srgb,var(--accent) 7%,rgba(22,24,30,.30));--nav-rim:color-mix(in srgb,var(--accent) 22%,rgba(255,255,255,.14))}
-body.glass.light{--nav-tint:color-mix(in srgb,var(--accent) 8%,rgba(255,255,255,.34));--nav-rim:rgba(255,255,255,.85)}
-.qr-player .qr-pbtn.qr-pmain,.qr-full-player .qr-full-play{background:var(--ac-cont);color:var(--ac-on);box-shadow:none}
-.qr-player .qr-pbtn.qr-pmain svg,.qr-full-player .qr-full-play svg{color:var(--ac-on)}
-body.glass .qr-full-player .qr-full-play{background:var(--ac-cont);color:var(--ac-on);box-shadow:0 10px 26px -6px var(--ac-line)}
-.qr-player .qr-pbtn:not(.qr-pmain){background:color-mix(in srgb,var(--accent) 14%,var(--gfill))}
-.qr-full-player .qr-full-icon,.qr-full-player .qr-full-secondary,.qr-full-player .qr-full-side,.qr-full-player .qr-sleep-btn{background:color-mix(in srgb,var(--accent) 12%,var(--gfill))}
 .qr-queue-row.current,.qr-full-player .qr-full-side[aria-pressed="true"],.qr-full-player .qr-sleep-btn.on{background:var(--ac-soft);box-shadow:inset 0 0 0 1.5px var(--ac-line)}
 
 /* The page-bottom fade (main::after) painted the background colour over everything behind the bar, so glass had nothing to show. */
