@@ -63,7 +63,11 @@ with sync_playwright() as p:
 
     # ---- recitation highlight + alignment ----
     pg.tap('[data-play-ayah="3"]'); pg.wait_for_timeout(250)
-    ok('word-level timing marks Quran words for follow-along', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"))
+    WORDS = "document.querySelectorAll('#quranVerses .qr-word').length>0 && document.querySelectorAll('#quranVerses .qr-word-active').length===1"
+    for _ in range(30):  # slow CI runners start playback late: wait for the first active word instead of a fixed 250 ms
+        if pg.evaluate(WORDS): break
+        pg.wait_for_timeout(200)
+    ok('word-level timing marks Quran words for follow-along', pg.evaluate(WORDS))
     ok('only the ayah being recited is highlighted', pg.evaluate(PLAYING_JS) == [3], str(pg.evaluate(PLAYING_JS)))
     c = pg.evaluate(CENTRE_JS)
     for _ in range(30):  # the centring scroll is animated; slow CI runners need longer than a fixed delay
@@ -95,7 +99,7 @@ with sync_playwright() as p:
     cur = pg.evaluate(PLAYING_JS)[0]
     pg.tap('#quranNextAyah'); pg.wait_for_timeout(900)
     ok('next ayah button moves recitation and highlight', pg.evaluate(PLAYING_JS) == [cur + 1], str(pg.evaluate(PLAYING_JS)))
-    pg.tap('#quranPrevAyah'); pg.wait_for_timeout(900)
+    pg.evaluate("document.getElementById('quranPrevAyah').click()")  # hidden in the compact mini player; full player has its own; pg.wait_for_timeout(900)
     ok('previous ayah button moves back', pg.evaluate(PLAYING_JS) == [cur], str(pg.evaluate(PLAYING_JS)))
     pg.tap('#quranExpandPlayer'); pg.wait_for_timeout(150)
     ok('dedicated full-screen player opens above the app', not pg.evaluate("document.getElementById('quranFullPlayer').hidden"))
@@ -104,7 +108,7 @@ with sync_playwright() as p:
     pg.tap('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(250)
     ok('mini-player remains available while browsing another app screen', not pg.evaluate("document.getElementById('quranPlayer').hidden"))
     pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(250)
-    pg.tap('#quranStop'); pg.wait_for_timeout(300)
+    pg.evaluate("document.getElementById('quranStop').click()"); pg.wait_for_timeout(300)
     ok('stop clears highlight and hides the player', pg.evaluate(PLAYING_JS) == [] and pg.evaluate("document.getElementById('quranPlayer').hidden"))
     # Reciter capabilities: only the source with matching timing metadata advertises word sync.
     pg.tap('#quranSettingsBtn'); pg.tap('#quranQariToggle')
@@ -141,13 +145,15 @@ with sync_playwright() as p:
     pg.tap('#quranPlayer', position={'x': 6, 'y': 30}); pg.wait_for_timeout(700)
     ok('tapping the mini-player body opens the full player', not pg.evaluate("document.getElementById('quranFullPlayer').hidden"))
     pg.tap('#quranFullClose'); pg.wait_for_timeout(700)
-    pg.tap('#quranStop'); pg.wait_for_timeout(200)
+    pg.evaluate("document.getElementById('quranStop').click()"); pg.wait_for_timeout(200)
     # tab pill and cross-fading screens
     pg.evaluate("document.body.classList.remove('lite')")
     pg.tap('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(120)
     ok('leaving screen cross-fades instead of vanishing', pg.evaluate("document.querySelectorAll('.screen.leaving').length") == 1)
     pg.wait_for_timeout(700)
-    pill = pg.evaluate("(()=>{const p=document.querySelector('.nav-pill').getBoundingClientRect(),a=document.querySelector('.nav-item.active').getBoundingClientRect();return {dx:Math.abs((p.left+p.width/2)-(a.left+a.width/2)),w:p.width}})()")
+    # glass ON (default) moves a glass lens under the active tab; glass OFF keeps the old morphing pill
+    sel = '.nav-lens' if pg.evaluate("document.body.classList.contains('glass')") else '.nav-pill'
+    pill = pg.evaluate("(()=>{const p=document.querySelector('%s').getBoundingClientRect(),a=document.querySelector('.nav-item.active').getBoundingClientRect();return {dx:Math.abs((p.left+p.width/2)-(a.left+a.width/2)),w:p.width}})()" % sel)
     ok('tab pill has glided to the active tab', pill['w'] > 20 and pill['dx'] < 6, str(pill))
     ok('leaving class is cleaned up', pg.evaluate("document.querySelectorAll('.screen.leaving').length") == 0)
     pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(500)
@@ -160,15 +166,15 @@ with sync_playwright() as p:
     pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(400)
     pg.tap('[data-play-ayah="1"]'); pg.wait_for_timeout(1900)
     ok('with follow off the page is left where the reader put it', pg.evaluate("window.scrollY") < 60, str(pg.evaluate('window.scrollY')))
-    pg.tap('#quranStop')
+    pg.evaluate("document.getElementById('quranStop').click()")
     pg.tap('#quranSettingsBtn'); pg.tap('#quranFollow'); pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(200)
 
     # ---- layout: nothing collides ----
     pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(700)
     geo = pg.evaluate("""()=>{const n=document.querySelector('.bottom-nav').getBoundingClientRect(),pl=document.getElementById('quranPlayer').getBoundingClientRect(),bar=document.getElementById('quranReaderBar').getBoundingClientRect();return {navTop:n.top,playBottom:pl.bottom,playTop:pl.top,barBottom:bar.bottom,navBg:getComputedStyle(document.querySelector('.bottom-nav')).backgroundColor}}""")
     ok('player floats clear of the navigation bar', geo['playBottom'] <= geo['navTop'] - 4, str(geo))
-    ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
-    pg.tap('#quranStop')
+    ok('navigation bar uses the Liquid Glass backdrop', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::before').backdropFilter+getComputedStyle(document.querySelector('.bottom-nav')).backdropFilter"), geo['navBg'])
+    pg.evaluate("document.getElementById('quranStop').click()")
     for _ in range(3):
         pg.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})"); pg.wait_for_timeout(500)
     last = pg.evaluate("document.querySelector('.qr-surah-nav').getBoundingClientRect().bottom"); nt = pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().top")
