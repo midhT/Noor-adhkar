@@ -94,11 +94,11 @@ body.navpill .bottom-nav .nav-pill{display:none}
 /* ---------------------------------------------------------------- the lens */
 .nav-lens{display:none}
 body.navpill .nav-lens{
-  display:block;position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
+  display:block;position:absolute;z-index:2;overflow:hidden;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
   border-radius:999px;pointer-events:none;--sx:1;--sy:1;--ty:0px;--hl:.25;
   /* position is driven per frame by glass-nav.js (one clock for lens and blur hole); only scale/shadow use CSS transitions */
-  transform:none;translate:var(--lpx,0px) var(--ty);scale:var(--sx) var(--sy);
-  transition:scale .38s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease;
+  transform:none;translate:var(--lpx,0px) var(--ty);scale:calc(var(--sx) * (1 + var(--fx,0))) calc(var(--sy) * (1 - var(--fx,0) * .5));
+  transition:scale .2s cubic-bezier(.28,1.3,.42,1),box-shadow .3s ease;
   /* a whisper of top light, and a soft lower inner shade */
   background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.006) 38%,transparent 64%,rgba(255,255,255,.012));
   box-shadow:inset 0 -6px 6px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 2px 5px -1px var(--drop-cast);
@@ -107,16 +107,15 @@ body.navpill .nav-lens{
 }
 /* curved rim light, upper-left strong and lower-right faint, strongest while the finger is down */
 body.navpill .nav-lens::before,body.navpill .nav-lens::after{
-  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:var(--hl);transition:opacity .25s ease;
+  content:"";position:absolute;z-index:1;inset:0;border-radius:inherit;pointer-events:none;opacity:var(--hl);transition:opacity .25s ease;
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
   mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
 }
 body.navpill .nav-lens::before{padding:.7px;background:linear-gradient(135deg,rgba(255,255,255,var(--rim-a)) 0,rgba(255,255,255,.30) 24%,transparent 52%)}
 body.navpill .nav-lens::after{padding:.45px;background:linear-gradient(135deg,transparent 62%,rgba(255,255,255,.06) 84%,rgba(255,255,255,var(--rim-b)) 100%)}
 /* stretches a touch along its travel, then settles with the spring */
-body.navpill .bottom-nav.lens-moving .nav-lens{--sx:var(--stretch,1.1);--sy:.97}
 /* swells under the finger: uniform scale so the ends stay round and its radius matches the pill's */
-body.navpill .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--hl:1;box-shadow:inset 0 -7px 7px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 6px 12px -3px var(--drop-cast)}
+body.navpill .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--hl:1;--mag:1.16;box-shadow:inset 0 -7px 7px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 6px 12px -3px var(--drop-cast)}
 
 /* Smooth mode keeps the real blur (that is what makes it glass); it only drops the costly lens refraction and shortens motion. */
 
@@ -315,3 +314,21 @@ body.nav-anim .bottom-nav::before,body.nav-anim .qr-player{-webkit-backdrop-filt
 body.light .toggle[aria-pressed="true"],body.light .focus-preset.active,body.light .st-seg button[aria-pressed="true"],body.light .rm-seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
 /* Settings rows are pages now, not dropdowns: the arrow never rotates or animates. */
 .st-chev,.st-group[open]>summary .st-chev,.st-group>summary .st-chev{transition:none!important}
+
+
+/* ============ Stage 10: the lens holds a magnified copy of the tab row (what LastWave does) ============ */
+/* The real icons under the lens fade out as it arrives (JS sets --o); the copy inside the lens, enlarged about the lens centre,
+   takes over, so the magnified icon + name is genuinely bigger and the page behind the lens stays clear. */
+body.navpill .bottom-nav>.nav-item{opacity:var(--o,1)}
+.nav-lens .lens-copy{position:absolute;left:-4px;top:-4px;width:var(--navw,340px);height:var(--nav-h);box-sizing:border-box;padding:4px;
+  display:grid;grid-template-columns:repeat(var(--count),minmax(0,1fr));pointer-events:none;
+  translate:calc(-1 * var(--lpx,0px)) 0;scale:var(--mag,1);transform-origin:calc(4px + var(--lpx,0px) + var(--slot,70px) / 2) 50%;
+  transition:scale .3s cubic-bezier(.28,1.3,.42,1);will-change:transform}
+.nav-lens .lens-copy .nav-item{opacity:1!important;transition:none}
+.nav-lens .lens-copy .nav-item small{transition:none}
+body.navpill .bottom-nav.no-active>.nav-item{opacity:1}
+/* collapse: the whole pill shrinks into the round button (one morph, compositor-only) instead of scaling and fading away */
+body.nav-collapsed .bottom-nav{transform:translateX(-50%) translate(var(--cdx,0px),var(--cdy,0px)) scale(var(--csx,.7),var(--csy,.9));transition:transform .3s cubic-bezier(.3,.95,.3,1),opacity .13s linear .03s,visibility 0s .3s}
+body.nav-collapsed .bottom-nav>.nav-item{opacity:0!important;transition:opacity .09s linear}
+body.nav-collapsed .nav-lens{opacity:0}
+body.nav-collapsed .nav-dock{transition:transform .3s cubic-bezier(.3,.95,.3,1),opacity .16s linear .08s,visibility 0s}

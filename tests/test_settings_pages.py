@@ -15,7 +15,7 @@ with sync_playwright() as p:
     pg = ctx.new_page(); errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.goto(srv.url()); pg.wait_for_timeout(2400)
-    ok('4 tabs only', pg.locator('.bottom-nav .nav-item').count() == 4)
+    ok('4 tabs only', pg.locator('.bottom-nav > .nav-item').count() == 4)
     pg.tap('#brandMark'); pg.wait_for_timeout(900)
     ok('brand button opens the Settings list (no page auto-opened)', pg.evaluate("document.getElementById('settingsScreen').classList.contains('active') && !document.querySelector('.st-group[open]')"))
     pg.tap('#stAccount > summary'); pg.wait_for_timeout(700)

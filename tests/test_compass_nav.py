@@ -56,7 +56,7 @@ with sync_playwright() as p:
     ok('Home mini pointer turns by Qibla bearing minus heading', abs(((_pa + 30 + 180) % 360) - 180) < 1, str(_pa))
     # ================= nav press-and-drag =================
     cur = lambda: ev("document.querySelector('.screen.active').id")
-    rects = lambda: ev("[...document.querySelectorAll('.bottom-nav .nav-item')].map(e=>{const r=e.getBoundingClientRect();return [e.dataset.screen,r.left+r.width/2,r.top+r.height/2]})")
+    rects = lambda: ev("[...document.querySelectorAll('.bottom-nav > .nav-item')].map(e=>{const r=e.getBoundingClientRect();return [e.dataset.screen,r.left+r.width/2,r.top+r.height/2]})")
     peek = lambda: ev("(document.querySelector('.nav-item.peek')||{dataset:{}}).dataset.screen")
     ids = [c[0] for c in rects()]; ok('four tabs in the bar, in order', ids == ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen'], str(ids))
     def touch(t, x, y): cdp.send('Input.dispatchTouchEvent', {'type': t, 'touchPoints': [{'x': x, 'y': y}] if t != 'touchEnd' else []})

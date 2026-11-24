@@ -35,7 +35,7 @@ with sync_playwright() as p:
     seed = ev("({flag:localStorage.getItem('naseem-onboarding-complete-v1'),settings:JSON.parse(localStorage.getItem('naseem-v404-settings')||'{}').setupComplete,error:window.__naseemTestSeedError||null})")
     ok('returning-user test storage seeded before app startup', seed['flag'] == '1' and seed['settings'] is True and seed['error'] is None, str(seed))
     # ---------- navigation + scrolling ----------
-    labels = ev("[...document.querySelectorAll('.nav-item small')].map(e=>e.textContent)")
+    labels = ev("[...document.querySelectorAll('.bottom-nav > .nav-item small')].map(e=>e.textContent)")
     ok('onboarding does not cover returning-user navigation', not ev("!!document.querySelector('.v404-onboarding')"))
     ok('six tabs in order', labels == ['Home', 'Dhikr', 'Salah', 'More', 'Zakat', 'Settings'], str(labels))
     for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'featuresScreen', 'zakatScreen', 'settingsScreen']:

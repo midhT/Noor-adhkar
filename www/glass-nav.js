@@ -9,23 +9,43 @@
   if (!nav) return;
   const lens = document.createElement('span');
   lens.className = 'nav-lens'; lens.setAttribute('aria-hidden', 'true');
-  nav.insertBefore(lens, nav.firstChild);
-  const tabs = () => [...nav.querySelectorAll('.nav-item')];
+  nav.appendChild(lens);   // after the tabs in the DOM (z-index puts it above them), so document-order queries find the real tabs first
+  const copy = document.createElement('span'); copy.className = 'lens-copy'; lens.appendChild(copy);
+  const tabs = () => [...nav.querySelectorAll(':scope > .nav-item')];
   let drag = false, down = false, sx = 0, pid = null, rect = null;
 
-  let slotPx = 0;
-  const measure = () => { const n = tabs().length || 5; slotPx = Math.max(0, (nav.clientWidth - 8) / n); nav.style.setProperty('--slot', slotPx.toFixed(2) + 'px'); write(cur); };
+  let slotPx = 0, items = [], copyItems = [];
+  function buildCopy() {
+    items = tabs(); copy.textContent = ''; copyItems = items.map(t => {
+      const c = t.cloneNode(true); c.removeAttribute('data-screen'); c.removeAttribute('id'); c.tabIndex = -1; c.setAttribute('aria-hidden', 'true'); c.disabled = true; copy.appendChild(c); return c;
+    });
+  }
+  const syncCopy = () => {   // mirror the tab classes (active tab shows its name) without touching the DOM when nothing changed
+    if (copyItems.length !== tabs().length) buildCopy();
+    items.forEach((t, i) => { if (copyItems[i].className !== t.className) copyItems[i].className = t.className; });
+  };
+  let lastP = 0, lastT = 0, fv = 0;
+  const measure = () => { const n = tabs().length || 5; slotPx = Math.max(0, (nav.clientWidth - 8) / n); nav.style.setProperty('--slot', slotPx.toFixed(2) + 'px'); nav.style.setProperty('--navw', nav.clientWidth + 'px'); write(cur); };
   // One clock moves everything: the lens (translate) and the hole in the blur layer (--lx) are written in the same frame,
   // so the refraction can never trail the capsule. Dragging writes the finger position straight through; settling uses a spring.
   let cur = 0, vel = 0, target = 0, raf = 0, last = 0;
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const write = p => { const px = p * slotPx; nav.style.setProperty('--lens', p.toFixed(3)); nav.style.setProperty('--lpx', px.toFixed(2) + 'px'); nav.style.setProperty('--lx', (4 + px).toFixed(2) + 'px'); };
+  const write = p => {
+    const px = p * slotPx, now = performance.now();
+    nav.style.setProperty('--lens', p.toFixed(3)); nav.style.setProperty('--lpx', px.toFixed(2) + 'px'); nav.style.setProperty('--lx', (4 + px).toFixed(2) + 'px');
+    // speed along the bar (slots per second) stretches the lens a little, like a drop being pulled
+    const dt = now - lastT; if (dt > 0 && dt < 120) fv = fv * .6 + ((p - lastP) / dt * 1000) * .4; else fv = 0;
+    lastP = p; lastT = now;
+    nav.style.setProperty('--fx', Math.min(.12, Math.abs(fv) * .018).toFixed(3));
+    // the real icon fades out as the lens reaches it; the magnified copy inside the lens shows in its place
+    for (let i = 0; i < items.length; i++) { const d = Math.abs(p - i), o = nav.classList.contains('no-active') ? 1 : Math.max(0, Math.min(1, (d - .28) / .4)); items[i].style.setProperty('--o', o.toFixed(2)); }
+  };
   function step(t) {
     const dt = Math.min(0.034, (t - last) / 1000 || 0.016); last = t;
-    const K = 380, C = 25;                                  // slightly under-damped: a small, soft overshoot
+    const K = 480, C = 36;                                  // damping ratio ~0.82: tight, with one soft overshoot (LastWave uses 0.9 / 520)
     vel += (-K * (cur - target) - C * vel) * dt; cur += vel * dt;
     write(cur);
-    if (Math.abs(vel) < 0.004 && Math.abs(cur - target) < 0.002) { cur = target; vel = 0; write(cur); raf = 0; return; }
+    if (Math.abs(vel) < 0.004 && Math.abs(cur - target) < 0.002) { cur = target; vel = 0; fv = 0; write(cur); nav.style.setProperty('--fx', '0'); raf = 0; return; }
     raf = requestAnimationFrame(step);
   }
   const setPos = (p, instant) => {
@@ -41,11 +61,7 @@
     const i = list.findIndex(t => t.classList.contains('active'));
     nav.classList.toggle('no-active', i < 0);         // e.g. on Settings, which is not a tab: the lens fades out
     const pos = i < 0 ? shown : i, dist = Math.abs(pos - shown);
-    if (dist > 0.4 && !down) {                       // the lens stretches along its travel, then settles with the spring
-      nav.style.setProperty('--stretch', (1 + Math.min(0.22, dist * 0.06)).toFixed(3));
-      nav.classList.add('lens-moving'); clearTimeout(settle);
-      settle = setTimeout(() => nav.classList.remove('lens-moving'), 190);
-    }
+    syncCopy();
     shown = pos; setPos(pos, firstSync); firstSync = false;
   }
   function release() {
@@ -54,8 +70,8 @@
     sync();
   }
   if ('ResizeObserver' in window) new ResizeObserver(() => { measure(); sync(); }).observe(nav);
-  measure();
-  new MutationObserver(sync).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  buildCopy(); measure();
+  new MutationObserver(recs => { if (recs.every(r => lens.contains(r.target))) return; sync(); }).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] });
 
   nav.addEventListener('pointerdown', e => {
     if (!document.body.classList.contains('glass')) return;   // the lens (and dragging it) exists only with Liquid Glass
@@ -90,7 +106,7 @@
   let collapsed = false, travel = 0, animT = 0;
   const lastY = new WeakMap();
   function syncDock() {
-    const a = nav.querySelector('.nav-item.active') || tabs()[0]; if (!a) return;
+    const a = tabs().find(t => t.classList.contains('active')) || tabs()[0]; if (!a) return;
     const ni = a.querySelector('.ni'); if (!ni) return;
     const html = ni.outerHTML;
     if (dock.__html !== html) { dock.__html = html; dock.innerHTML = html; }
@@ -104,6 +120,11 @@
     body.classList.add('nav-anim'); clearTimeout(animT); animT = setTimeout(() => body.classList.remove('nav-anim'), 300);
     // FLIP: the mini player jumps to its new place instantly (layout runs once), then a transform-only animation
     // slides it from where it was. Nothing is re-laid-out per frame, so it stays smooth on weak GPUs.
+    if (on) {   // where the pill has to shrink to: the round button's box
+      const b = nav.getBoundingClientRect(), dw = dock.offsetWidth, dh = dock.offsetHeight;
+      nav.style.setProperty('--csx', (dw / b.width).toFixed(4)); nav.style.setProperty('--csy', (dh / b.height).toFixed(4));
+      nav.style.setProperty('--cdx', (dock.offsetLeft - b.left).toFixed(1) + 'px'); nav.style.setProperty('--cdy', (dock.offsetTop + dh - b.bottom).toFixed(1) + 'px');
+    }
     const pl = playerOn() ? player : null, from = pl && pl.getBoundingClientRect();
     body.classList.toggle('nav-collapsed', on);
     if (pl && from && pl.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {

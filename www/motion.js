@@ -76,7 +76,7 @@
   const nav = doc.querySelector('.bottom-nav');
   if (nav) {
     let down = false, dragging = false, sx = 0, pid = null, peek = null;
-    const items = () => [...nav.querySelectorAll('.nav-item')];
+    const items = () => [...nav.querySelectorAll(':scope > .nav-item')];
     const itemAt = x => {
       // Clamp to the first/last tab (not the bar's padded edge) so sliding past either end selects that end tab.
       const list = items(); if (!list.length) return null;
@@ -128,7 +128,7 @@
     let edgeCache = -1; addEventListener('resize', () => { edgeCache = -1; });
     const edgeW = () => edgeCache < 0 ? (edgeCache = parseFloat(getComputedStyle(bar).borderLeftWidth) || 0) : edgeCache;
     const target = () => {
-      const it = bar.querySelector('.nav-item.peek') || bar.querySelector('.nav-item.active'); if (!it) return null;
+      const it = bar.querySelector(':scope > .nav-item.peek') || bar.querySelector(':scope > .nav-item.active'); if (!it) return null;
       const b = bar.getBoundingClientRect(), r = it.getBoundingClientRect(), edge = edgeW();
       return { x: r.left - b.left - edge, w: r.width };
     };
