@@ -101,8 +101,15 @@
     travel = 0;
     if (on === collapsed) return;
     collapsed = on; syncDock();
-    body.classList.add('nav-anim'); clearTimeout(animT); animT = setTimeout(() => body.classList.remove('nav-anim'), 400);
+    body.classList.add('nav-anim'); clearTimeout(animT); animT = setTimeout(() => body.classList.remove('nav-anim'), 300);
+    // FLIP: the mini player jumps to its new place instantly (layout runs once), then a transform-only animation
+    // slides it from where it was. Nothing is re-laid-out per frame, so it stays smooth on weak GPUs.
+    const pl = playerOn() ? player : null, from = pl && pl.getBoundingClientRect();
     body.classList.toggle('nav-collapsed', on);
+    if (pl && from && pl.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const to = pl.getBoundingClientRect(), dx = from.left - to.left, dy = from.top - to.top;
+      if (Math.abs(dx) + Math.abs(dy) > 1) pl.animate([{ translate: dx + 'px ' + dy + 'px', opacity: .7 }, { translate: '0px 0px', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.25,.9,.3,1)' });
+    }
     nav.setAttribute('aria-hidden', String(on));
     document.dispatchEvent(new CustomEvent('naseem:nav-collapsed', { detail: { collapsed: on } }));
   }

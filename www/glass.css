@@ -159,15 +159,15 @@ body.glass .nav-dock{
   box-shadow:inset 0 0 0 1px var(--nav-rim),0 10px 26px -8px var(--nav-shadow),0 2px 6px -2px var(--nav-shadow);
   -webkit-backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur,12px)) saturate(var(--glass-sat));
 }
-body.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .22s linear .1s,visibility 0s}
+body.nav-collapsed .nav-dock{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .28s cubic-bezier(.25,.9,.3,1),opacity .18s linear .04s,visibility 0s}
 body.nav-collapsed .nav-dock:active{transform:scale(.94)}
-body.nav-collapsed .bottom-nav{opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-50%) scale(.7);transform-origin:0 100%;transition:transform .46s cubic-bezier(.2,.8,.2,1),opacity .2s linear,visibility 0s .46s}
+body.nav-collapsed .bottom-nav{opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-50%) scale(.7);transform-origin:0 100%;transition:transform .26s cubic-bezier(.25,.9,.3,1),opacity .16s linear,visibility 0s .26s}
 @media(prefers-reduced-motion:reduce){.nav-dock,body.nav-collapsed .bottom-nav{transition:none}}
 
 /* ---------------------------------------------------------------- things that sit above the pill move up with it */
 body.navpill .app-shell{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
 body.navpill .toast{bottom:calc(100px + env(safe-area-inset-bottom))}
-body .qr-player{transition:scale .35s var(--spring,ease),left .46s cubic-bezier(.2,.8,.2,1),bottom .46s cubic-bezier(.2,.8,.2,1)}
+body .qr-player{transition:scale .35s var(--spring,ease)}
 body.navpill .qr-player{bottom:calc(var(--nav-bottom) + var(--nav-h) + 12px + env(safe-area-inset-bottom))}
 /* the mini player slides down into the row beside the round button, keeping artwork, title, play and next */
 @media(max-width:520px){
@@ -310,4 +310,8 @@ body.light .screen .card-surface,body.light .screen .pd-next,body.light .screen 
 @keyframes scrFade{from{opacity:0;transform:translate3d(0,6px,0)}to{opacity:1;transform:none}}
 /* While the bar folds/unfolds, the blur passes pause (they re-run every frame otherwise); the tint stays so nothing flashes. */
 body.nav-anim .bottom-nav::before,body.nav-anim .qr-player{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-body .qr-player{transition:scale .35s var(--spring,ease),left .34s cubic-bezier(.2,.9,.25,1),bottom .34s cubic-bezier(.2,.9,.25,1)}
+
+/* Accent state must win in light mode too (body.light .toggle was outranking the pressed rule). */
+body.light .toggle[aria-pressed="true"],body.light .focus-preset.active,body.light .st-seg button[aria-pressed="true"],body.light .rm-seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
+/* Settings rows are pages now, not dropdowns: the arrow never rotates or animates. */
+.st-chev,.st-group[open]>summary .st-chev,.st-group>summary .st-chev{transition:none!important}

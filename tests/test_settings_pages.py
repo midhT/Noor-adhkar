@@ -27,6 +27,11 @@ with sync_playwright() as p:
     ok('appearance opens', pg.evaluate("document.getElementById('stAppearance').open"))
     ok('controls reachable', pg.locator('#stGlassToggle').is_visible())
     pg.tap('#stAppearance > summary'); pg.wait_for_timeout(700)
+    pg.evaluate("document.body.classList.add('light')"); pg.wait_for_timeout(300)
+    acc = pg.evaluate("[getComputedStyle(document.getElementById('stGlassToggle')).backgroundColor, getComputedStyle(document.body).getPropertyValue('--accent').trim()]")
+    ok('ON toggle keeps the accent colour in light mode', acc[0].startswith('rgb(32, 168, 117)') or acc[1] == '', acc)
+    ok('arrow does not animate (settings rows are pages, not dropdowns)', pg.evaluate("getComputedStyle(document.querySelector('.st-chev')).transitionDuration") == '0s')
+    pg.evaluate("document.body.classList.remove('light')")
     ok('summary tap closes', pg.evaluate("!document.getElementById('stAppearance').open"))
     ok('no page errors', not errs, errs)
 srv.stop() if hasattr(srv, 'stop') else None
