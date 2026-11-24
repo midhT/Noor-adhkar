@@ -44,7 +44,7 @@ assert.match(pkg.dependencies['@capacitor/app'], /^\^7\./);
 assert.match(js, /setupCitySearch/);
 assert.match(js, /Visualise Salah times/);
 assert.doesNotMatch(html, /data-planned=/);
-assert.match(html, /<small>You<\/small>/);
+assert.doesNotMatch(html, /<small>You<\/small>/);
 assert.match(html, /data-open-screen="featuresScreen"/);
 assert.match(html, /data-open-screen="zakatScreen"/);
 assert.match(html, /salah-experience\.js/);

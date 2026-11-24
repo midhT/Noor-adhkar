@@ -288,3 +288,6 @@ body.lite .st-group[open],body.lite .st-group.st-closing{animation-duration:.01s
 #settingsScreen{contain:none}
 #settingsScreen.active{animation-fill-mode:backwards!important;will-change:auto}
 body.st-page-open .topbar{visibility:hidden}
+
+/* Performance: no endless decorative animation behind the glass (it forces the backdrop blur to re-run every frame). */
+.app-shell:after,body.cosmos-on .app-shell:after{animation:none!important}

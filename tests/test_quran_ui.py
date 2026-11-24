@@ -105,7 +105,7 @@ with sync_playwright() as p:
     ok('dedicated full-screen player opens above the app', not pg.evaluate("document.getElementById('quranFullPlayer').hidden"))
     ok('full-screen player identifies the selected reciter', 'Muhammad Al-Luhaidan' in pg.inner_text('#quranFullReciter'))
     pg.tap('#quranFullClose'); pg.wait_for_timeout(150)
-    pg.tap('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(250)
+    pg.evaluate("switchScreen('settingsScreen')"); pg.wait_for_timeout(250)
     ok('mini-player remains available while browsing another app screen', not pg.evaluate("document.getElementById('quranPlayer').hidden"))
     pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(250)
     pg.evaluate("document.getElementById('quranStop').click()"); pg.wait_for_timeout(300)
@@ -148,7 +148,7 @@ with sync_playwright() as p:
     pg.evaluate("document.getElementById('quranStop').click()"); pg.wait_for_timeout(200)
     # tab pill and cross-fading screens
     pg.evaluate("document.body.classList.remove('lite')")
-    pg.tap('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(120)
+    pg.evaluate("switchScreen('dhikrScreen')"); pg.wait_for_timeout(120)
     ok('leaving screen cross-fades instead of vanishing', pg.evaluate("document.querySelectorAll('.screen.leaving').length") == 1)
     pg.wait_for_timeout(700)
     # glass ON (default) moves a glass lens under the active tab; glass OFF keeps the old morphing pill

@@ -4,6 +4,7 @@
    for a capsule-shaped lens: no shift in the middle, an increasing bend toward the rim, like the edge of a glass pebble. */
 (function () {
   'use strict';
+  const build = () => {
   try {
     const W = 144, H = 120, c = document.createElement('canvas'); c.width = W; c.height = H;
     const ctx = c.getContext('2d'); if (!ctx) return;
@@ -25,4 +26,6 @@
     document.querySelectorAll('.naseem-lens-map').forEach(el => { el.setAttribute('href', url); el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url); });
     document.documentElement.classList.add('lens-map-ready');
   } catch (_) { /* no refraction map: the lens simply keeps its plain frosted look */ }
+  };
+  if (window.requestIdleCallback) requestIdleCallback(build, { timeout: 1500 }); else setTimeout(build, 300);
 })();

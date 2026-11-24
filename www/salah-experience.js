@@ -74,6 +74,8 @@
   $('salahTahajjudToggle').addEventListener('click',()=>{const d=dayData(new Date());d.tahajjud=d.tahajjud!==true;save();render();});
   $('salahResetToday').addEventListener('click',()=>{if(!confirm("Reset today's prayer tracker?"))return;history[dateKey(new Date())]={};save();render();});
   $('salahPrayerSettings').addEventListener('click',()=>{switchScreen('settingsScreen');setTimeout(()=>{const panel=document.getElementById('stSalah');if(panel){panel.open=true;panel.scrollIntoView({behavior:'smooth',block:'start'});}},280);});
-  render();window.addEventListener('noor:schedule',render);window.setInterval(render,1000);
+  render();window.addEventListener('noor:schedule',render);
+  const tick=()=>{const now=new Date(),next=chooseNext(now,S.timesFor(now)),t=new Date(next.date),p=String(next.time).split(':').map(Number);t.setHours(p[0]||0,p[1]||0,0,0);const el=$('salahNextCountdown');if(el)el.textContent=countdown(Math.max(0,Math.floor((t-now)/1000)));};
+  if(window.NaseemPerf){NaseemPerf.every(tick,1000,'salahScreen');NaseemPerf.every(render,60000,'salahScreen');}else window.setInterval(render,1000);
   window.NaseemSalahTracker={KEY,phaseFor:getPhase,lastThirdWindow:tahajjudWindow,prayerIsAvailable,statusOf};
 })();

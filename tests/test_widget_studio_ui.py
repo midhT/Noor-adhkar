@@ -1,7 +1,7 @@
 import os, sys, json
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import Server
+from common import Server, open_settings
 
 srv=Server(8792)
 try:
@@ -16,9 +16,9 @@ try:
           setCustomWidget:async s=>{window.__customWidgetCalls.push(s);return true;},
           setPrayerTimes:async()=>true,setTasbeeh:async()=>true,setHijriDate:async()=>true
         }; }""")
-        page.click('.nav-item[data-screen="settingsScreen"]');page.wait_for_timeout(100)
+        open_settings(page);page.wait_for_timeout(100)
         page.click('.you-shortcut[data-open-screen="featuresScreen"]');page.wait_for_timeout(100)
-        assert page.locator('.nav-item[data-screen="settingsScreen"]').evaluate("(e) => e.classList.contains('active')")
+        assert page.evaluate("document.querySelector('.screen.active').id") == 'featuresScreen'
         page.click('[data-open-v404="widgets"]');page.wait_for_timeout(200)
         page.select_option('#studioWidgetTheme','light')
         page.select_option('#studioWidgetAccent','silver')

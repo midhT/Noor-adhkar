@@ -58,7 +58,7 @@ with sync_playwright() as p:
     cur = lambda: ev("document.querySelector('.screen.active').id")
     rects = lambda: ev("[...document.querySelectorAll('.bottom-nav .nav-item')].map(e=>{const r=e.getBoundingClientRect();return [e.dataset.screen,r.left+r.width/2,r.top+r.height/2]})")
     peek = lambda: ev("(document.querySelector('.nav-item.peek')||{dataset:{}}).dataset.screen")
-    ids = [c[0] for c in rects()]; ok('five tabs in the bar, in order', ids == ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'settingsScreen'], str(ids))
+    ids = [c[0] for c in rects()]; ok('four tabs in the bar, in order', ids == ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen'], str(ids))
     def touch(t, x, y): cdp.send('Input.dispatchTouchEvent', {'type': t, 'touchPoints': [{'x': x, 'y': y}] if t != 'touchEnd' else []})
     def drag(from_id, to_id, mid_id=None, check=None):
         r = {c[0]: c for c in rects()}; x0, y = r[from_id][1], r[from_id][2]
@@ -72,24 +72,24 @@ with sync_playwright() as p:
     seen = {}
     def mid():
         seen['cur'] = cur(); seen['peek'] = peek(); seen['cls'] = ev("document.querySelector('.bottom-nav').classList.contains('dragging')")
-    drag('homeScreen', 'settingsScreen', check=mid)
-    ok('while dragging the highlight follows the finger but the screen has not switched yet', seen == {'cur': 'homeScreen', 'peek': 'settingsScreen', 'cls': True}, str(seen))
-    ok('lifting the finger on Settings opens Settings', cur() == 'settingsScreen', cur())
-    ok('highlight is on Settings and drag styling cleaned up', ev("document.querySelector('.nav-item.active').dataset.screen") == 'settingsScreen' and ev("!document.querySelector('.nav-item.peek')") and ev("!document.querySelector('.bottom-nav.dragging')"))
+    drag('homeScreen', 'quranReaderScreen', check=mid)
+    ok('while dragging the highlight follows the finger but the screen has not switched yet', seen == {'cur': 'homeScreen', 'peek': 'quranReaderScreen', 'cls': True}, str(seen))
+    ok('lifting the finger on Quran opens Quran', cur() == 'quranReaderScreen', cur())
+    ok('highlight is on Quran and drag styling cleaned up', ev("document.querySelector('.nav-item.active').dataset.screen") == 'quranReaderScreen' and ev("!document.querySelector('.nav-item.peek')") and ev("!document.querySelector('.bottom-nav.dragging')"))
     seen.clear()
     def mid2(): seen['peek'] = peek()
-    drag('settingsScreen', 'dhikrScreen', check=mid2)
+    drag('quranReaderScreen', 'dhikrScreen', check=mid2)
     ok('drag right-to-left: highlight on Dhikr, then opens Dhikr (no extra page swipe)', seen.get('peek') == 'dhikrScreen' and cur() == 'dhikrScreen', f'{seen} {cur()}')
     # sliding across tabs updates the highlight continuously
     r = {c[0]: c for c in rects()}; x0, y = r['dhikrScreen'][1], r['dhikrScreen'][2]
     touch('touchStart', x0, y); touch('touchMove', x0 + 12, y); time.sleep(0.05)
     r = {c[0]: c for c in rects()}; trail = []
-    for sid in ['salahScreen', 'quranReaderScreen', 'settingsScreen', 'quranReaderScreen']:
+    for sid in ['salahScreen', 'quranReaderScreen', 'salahScreen', 'quranReaderScreen']:
         touch('touchMove', r[sid][1], y); time.sleep(0.05); trail.append(peek())
     touch('touchEnd', 0, 0); time.sleep(0.6)
-    ok('highlight tracks the finger tab by tab, forwards and back', trail == ['salahScreen', 'quranReaderScreen', 'settingsScreen', 'quranReaderScreen'], str(trail))
+    ok('highlight tracks the finger tab by tab, forwards and back', trail == ['salahScreen', 'quranReaderScreen', 'salahScreen', 'quranReaderScreen'], str(trail))
     ok('release lands on the tab under the finger', cur() == 'quranReaderScreen', cur())
-    ok('release off the end of the bar clamps to the last tab', (lambda: (touch('touchStart', *rects()[4][1:]), touch('touchMove', rects()[4][1] + 14, rects()[4][2]), time.sleep(0.05), touch('touchMove', 392, rects()[4][2]), touch('touchEnd', 0, 0), time.sleep(0.6), cur() == 'settingsScreen')[-1])())
+    ok('release off the end of the bar clamps to the last tab', (lambda: (touch('touchStart', *rects()[3][1:]), touch('touchMove', rects()[3][1] + 14, rects()[3][2]), time.sleep(0.05), touch('touchMove', 392, rects()[3][2]), touch('touchEnd', 0, 0), time.sleep(0.6), cur() == 'quranReaderScreen')[-1])())
     r = {c[0]: c for c in rects()}
     pg.touchscreen.tap(r['salahScreen'][1], r['salahScreen'][2]); pg.wait_for_timeout(500)
     ok('plain tap on a tab still works', cur() == 'salahScreen', cur())

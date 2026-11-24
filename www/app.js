@@ -29,7 +29,7 @@ if(themeMedia){const changed=()=>{if(state.theme==='system')applyTheme('system')
 state.counts ||= {}; state.adhkar ||= {}; state.sessions ||= []; state.days ||= {}; state.completed ||= {}; state.customRoutines=Array.isArray(state.customRoutines)?state.customRoutines:[];
 let toastTimer;
 function save(){ localStorage.setItem(KEY,JSON.stringify(state)); }
-function today(){return new Date().toLocaleDateString("en-CA");}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function prettyDate(iso){return new Date(iso+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});}
 function getDhikr(){if(state.selected==="custom")return {name:state.customName||"Custom dhikr",arabic:"ذِكْر",meaning:"Your personal remembrance",target:state.target};return DHIKR[state.selected]||DHIKR.istighfar;}
 function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2100);}

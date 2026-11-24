@@ -125,9 +125,11 @@
     const pill = doc.createElement('span'); pill.className = 'nav-pill'; pill.setAttribute('aria-hidden', 'true');
     bar.insertBefore(pill, bar.firstChild); bar.classList.add('has-pill');
     let x = 0, w = 0, ready = false, raf = 0, until = 0;
+    let edgeCache = -1; addEventListener('resize', () => { edgeCache = -1; });
+    const edgeW = () => edgeCache < 0 ? (edgeCache = parseFloat(getComputedStyle(bar).borderLeftWidth) || 0) : edgeCache;
     const target = () => {
       const it = bar.querySelector('.nav-item.peek') || bar.querySelector('.nav-item.active'); if (!it) return null;
-      const b = bar.getBoundingClientRect(), r = it.getBoundingClientRect(), edge = parseFloat(getComputedStyle(bar).borderLeftWidth) || 0;
+      const b = bar.getBoundingClientRect(), r = it.getBoundingClientRect(), edge = edgeW();
       return { x: r.left - b.left - edge, w: r.width };
     };
     const step = () => {

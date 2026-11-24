@@ -116,17 +116,23 @@
     var mins = Math.round(fix(h, 24) * 60) % 1440;     // nearest minute
     return pad(Math.floor(mins / 60)) + ':' + pad(mins % 60);
   }
+  var tzFmt = {}, calcMemo = {};
   function tzOffsetHours(tz, y, m, d) {
     try {
       var utc = Date.UTC(y, m - 1, d, 12);
-      var parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }).formatToParts(new Date(utc));
+      var fmt = tzFmt[tz] || (tzFmt[tz] = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }));
+      var parts = fmt.formatToParts(new Date(utc));
       var g = function (type) { return Number(parts.filter(function (p) { return p.type === type; })[0].value); };
       return (Date.UTC(g('year'), g('month') - 1, g('day'), g('hour'), g('minute'), g('second')) - utc) / 3600000;
     } catch (e) { return -new Date(y, m - 1, d, 12).getTimezoneOffset() / 60; }
   }
   function calculate(y, m, d, loc, methodId, asr) {
+    var key = [y, m, d, loc.lat, loc.lng, loc.tz, methodId, asr].join('|'), hit = calcMemo[key];
+    if (hit) return Object.assign({}, hit);
     var h = computeHours(y, m, d, loc.lat, loc.lng, tzOffsetHours(loc.tz, y, m, d), methodId, asr), out = {};
     Object.keys(h).forEach(function (k) { out[k] = hoursToHHMM(h[k]); });
+    if (Object.keys(calcMemo).length > 40) calcMemo = {};
+    calcMemo[key] = Object.assign({}, out);
     return out;
   }
   var toMin = function (v) { return /^\d{2}:\d{2}$/.test(v || '') ? Number(v.slice(0, 2)) * 60 + Number(v.slice(3)) : null; };

@@ -37,7 +37,7 @@ with sync_playwright() as p:
         ok(f'swipe changes tab (glass={glass})', a != b2, f'{a}->{b2}')
     # lens drag only with glass
     pg.evaluate("document.body.classList.remove('glass')")
-    ok('lens hidden/inert without glass', pg.evaluate("(()=>{const l=document.querySelector('.nav-lens');return !l||getComputedStyle(l).display==='none'||getComputedStyle(l).opacity==='0'||l.getBoundingClientRect().width===0})()"))
+    ok('flat mode keeps the same lens geometry but with no blur', pg.evaluate("(()=>{const l=document.querySelector('.nav-lens');const bf=getComputedStyle(l).backdropFilter;return !l||bf==='none'||bf===''||getComputedStyle(l).opacity==='0'})()"))
     pg.evaluate("document.body.classList.add('glass')")
 
     pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(700)

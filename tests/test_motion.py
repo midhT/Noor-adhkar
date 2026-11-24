@@ -45,7 +45,7 @@ with sync_playwright() as p:
     cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []}); pg.wait_for_timeout(600)
     ok('drag handle down closes sheet', ev("document.querySelector('.nsheet').hidden"))
     # Settings pickers
-    pg.click('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(300)
+    open_settings(pg); pg.wait_for_timeout(300)
     if not ev("document.getElementById('stSalah').open"): pg.click('#stSalah > summary')
     pg.wait_for_timeout(300)
     n = ev("document.querySelectorAll('#stSalah select.nsel').length"); t = ev("document.querySelectorAll('#stSalah .ntrig').length")
@@ -56,6 +56,7 @@ with sync_playwright() as p:
     pg.click('.nsheet-opt[data-v="delhi"]'); pg.wait_for_timeout(500)
     ok('city sheet applies choice', ev("NoorSalah.get().loc.id") == 'delhi')
     pg.click('#ssCity + .ntrig'); pg.click('.nsheet-opt[data-v="srinagar"]'); pg.wait_for_timeout(500)
+    ev("document.dispatchEvent(new CustomEvent('naseem:back',{cancelable:true,bubbles:true}))"); pg.wait_for_timeout(500)
     # ---- swipe navigation ----
     pg.click('.nav-item[data-screen="homeScreen"]'); pg.wait_for_timeout(500)
     swipe(cdp, 330, 60, y=300); ok('swipe left: Home -> Dhikr', cur() == 'dhikrScreen', cur())
@@ -63,10 +64,7 @@ with sync_playwright() as p:
     swipe(cdp, 330, 60, y=300); ok('swipe left inside Dhikr: Counter -> Adhkar panel', cur() == 'dhikrScreen' and ev("!document.getElementById('libraryScreen').hidden"))
     swipe(cdp, 330, 60, y=300); ok('swipe left again: Dhikr -> Salah', cur() == 'salahScreen', cur())
     swipe(cdp, 330, 60, y=300); ok('swipe left again: Salah -> Quran', cur() == 'quranReaderScreen', cur())
-    swipe(cdp, 330, 60, y=300); ok('swipe left again: Quran -> You', cur() == 'settingsScreen', cur())
-    ok('You tab is active after swipe', ev("document.querySelector('.nav-item.active').dataset.screen") == 'settingsScreen')
-    swipe(cdp, 330, 60, y=300); ok('no wrap past the last tab', cur() == 'settingsScreen')
-    swipe(cdp, 60, 330, y=300); ok('swipe right: You -> Quran', cur() == 'quranReaderScreen', cur())
+    swipe(cdp, 330, 60, y=300); ok('no wrap past the last tab (Quran)', cur() == 'quranReaderScreen', cur())
     swipe(cdp, 60, 330, y=300); ok('swipe right: Quran -> Salah', cur() == 'salahScreen', cur())
     # Dhikr's selected subpanel is preserved when leaving the tab. We left
     # Dhikr on Adhkar above, so returning from Salah must show Adhkar first.
@@ -87,25 +85,27 @@ with sync_playwright() as p:
     pg.click('#countButton'); pg.wait_for_timeout(100)
     ok('tap still counts; pop animation class applied', ev("(state.count||0)") == before + 1 and ev("document.getElementById('countValue').classList.contains('pop')"))
     # ---- smooth mode ----
-    pg.click('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(300)
+    open_settings(pg); pg.wait_for_timeout(300)
     if not ev("document.getElementById('stAppearance').open"): pg.click('#stAppearance > summary')
     pg.click('#stMotionSeg [data-motion="smooth"]'); pg.wait_for_timeout(200)
     ok('Smooth mode applies lite class and persists', ev("document.body.classList.contains('lite')") and ev("localStorage.getItem('noorMotionV1')") == 'smooth')
     pg.reload(); pg.wait_for_timeout(2300)
     ok('Smooth persists after restart', ev("document.body.classList.contains('lite')"))
-    pg.click('.nav-item[data-screen="settingsScreen"]'); pg.wait_for_timeout(300)
+    open_settings(pg); pg.wait_for_timeout(300)
     if not ev("document.getElementById('stAppearance').open"): pg.click('#stAppearance > summary')
     pg.click('#stMotionSeg [data-motion="full"]'); pg.wait_for_timeout(200)
     ok('Full mode removes lite class', not ev("document.body.classList.contains('lite')"))
+    ev("document.querySelectorAll('.st-group').forEach(g=>g.open=false);document.body.classList.remove('st-page-open')")
     # ---- no horizontal overflow across widths, large text ----
     for w in (320, 360, 393, 412, 600):
         c2 = b.new_context(viewport={'width': w, 'height': 800}, is_mobile=True, has_touch=True, timezone_id='Asia/Kolkata'); seed_returning_user(c2); q = c2.new_page(); q.goto(srv.url()); q.wait_for_timeout(2300)
         bad = []
         for sid in ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'settingsScreen']:
-            q.click(f'.nav-item[data-screen="{sid}"]'); q.wait_for_timeout(450)
+            q.click('#brandMark' if sid == 'settingsScreen' else f'.nav-item[data-screen="{sid}"]'); q.wait_for_timeout(450)
             if sid == 'settingsScreen':
                 for g in ['stAccount', 'stSalah', 'stNotifications', 'stAppearance']:
-                    q.evaluate(f"document.getElementById('{g}').open=true")
+                    q.evaluate(f"document.getElementById('{g}').open=true"); q.wait_for_timeout(80)
+                q.evaluate("document.querySelectorAll('.st-group').forEach(g=>g.open=false)")
             q.wait_for_timeout(200)
             if q.evaluate("document.documentElement.scrollWidth") > w + 1: bad.append(sid)
         # Features and Zakat are destinations inside You, not bottom-nav tabs.

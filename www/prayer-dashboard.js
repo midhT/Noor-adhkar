@@ -78,11 +78,11 @@
     const angle = Math.max(12, Math.min(348, (1 - diff / 86400) * 360));
     if ($('pdRingOne')) $('pdRingOne').style.setProperty('--ring-angle', `${angle}deg`); if ($('pdRingTwo')) $('pdRingTwo').style.setProperty('--ring-angle', `${angle}deg`);
     const st = S.get();
-    $('pdDate').textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
+    $('pdDate').textContent = (window.__pdDateFmt || (window.__pdDateFmt = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' }))).format(now);
     $('pdPlace').textContent = st.mode === 'manual' ? 'YOUR OWN TIMES' : st.loc.name.toUpperCase();
     $('pdSource').textContent = st.mode === 'manual' ? 'Entered by you in Settings' : `${S.METHODS[st.method].name} · ${st.asr === 'hanafi' ? 'Later' : 'Earlier'} Asr` ;
   };
   render();
   window.addEventListener('noor:schedule', render);
-  window.setInterval(render, 30000);
+  (window.NaseemPerf ? NaseemPerf.every(render, 30000, 'homeScreen') : window.setInterval(render, 30000));
 })();
