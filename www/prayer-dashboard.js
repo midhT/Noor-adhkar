@@ -84,5 +84,5 @@
   };
   render();
   window.addEventListener('noor:schedule', render);
-  (window.NaseemPerf ? NaseemPerf.every(render, 30000, 'homeScreen') : window.setInterval(render, 30000));
+  (window.NaseemPerf ? window.NaseemPerf.every(render, 30000, 'homeScreen') : window.setInterval(render, 30000));
 })();
