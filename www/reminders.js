@@ -126,8 +126,9 @@
     render(); await apply();
   }
 
-  const audio = new Audio('audio/adhan.mp3');
-  audio.addEventListener('ended', () => { previewing = false; const b = root.querySelector('#rmPreview'); if (b) b.textContent = 'Preview Adhan'; });
+  // created on first use so the 1 MB adhan file is not requested at startup
+  let audioEl = null;
+  const getAudio = () => { if (!audioEl) { audioEl = new Audio(); audioEl.preload = 'none'; audioEl.src = 'audio/adhan.mp3'; audioEl.addEventListener('ended', () => { previewing = false; const b = root.querySelector('#rmPreview'); if (b) b.textContent = 'Preview Adhan'; }); } return audioEl; };
 
   root.addEventListener('click', async e => {
     const el = e.target.closest('button'); if (!el) return;
@@ -138,8 +139,8 @@
     else if (el.dataset.pre !== undefined) { cfg.pre = Number(el.dataset.pre); }
     else if (el.dataset.lead !== undefined) { cfg.lead = Number(el.dataset.lead); }
     else if (el.id === 'rmPreview') {
-      if (previewing) { audio.pause(); audio.currentTime = 0; previewing = false; }
-      else { try { await audio.play(); previewing = true; } catch (_) { note = 'The Adhan preview could not play.'; } }
+      if (previewing) { getAudio().pause(); getAudio().currentTime = 0; previewing = false; }
+      else { try { await getAudio().play(); previewing = true; } catch (_) { note = 'The Adhan preview could not play.'; } }
       render(); return;
     }
     else if (el.id === 'rmTestAdhan' || el.id === 'rmTestTone') {

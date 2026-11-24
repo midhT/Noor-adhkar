@@ -68,7 +68,7 @@
     bd.style.setProperty('--glass-blur', (9 + 9 * k).toFixed(1) + 'px');
     bd.style.setProperty('--tint-a', ((light ? .30 : .26) + .26 * k).toFixed(2));
   }
-  const queueAdapt = () => { if (!adTimer) adTimer = setTimeout(adapt, 220); };
+  const queueAdapt = () => { clearTimeout(adTimer); adTimer = setTimeout(adapt, 260); };   // debounced: never runs while a finger is still scrolling
   addEventListener('scroll', queueAdapt, { passive: true, capture: true });
   doc.addEventListener('naseem:theme-changed', queueAdapt);
   doc.addEventListener('click', () => setTimeout(queueAdapt, 400), true);

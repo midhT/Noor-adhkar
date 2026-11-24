@@ -96,8 +96,9 @@ body.navpill .bottom-nav .nav-pill{display:none}
 body.navpill .nav-lens{
   display:block;position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--count));
   border-radius:999px;pointer-events:none;--sx:1;--sy:1;--ty:0px;--hl:.25;
-  transform:translate3d(calc(var(--lens) * 100%),var(--ty),0) scale(var(--sx),var(--sy));
-  transition:transform .52s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease;
+  /* position is driven per frame by glass-nav.js (one clock for lens and blur hole); only scale/shadow use CSS transitions */
+  transform:none;translate:var(--lpx,0px) var(--ty);scale:var(--sx) var(--sy);
+  transition:scale .38s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease;
   /* a whisper of top light, and a soft lower inner shade */
   background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.006) 38%,transparent 64%,rgba(255,255,255,.012));
   box-shadow:inset 0 -6px 6px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 2px 5px -1px var(--drop-cast);
@@ -116,9 +117,9 @@ body.navpill .nav-lens::after{padding:.45px;background:linear-gradient(135deg,tr
 body.navpill .bottom-nav.lens-moving .nav-lens{--sx:var(--stretch,1.1);--sy:.97}
 /* swells under the finger: uniform scale so the ends stay round and its radius matches the pill's */
 body.navpill .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--hl:1;box-shadow:inset 0 -7px 7px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 6px 12px -3px var(--drop-cast)}
-body.navpill .bottom-nav.lens-drag .nav-lens{transition:transform .09s linear,box-shadow .3s ease}
+
 /* Smooth mode keeps the real blur (that is what makes it glass); it only drops the costly lens refraction and shortens motion. */
-body.glass.lite .nav-lens{transition:transform .18s ease-out}
+
 @media(prefers-reduced-motion:reduce){body.glass .nav-lens,body.navpill .bottom-nav,body.glass .nav-dock,body.navpill .bottom-nav .nav-item small,body.navpill .bottom-nav .nav-item .ni{transition:none}}
 
 /* Real refraction: Chromium (Android WebView) runs an SVG displacement map on the backdrop. Only the small moving lens uses it. */
@@ -135,9 +136,8 @@ body.glass.lite .nav-lens{transition:transform .18s ease-out}
     -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
     -webkit-mask-size:100% 100%,var(--slot,70px) calc(100% - 8px);mask-size:100% 100%,var(--slot,70px) calc(100% - 8px);
     -webkit-mask-position:0 0,var(--lx,4px) 4px;mask-position:0 0,var(--lx,4px) 4px;
-    transition:mask-position .52s cubic-bezier(.28,1.4,.42,1);
   }
-  body.glass .bottom-nav.lens-drag::before{transition:mask-position .09s linear}
+  
 }
 
 /* ---------------------------------------------------------------- collapsed: a round button with the current tab's icon
@@ -269,7 +269,7 @@ body.navpill:not(.glass) .nav-lens{background:var(--gfill);-webkit-backdrop-filt
 body.navpill:not(.glass) .nav-lens::before,body.navpill:not(.glass) .nav-lens::after{display:none}
 body.navpill:not(.glass) .nav-dock{background:var(--nav-tint)}
 
-.bottom-nav .nav-lens{transition:transform .52s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease,opacity .25s ease}
+.bottom-nav .nav-lens{transition:scale .38s cubic-bezier(.28,1.4,.42,1),box-shadow .3s ease,opacity .25s ease}
 .bottom-nav.no-active .nav-lens{opacity:0}
 
 /* ---------- Settings sub-pages ---------- */
@@ -291,3 +291,23 @@ body.st-page-open .topbar{visibility:hidden}
 
 /* Performance: no endless decorative animation behind the glass (it forces the backdrop blur to re-run every frame). */
 .app-shell:after,body.cosmos-on .app-shell:after{animation:none!important}
+
+/* ============ Stage 8: smoothness for weak GPUs ============ */
+/* Header round buttons: the header already blurs the page, so the buttons only need a lens rim (no nested backdrop pass). */
+body.glass .topbar .brand-mark,body.glass .topbar .icon-button{-webkit-backdrop-filter:none;backdrop-filter:none;background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.03) 55%,rgba(255,255,255,.07));box-shadow:inset 0 0 0 1px var(--nav-rim),inset 1px 1.5px 1px -.5px rgba(255,255,255,.5),inset -1px -1.5px 1px -.5px rgba(255,255,255,.16),0 3px 8px -5px var(--nav-shadow)}
+body.glass{--hdr-blur:18px}
+/* Large soft shadows are the most expensive thing to rasterise on a low-end GPU: cards get a tight, cheap shadow instead. */
+.screen .card-surface,.screen .pd-next,.screen .pd-banner,.screen .pd-ring-card,.screen .pd-date,.screen #pdTimetable,.screen #homeRamadanCard,.screen .dhikr-picker,.screen .target-row,.screen .library-item,.screen .salah-next-card,.screen #salahImprove,.screen .salah-tahajjud,.screen #salahWeek,.screen .salah-item{box-shadow:0 1px 2px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04)!important}
+body.light .screen .card-surface,body.light .screen .pd-next,body.light .screen .pd-banner,body.light .screen .pd-ring-card,body.light .screen .pd-date,body.light .screen #pdTimetable,body.light .screen #homeRamadanCard,body.light .screen .dhikr-picker,body.light .screen .target-row,body.light .screen .library-item,body.light .screen .salah-next-card,body.light .screen #salahImprove,body.light .screen .salah-tahajjud,body.light .screen #salahWeek,body.light .screen .salah-item{box-shadow:0 1px 2px rgba(20,30,40,.10),inset 0 1px 0 rgba(255,255,255,.5)!important}
+/* Lazy rendering: sections below the fold, and long lists, are not laid out or painted until they get near the screen. */
+.screen.active>*:nth-child(n+6),.library-item,.salah-item{content-visibility:auto;contain-intrinsic-size:auto 120px}
+/* One entry animation per screen change (transform + opacity only). The per-child stagger is gone: fewer simultaneous layers. */
+.screen.active>*:nth-child(-n+4){animation:none!important}
+.screen.active{animation-duration:.26s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-fill-mode:backwards}
+.screen.leaving{animation-duration:.16s;animation-timing-function:ease-out}
+@keyframes scrNext{from{opacity:0;transform:translate3d(22px,0,0)}to{opacity:1;transform:none}}
+@keyframes scrPrev{from{opacity:0;transform:translate3d(-22px,0,0)}to{opacity:1;transform:none}}
+@keyframes scrFade{from{opacity:0;transform:translate3d(0,6px,0)}to{opacity:1;transform:none}}
+/* While the bar folds/unfolds, the blur passes pause (they re-run every frame otherwise); the tint stays so nothing flashes. */
+body.nav-anim .bottom-nav::before,body.nav-anim .qr-player{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body .qr-player{transition:scale .35s var(--spring,ease),left .34s cubic-bezier(.2,.9,.25,1),bottom .34s cubic-bezier(.2,.9,.25,1)}

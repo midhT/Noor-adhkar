@@ -142,5 +142,5 @@
   }
   window.NaseemUpdates = { check, isNewer: newer, isUpdateAvailable: updateAvailable, currentVersion: CURRENT, currentBuild: CURRENT_BUILD };
   window.addEventListener('online', () => check(true));
-  window.setTimeout(() => check(false), 3500);
+  (window.NaseemPerf ? window.NaseemPerf.idle(() => check(false), 3500) : window.setTimeout(() => check(false), 3500));
 })();

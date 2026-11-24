@@ -14,10 +14,26 @@
   let drag = false, down = false, sx = 0, pid = null, rect = null;
 
   let slotPx = 0;
-  const measure = () => { const n = tabs().length || 5; slotPx = Math.max(0, (nav.clientWidth - 8) / n); nav.style.setProperty('--slot', slotPx.toFixed(2) + 'px'); };
-  // --lx is the lens position in px; the capsule's blur layer has a hole at that spot so the lens can refract the crisp page.
-  const setPos = p => { nav.style.setProperty('--lens', p.toFixed(3)); nav.style.setProperty('--lx', (4 + p * slotPx).toFixed(2) + 'px'); };
-  let shown = 0, settle = 0;
+  const measure = () => { const n = tabs().length || 5; slotPx = Math.max(0, (nav.clientWidth - 8) / n); nav.style.setProperty('--slot', slotPx.toFixed(2) + 'px'); write(cur); };
+  // One clock moves everything: the lens (translate) and the hole in the blur layer (--lx) are written in the same frame,
+  // so the refraction can never trail the capsule. Dragging writes the finger position straight through; settling uses a spring.
+  let cur = 0, vel = 0, target = 0, raf = 0, last = 0;
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const write = p => { const px = p * slotPx; nav.style.setProperty('--lens', p.toFixed(3)); nav.style.setProperty('--lpx', px.toFixed(2) + 'px'); nav.style.setProperty('--lx', (4 + px).toFixed(2) + 'px'); };
+  function step(t) {
+    const dt = Math.min(0.034, (t - last) / 1000 || 0.016); last = t;
+    const K = 380, C = 25;                                  // slightly under-damped: a small, soft overshoot
+    vel += (-K * (cur - target) - C * vel) * dt; cur += vel * dt;
+    write(cur);
+    if (Math.abs(vel) < 0.004 && Math.abs(cur - target) < 0.002) { cur = target; vel = 0; write(cur); raf = 0; return; }
+    raf = requestAnimationFrame(step);
+  }
+  const setPos = (p, instant) => {
+    target = p;
+    if (instant || reduced() || !nav.isConnected) { cancelAnimationFrame(raf); raf = 0; cur = p; vel = 0; write(p); return; }
+    if (!raf) { last = performance.now(); raf = requestAnimationFrame(step); }
+  };
+  let shown = 0, settle = 0, firstSync = true;
   function sync() {
     const list = tabs();
     nav.style.setProperty('--count', String(list.length || 5));
@@ -30,7 +46,7 @@
       nav.classList.add('lens-moving'); clearTimeout(settle);
       settle = setTimeout(() => nav.classList.remove('lens-moving'), 190);
     }
-    shown = pos; setPos(pos);
+    shown = pos; setPos(pos, firstSync); firstSync = false;
   }
   function release() {
     down = false; drag = false; pid = null; rect = null;
@@ -54,7 +70,7 @@
     if (!drag) { if (Math.abs(e.clientX - sx) < 8) return; drag = true; nav.classList.add('lens-drag'); }
     const n = tabs().length || 5, pad = 4, slot = (rect.width - pad * 2) / n;
     const pos = (e.clientX - rect.left - pad) / slot - 0.5;
-    setPos(Math.max(-0.16, Math.min(n - 1 + 0.16, pos)));   // a little elastic travel past the end tabs
+    setPos(Math.max(-0.16, Math.min(n - 1 + 0.16, pos)), true);   // a little elastic travel past the end tabs
   });
   nav.addEventListener('pointerup', e => { if (e.pointerId === pid) release(); });
   nav.addEventListener('pointercancel', release);
@@ -71,7 +87,7 @@
   const body = document.body;
   const collapseOn = () => { try { return localStorage.getItem(COLLAPSE_KEY) !== 'off'; } catch (_) { return true; } };
   const playerOn = () => { const p = document.getElementById('quranPlayer'); return !!p && !p.hidden && !p.classList.contains('qr-player-away'); };
-  let collapsed = false, travel = 0;
+  let collapsed = false, travel = 0, animT = 0;
   const lastY = new WeakMap();
   function syncDock() {
     const a = nav.querySelector('.nav-item.active') || tabs()[0]; if (!a) return;
@@ -85,6 +101,7 @@
     travel = 0;
     if (on === collapsed) return;
     collapsed = on; syncDock();
+    body.classList.add('nav-anim'); clearTimeout(animT); animT = setTimeout(() => body.classList.remove('nav-anim'), 400);
     body.classList.toggle('nav-collapsed', on);
     nav.setAttribute('aria-hidden', String(on));
     document.dispatchEvent(new CustomEvent('naseem:nav-collapsed', { detail: { collapsed: on } }));

@@ -70,8 +70,8 @@ with sync_playwright() as p:
     # header glass
     pg.evaluate("document.body.classList.add('glass')")
     pg.evaluate("document.getElementById('quranFullPlayer').hidden=true;document.body.classList.remove('qr-full-player-open')")
-    bf = pg.evaluate("(()=>{const e=document.querySelector('.topbar .icon-button');return e?getComputedStyle(e).backdropFilter:'none'})()")
-    ok('header buttons are glass', 'blur' in bf, bf)
+    bf = pg.evaluate("(()=>{const e=document.querySelector('.topbar .icon-button');if(!e)return 'none';const c=getComputedStyle(e);return c.backgroundImage.includes('gradient')&&c.boxShadow!=='none'?'lens-rim':'flat'})()")
+    ok('header buttons are lens-style glass (rim + sheen, no extra blur pass)', bf == 'lens-rim', bf)
     ok('no page errors', not errs, str(errs))
     ctx.close(); b.close()
 srv.stop()

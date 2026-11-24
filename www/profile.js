@@ -24,7 +24,7 @@
   $('acName').value = profile.name;
   $('acName').addEventListener('input', e => { profile.name = e.target.value.slice(0, 40); persist(); paint(); });
   $('acRemovePhoto').addEventListener('click', () => { profile.photo = ''; persist(); paint(); $('acNote').textContent = 'Picture removed.'; });
-  $('brandMark').addEventListener('click', () => { switchScreen('settingsScreen'); setTimeout(() => { const g = $('stAccount'); g.open = true; g.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); });
+  $('brandMark').addEventListener('click', () => { switchScreen('settingsScreen'); });
 
   // Resize to a 256 px square (centre crop) so the stored picture stays small.
   const toSquare = file => new Promise((resolve, reject) => {

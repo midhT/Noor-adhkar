@@ -54,7 +54,7 @@ with sync_playwright() as p:
     ev("document.querySelectorAll('.as-tap').forEach(b=>b.click()); tapItem('tasbih-100'); undoItem()")
     ok('reopen/re-tap changes nothing and awards no streak', ev("JSON.stringify([state.streak,state.best,state.completed,state.adhkar])") == before)
     # ---- evening has its own record
-    ok('evening untouched by morning', not ev("(state.completed[today()]||{}).evening") and 'Not started' in (pg.evaluate("switchScreen('homeScreen')") or '') + pg.inner_text('#eveningStatus'))
+    ok('evening untouched by morning', not ev("(state.completed[today()]||{}).evening") and (pg.evaluate("switchScreen('homeScreen')") or True) and (pg.wait_for_timeout(250) or True) and 'Not started' in pg.inner_text('#eveningStatus'))
     pg.click('.routine-card[data-routine="evening"]'); pg.wait_for_timeout(400)
     ok('evening session starts at zero', '0 / 100' in pg.inner_text('[data-id=tasbih-100] .as-count'))
     ev("""(()=>{for(const b of document.querySelectorAll('#asList .as-tap')){let g=0;while(!b.disabled&&g++<200)b.click()}})()""")

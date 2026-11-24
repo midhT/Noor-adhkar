@@ -51,5 +51,4 @@ def open_settings(pg, keep_account=False):
     BACK = "document.dispatchEvent(new CustomEvent('naseem:back',{cancelable:true,bubbles:true}))"
     if pg.evaluate("!!document.querySelector('.st-group[open]')"): pg.evaluate(BACK); pg.wait_for_timeout(450)
     pg.click('#brandMark'); pg.wait_for_timeout(450)
-    if not keep_account:
-        pg.evaluate("document.dispatchEvent(new CustomEvent('naseem:back',{cancelable:true,bubbles:true}))"); pg.wait_for_timeout(450)
+    if keep_account: pg.evaluate("document.getElementById('stAccount').open=true"); pg.wait_for_timeout(300)
