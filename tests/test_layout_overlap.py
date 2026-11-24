@@ -30,14 +30,17 @@ SCREENS = ['homeScreen', 'dhikrScreen', 'salahScreen', 'quranReaderScreen', 'fea
 srv = Server(8841)
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--no-sandbox'])
-    for theme in ('dark', 'light'):
+    for theme in ("dark", "light"):
         for w, h in ((320, 568), (360, 640), (412, 915), (600, 960), (768, 1024), (640, 360)):
             ctx = b.new_context(viewport={'width': w, 'height': h}, is_mobile=True, has_touch=True); seed_returning_user(ctx)
             ctx.add_init_script(f"localStorage.setItem('naseem-theme','{theme}');localStorage.setItem('naseemGlassV1','off')")  # glass has its own test; this checks the default look
             pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
             quran_mock.install(pg); pg.goto(srv.url()); pg.wait_for_timeout(2300)
-            bg = pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav')).backgroundColor")
-            ok(f'{theme} {w}x{h}: navigation bar is opaque', 'rgba' not in bg or bg.endswith(', 1)'), bg)
+            # flat mode paints its solid fill on the bar's ::before layer (same geometry as glass)
+            bg = pg.evaluate("getComputedStyle(document.querySelector('.bottom-nav'),'::before').backgroundColor")
+            import re as _re
+            nums = _re.findall(r'[\d.]+', bg); alpha = float(nums[3]) if len(nums) > 3 else 1.0
+            ok(f'{theme} {w}x{h}: navigation bar is opaque', alpha >= .95, bg)
             for sid in SCREENS:
                 pg.evaluate(f"switchScreen('{sid}')"); pg.wait_for_timeout(600)
                 H = pg.evaluate("document.documentElement.scrollHeight"); seen = set(); y = 0
