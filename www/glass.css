@@ -102,7 +102,7 @@ body.navpill .nav-lens{
   /* a whisper of top light, and a soft lower inner shade */
   background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.006) 38%,transparent 64%,rgba(255,255,255,.012));
   box-shadow:inset 0 -6px 6px -5px rgba(0,0,0,var(--shade-a)),inset 0 -3px 4px -3px rgba(0,0,0,var(--shade-a)),0 2px 5px -1px var(--drop-cast);
-  -webkit-backdrop-filter:saturate(1.15);backdrop-filter:saturate(1.15);
+  -webkit-backdrop-filter:blur(var(--lens-blur,3.5px)) saturate(1.15);backdrop-filter:blur(var(--lens-blur,3.5px)) saturate(1.15);   /* a little less blurry than the bar (12px), never distorted */
   will-change:transform;
 }
 /* curved rim light, upper-left strong and lower-right faint, strongest while the finger is down */
@@ -121,11 +121,7 @@ body.navpill .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--
 
 @media(prefers-reduced-motion:reduce){body.glass .nav-lens,body.navpill .bottom-nav,body.glass .nav-dock,body.navpill .bottom-nav .nav-item small,body.navpill .bottom-nav .nav-item .ni{transition:none}}
 
-/* Real refraction: Chromium (Android WebView) runs an SVG displacement map on the backdrop. Only the small moving lens uses it. */
-@supports (backdrop-filter:url(#naseem-lens)){
-  body.glass:not(.lite) .nav-lens{-webkit-backdrop-filter:url(#naseem-lens) saturate(1.15);backdrop-filter:url(#naseem-lens) saturate(1.15)}
-  body.glass:not(.lite) .bottom-nav.lens-press .nav-lens{-webkit-backdrop-filter:url(#naseem-lens-press) saturate(1.2);backdrop-filter:url(#naseem-lens-press) saturate(1.2)}
-}
+/* No refraction: the lens never distorts the page behind it. It only magnifies its own icon + name; the page shows through clearly. */
 /* A hole in the pill's blur layer AND its tint under the lens: the drop then shows the real page, not a tinted, blurred copy of it. */
 @supports (mask-composite:exclude) or (-webkit-mask-composite:xor){
   body.glass .bottom-nav::before{
@@ -328,7 +324,9 @@ body.navpill .bottom-nav>.nav-item{opacity:var(--o,1)}
 .nav-lens .lens-copy .nav-item small{transition:none}
 body.navpill .bottom-nav.no-active>.nav-item{opacity:1}
 /* collapse: the whole pill shrinks into the round button (one morph, compositor-only) instead of scaling and fading away */
-body.nav-collapsed .bottom-nav{transform:translateX(-50%) translate(var(--cdx,0px),var(--cdy,0px)) scale(var(--csx,.7),var(--csy,.9));transition:transform .3s cubic-bezier(.3,.95,.3,1),opacity .13s linear .03s,visibility 0s .3s}
-body.nav-collapsed .bottom-nav>.nav-item{opacity:0!important;transition:opacity .09s linear}
-body.nav-collapsed .nav-lens{opacity:0}
-body.nav-collapsed .nav-dock{transition:transform .3s cubic-bezier(.3,.95,.3,1),opacity .16s linear .08s,visibility 0s}
+/* collapse = shape morph (like PowerPoint Morph): the pill is clipped down to the round button while its tabs glide into it; no squashing, nothing is stretched. Driven by WAAPI in glass-nav.js */
+body.nav-collapsed .bottom-nav{transform:translateX(-50%);transition:none}
+body.nav-collapsed .bottom-nav>.nav-item{opacity:0;transition:none}
+body.nav-collapsed .nav-lens{opacity:0;transition:opacity .16s linear}
+body.nav-collapsed .nav-dock{transform:none;transition:opacity .14s linear .24s,visibility 0s}
+body:not(.nav-collapsed) .nav-dock{transform:none;transition:opacity .08s linear,visibility 0s .08s}

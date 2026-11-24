@@ -112,6 +112,25 @@
     if (dock.__html !== html) { dock.__html = html; dock.innerHTML = html; }
     dock.setAttribute('aria-label', 'Show navigation (' + (a.dataset.navLabel || 'menu') + ')');
   }
+  // Morph: clip-path (paint only) shrinks/grows the pill to/from the round button; each tab slides toward the button's
+  // centre while fading, so the tabs and the shape feel like one object changing form. 440 ms, Apple-style ease-out.
+  let morphAnims = [];
+  function runMorph(on, nb, dr) {
+    morphAnims.forEach(a => { try { a.cancel(); } catch (_) {} }); morphAnims = [];
+    const R = parseFloat(getComputedStyle(nav).borderTopLeftRadius) || nb.height / 2, Rd = dr.height / 2, M = 40;
+    const full = 'inset(-' + M + 'px -' + M + 'px -' + M + 'px -' + M + 'px round ' + (R + M) + 'px)';
+    const small = 'inset(' + (dr.top - nb.top) + 'px ' + (nb.right - dr.right) + 'px ' + (nb.bottom - dr.bottom) + 'px ' + (dr.left - nb.left) + 'px round ' + Rd + 'px)';
+    const ease = 'cubic-bezier(.32,.72,0,1)', D = on ? 420 : 460, cx = dr.left + dr.width / 2;
+    const run = (el, kf, o) => { const a = el.animate(kf, Object.assign({ duration: D, easing: ease }, o)); morphAnims.push(a); return a; };
+    const pair = (from, to) => on ? [from, to] : [to, from];
+    run(nav, pair({ clipPath: full, opacity: 1, visibility: 'visible' }, { clipPath: small, opacity: 1, visibility: 'visible' }));
+    tabs().forEach(t => {
+      const r = t.getBoundingClientRect(), dx = cx - (r.left + r.width / 2);
+      const [f, to] = pair({ translate: '0px 0px', scale: 1, opacity: 1 }, { translate: dx + 'px 0px', scale: .55, opacity: 0 });
+      run(t, [f, Object.assign({}, to, { offset: 1 })].map((k, i) => i ? k : k), { duration: Math.round(D * .62), easing: on ? 'cubic-bezier(.4,0,.8,.6)' : 'cubic-bezier(.2,.4,.2,1)', delay: on ? 0 : Math.round(D * .22), fill: on ? 'none' : 'backwards' });
+    });
+    morphAnims[0].finished.then(() => { morphAnims = []; }).catch(() => {});
+  }
   function setCollapsed(on) {
     on = !!on && collapseOn() && playerOn();
     travel = 0;
@@ -120,17 +139,16 @@
     body.classList.add('nav-anim'); clearTimeout(animT); animT = setTimeout(() => body.classList.remove('nav-anim'), 300);
     // FLIP: the mini player jumps to its new place instantly (layout runs once), then a transform-only animation
     // slides it from where it was. Nothing is re-laid-out per frame, so it stays smooth on weak GPUs.
-    if (on) {   // where the pill has to shrink to: the round button's box
-      const b = nav.getBoundingClientRect(), dw = dock.offsetWidth, dh = dock.offsetHeight;
-      nav.style.setProperty('--csx', (dw / b.width).toFixed(4)); nav.style.setProperty('--csy', (dh / b.height).toFixed(4));
-      nav.style.setProperty('--cdx', (dock.offsetLeft - b.left).toFixed(1) + 'px'); nav.style.setProperty('--cdy', (dock.offsetTop + dh - b.bottom).toFixed(1) + 'px');
-    }
+    const calm = matchMedia('(prefers-reduced-motion: reduce)').matches, dr = dock.getBoundingClientRect();
+    const nb = nav.getBoundingClientRect();
+    const morph = !calm && nav.animate && dr.width && nb.width ? { nb, dr } : null;
     const pl = playerOn() ? player : null, from = pl && pl.getBoundingClientRect();
     body.classList.toggle('nav-collapsed', on);
     if (pl && from && pl.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const to = pl.getBoundingClientRect(), dx = from.left - to.left, dy = from.top - to.top;
       if (Math.abs(dx) + Math.abs(dy) > 1) pl.animate([{ translate: dx + 'px ' + dy + 'px', opacity: .7 }, { translate: '0px 0px', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.25,.9,.3,1)' });
     }
+    if (morph) runMorph(on, morph.nb, morph.dr);
     nav.setAttribute('aria-hidden', String(on));
     document.dispatchEvent(new CustomEvent('naseem:nav-collapsed', { detail: { collapsed: on } }));
   }
