@@ -370,3 +370,10 @@ button:active:not(:disabled),[role="button"]:active,[data-open-screen]:active,.r
 /* bottom sheets: iOS drawer curve, closing faster than opening */
 .nsheet-panel{transition:transform .36s var(--ease-drawer)}
 .nsheet:not(.is-open) .nsheet-panel{transition-duration:.24s}
+
+/* Collapse is driven frame by frame from glass-nav.js (one spring). While it runs the bar's own tabs and lens stay visible
+   so they shrink and fade WITH the bar instead of vanishing the moment the class flips. */
+body.cc-run.nav-collapsed .bottom-nav>.nav-item{opacity:var(--o,1)}
+body.cc-run.nav-collapsed .nav-lens{opacity:1;transition:none}
+body.cc-run .nav-dock,body.cc-run .bottom-nav{will-change:auto}
+body.cc-run.navpill .bottom-nav .nav-item.active small,body.cc-run.navpill .nav-lens .lens-copy .nav-item small{opacity:calc(1 - var(--cp,0)*2);transition:none}

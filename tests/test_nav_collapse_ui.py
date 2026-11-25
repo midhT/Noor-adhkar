@@ -15,7 +15,7 @@ AUDIO = "document.getElementById('quranAudio')"
 def wheel(pg, dy, steps=8):
     pg.mouse.move(180, 300)
     for _ in range(steps): pg.mouse.wheel(0, dy / steps); pg.wait_for_timeout(40)
-    pg.wait_for_timeout(700)
+    pg.wait_for_timeout(900)
 
 srv = Server(8865)
 with sync_playwright() as p:
@@ -59,14 +59,14 @@ with sync_playwright() as p:
     ok('scrolling back up expands the bar', not pg.evaluate(COLL))
     wheel(pg, 500)
     ok('collapses again', pg.evaluate(COLL))
-    pg.evaluate("document.querySelector('.nav-dock').click()"); pg.wait_for_timeout(700)
+    pg.evaluate("document.querySelector('.nav-dock').click()"); pg.wait_for_timeout(900)
     ok('tapping the round button expands the bar', not pg.evaluate(COLL))
     wheel(pg, 500); ok('collapsed once more', pg.evaluate(COLL))
     pg.evaluate("document.querySelector('.bottom-nav .nav-item[data-screen=\"homeScreen\"]').click()"); pg.wait_for_timeout(900)
     ok('changing tab expands the bar', not pg.evaluate(COLL))
 
     # themes: the round button is tinted glass, not white
-    pg.locator('.nav-item[data-screen="quranReaderScreen"]').tap(); pg.wait_for_timeout(700)
+    pg.locator('.nav-item[data-screen="quranReaderScreen"]').tap(); pg.wait_for_timeout(900)
     wheel(pg, 700)
     for theme in ['dark', 'light']:
         pg.evaluate("t=>document.body.classList.toggle('light',t==='light')", theme); pg.wait_for_timeout(300)
