@@ -114,13 +114,15 @@
   }
   // Morph: clip-path (paint only) shrinks/grows the pill to/from the round button; each tab slides toward the button's
   // centre while fading, so the tabs and the shape feel like one object changing form. about half a second, ease-in-out with a long soft landing (a sharp ease-out makes the pill vanish in the first frames).
+  // one spring for everything that moves in a collapse (bar shape, tabs, mini player): a damped spring sampled into linear(); older WebViews fall back to the drawer curve
+  const SPRING = (window.CSS && CSS.supports && CSS.supports('animation-timing-function', 'linear(0, 1)')) ? 'linear(0, 0.0172, 0.0619, 0.1249, 0.1993, 0.2794, 0.3611, 0.4412, 0.5176, 0.5888, 0.6538, 0.7124, 0.7642, 0.8095, 0.8486, 0.8819, 0.91, 0.9332, 0.9523, 0.9677, 0.9799, 0.9894, 0.9966, 1.002, 1.0058, 1.0084, 1.01, 1.0109, 1.0111, 1.0109, 1.0104, 1.0097, 1.0089, 1)' : 'cubic-bezier(.32,.72,0,1)';
   let morphAnims = [];
   function runMorph(on, nb, dr) {
     morphAnims.forEach(a => { try { a.cancel(); } catch (_) {} }); morphAnims = [];
     const R = parseFloat(getComputedStyle(nav).borderTopLeftRadius) || nb.height / 2, Rd = dr.height / 2, M = 40;
     const full = 'inset(-' + M + 'px -' + M + 'px -' + M + 'px -' + M + 'px round ' + (R + M) + 'px)';
     const small = 'inset(' + (dr.top - nb.top) + 'px ' + (nb.right - dr.right) + 'px ' + (nb.bottom - dr.bottom) + 'px ' + (dr.left - nb.left) + 'px round ' + Rd + 'px)';
-    const ease = 'cubic-bezier(.4,0,.12,1)', D = on ? 520 : 560, cx = dr.left + dr.width / 2;
+    const ease = SPRING, D = 560, cx = dr.left + dr.width / 2;
     const run = (el, kf, o) => { const a = el.animate(kf, Object.assign({ duration: D, easing: ease }, o)); morphAnims.push(a); return a; };
     const pair = (from, to) => on ? [from, to] : [to, from];
     run(nav, pair({ clipPath: full, opacity: 1, visibility: 'visible' }, { clipPath: small, opacity: 1, visibility: 'visible' }));
@@ -158,7 +160,7 @@
     body.classList.toggle('nav-collapsed', on);
     if (pl && from && pl.animate && !calm) {
       const to = pl.getBoundingClientRect(), dx = from.left - to.left, dy = from.top - to.top;
-      if (Math.abs(dx) + Math.abs(dy) > 1) pl.animate([{ translate: dx + 'px ' + dy + 'px', opacity: .7 }, { translate: '0px 0px', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.32,.72,0,1)' });
+      if (Math.abs(dx) + Math.abs(dy) > 1) pl.animate([{ translate: dx + 'px ' + dy + 'px' }, { translate: '0px 0px' }], { duration: 560, easing: SPRING });
     }
     if (morph) runMorph(on, morph.nb, morph.dr);
     finish(on);
