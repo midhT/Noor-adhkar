@@ -121,7 +121,12 @@ body.navpill .bottom-nav.lens-press .nav-lens{--sx:1.143;--sy:1.143;--ty:-1px;--
 
 @media(prefers-reduced-motion:reduce){body.glass .nav-lens,body.navpill .bottom-nav,body.glass .nav-dock,body.navpill .bottom-nav .nav-item small,body.navpill .bottom-nav .nav-item .ni{transition:none}}
 
-/* No refraction: the lens never distorts the page behind it. It only magnifies its own icon + name; the page shows through clearly. */
+/* Liquid glass lens: its own gentle blur (less than the bar's) + a refraction that only bends the EDGE of the drop (SVG displacement
+   map, zero in the middle) + the magnified icon/name inside. Skipped in Smooth mode (weak phones keep the blur + magnifier only). */
+@supports (backdrop-filter:url(#naseem-lens)){
+  body.glass:not(.lite) .nav-lens{-webkit-backdrop-filter:blur(var(--lens-blur,6px)) url(#naseem-lens) saturate(1.2);backdrop-filter:blur(var(--lens-blur,6px)) url(#naseem-lens) saturate(1.2)}
+  body.glass:not(.lite) .bottom-nav.lens-press .nav-lens{-webkit-backdrop-filter:blur(var(--lens-blur,6px)) url(#naseem-lens-press) saturate(1.25);backdrop-filter:blur(var(--lens-blur,6px)) url(#naseem-lens-press) saturate(1.25)}
+}
 /* A hole in the pill's blur layer AND its tint under the lens: the drop then shows the real page, not a tinted, blurred copy of it. */
 @supports (mask-composite:exclude) or (-webkit-mask-composite:xor){
   body.glass .bottom-nav::before{
@@ -328,5 +333,13 @@ body.navpill .bottom-nav.no-active>.nav-item{opacity:1}
 body.nav-collapsed .bottom-nav{transform:translateX(-50%);transition:none}
 body.nav-collapsed .bottom-nav>.nav-item{opacity:0;transition:none}
 body.nav-collapsed .nav-lens{opacity:0;transition:opacity .16s linear}
-body.nav-collapsed .nav-dock{transform:none;transition:opacity .14s linear .24s,visibility 0s}
+body.nav-collapsed .nav-dock{transform:none;transition:opacity .16s linear .32s,visibility 0s}
 body:not(.nav-collapsed) .nav-dock{transform:none;transition:opacity .08s linear,visibility 0s .08s}
+
+/* No player on screen: scrolling down makes the whole pill smaller (one uniform scale, so icons and shape are never stretched),
+   the selected tab's name fades out and only icons remain; scrolling up springs it back. Transform + opacity only. */
+body.navpill .bottom-nav{transition:transform .5s cubic-bezier(.34,1.18,.5,1),opacity .22s linear,visibility 0s}
+body.nav-compact .bottom-nav{transform:translateX(-50%) scale(.8);transform-origin:50% 100%}
+body.navpill .nav-lens .lens-copy .nav-item small{transition:opacity .2s linear}
+body.nav-compact.navpill .bottom-nav .nav-item.active small,body.nav-compact.navpill .nav-lens .lens-copy .nav-item small{opacity:0}
+@media(prefers-reduced-motion:reduce){body.navpill .bottom-nav{transition:none}}

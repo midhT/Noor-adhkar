@@ -19,6 +19,7 @@
   <title>Naseem — Islamic Daily Companion</title>
 </head>
 <body class="intro-pending navpill">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><filter id="naseem-lens" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage class="naseem-lens-map" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale="9" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="naseem-lens-press" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage class="naseem-lens-map" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale="20" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg>
   <div class="noor-intro" id="noorIntro" aria-label="Naseem opening animation" role="status">
     <div class="intro-grain" aria-hidden="true"></div>
     <div class="intro-geometry intro-geometry-one" aria-hidden="true"></div>
@@ -254,7 +255,7 @@
           <div class="st-body">
             <div class="setting-row"><div><strong>Theme</strong><p>Follow your device or choose an appearance</p></div><div class="st-seg" id="stThemeSeg" role="group" aria-label="Theme"><button type="button" data-theme="system" aria-pressed="false">System</button><button type="button" data-theme="light" aria-pressed="false">Light</button><button type="button" data-theme="dark" aria-pressed="false">Dark</button></div></div>
             <div class="setting-row"><div><strong>Liquid Glass</strong><p id="stGlassNote">A frosted, water-drop navigation bar.</p></div><button class="toggle" id="stGlassToggle" aria-pressed="true">ON</button></div>
-            <div class="setting-row"><div><strong>Collapse navigation bar</strong><p>While a recitation is playing, scrolling down shrinks the bar to one round button. </p></div><button class="toggle" id="stNavCollapseToggle" aria-pressed="true">ON</button></div>
+            <div class="setting-row"><div><strong>Collapse navigation bar</strong><p>Scrolling down shrinks the bar to one round button; scrolling up brings it back. </p></div><button class="toggle" id="stNavCollapseToggle" aria-pressed="true">ON</button></div>
             <div class="setting-row"><div><strong>Surah name artwork</strong><p>The full player shows the surah name in large Arabic over a gradient.</p></div><button class="toggle" id="stArtToggle" aria-pressed="true">ON</button></div>
             <div class="accent-setting" aria-label="App accent colour"><div class="accent-heading"><div><strong>App accent colour</strong><p>Changes highlights and controls throughout Naseem.</p></div><span class="accent-current" id="accentCurrentLabel">Islamic emerald</span></div><div class="accent-palette" id="accentPalette" role="group" aria-label="Choose app accent colour"><button type="button" class="accent-swatch" data-accent="emerald" aria-label="Islamic emerald"><span style="--swatch:#20a875"></span><small>Emerald</small></button><button type="button" class="accent-swatch" data-accent="forest" aria-label="Deep forest green"><span style="--swatch:#2f9b63"></span><small>Forest</small></button><button type="button" class="accent-swatch" data-accent="blue" aria-label="Royal blue"><span style="--swatch:#4f8fe8"></span><small>Blue</small></button><button type="button" class="accent-swatch" data-accent="purple" aria-label="Midnight purple"><span style="--swatch:#9a7bea"></span><small>Purple</small></button><button type="button" class="accent-swatch" data-accent="gold" aria-label="Muted gold"><span style="--swatch:#c4a15b"></span><small>Gold</small></button><button type="button" class="accent-swatch" data-accent="silver" aria-label="Silver grey"><span style="--swatch:#a8b3c2"></span><small>Silver</small></button><label class="accent-swatch accent-custom" for="accentCustom"><span id="accentCustomPreview"></span><small>Custom</small><input type="color" id="accentCustom" value="#20a875" aria-label="Choose custom accent colour"></label></div></div>
             <div class="setting-row"><div><strong>Motion</strong><p id="stMotionNote">Choose how animations behave on this device.</p></div><div class="st-seg" id="stMotionSeg" role="group" aria-label="Motion"><button type="button" data-motion="auto" aria-pressed="true">Auto</button><button type="button" data-motion="full" aria-pressed="false">Full</button><button type="button" data-motion="smooth" aria-pressed="false">Smooth</button></div></div></div>
@@ -300,6 +301,7 @@
   <script src="motion.js"></script>
   <script src="glass.js"></script>
   <script src="glass-nav.js"></script>
+  <script src="glass-refract.js"></script>
   <script src="qibla-core.js"></script>
   <script src="zakat-core.js"></script>
   <script src="features.js"></script>

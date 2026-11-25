@@ -93,8 +93,8 @@
   document.addEventListener('noor:screen', sync);
   sync();
 
-  /* ---- Collapse: only while a recitation player is on screen. Scrolling down ~28px turns the pill into a round
-     button holding the current tab's icon (the mini player docks beside it); scrolling back up the same distance,
+  /* ---- Collapse: scrolling down ~28px (on any screen) turns the pill into a round
+     button holding the current tab's icon (a visible mini player docks beside it); scrolling back up the same distance,
      reaching the top, changing tab, or tapping the button brings the pill back. ---- */
   const COLLAPSE_KEY = 'naseemNavCollapseV1', THRESHOLD = 28;
   const dock = document.createElement('button');
@@ -113,30 +113,42 @@
     dock.setAttribute('aria-label', 'Show navigation (' + (a.dataset.navLabel || 'menu') + ')');
   }
   // Morph: clip-path (paint only) shrinks/grows the pill to/from the round button; each tab slides toward the button's
-  // centre while fading, so the tabs and the shape feel like one object changing form. 440 ms, Apple-style ease-out.
+  // centre while fading, so the tabs and the shape feel like one object changing form. about half a second, ease-in-out with a long soft landing (a sharp ease-out makes the pill vanish in the first frames).
   let morphAnims = [];
   function runMorph(on, nb, dr) {
     morphAnims.forEach(a => { try { a.cancel(); } catch (_) {} }); morphAnims = [];
     const R = parseFloat(getComputedStyle(nav).borderTopLeftRadius) || nb.height / 2, Rd = dr.height / 2, M = 40;
     const full = 'inset(-' + M + 'px -' + M + 'px -' + M + 'px -' + M + 'px round ' + (R + M) + 'px)';
     const small = 'inset(' + (dr.top - nb.top) + 'px ' + (nb.right - dr.right) + 'px ' + (nb.bottom - dr.bottom) + 'px ' + (dr.left - nb.left) + 'px round ' + Rd + 'px)';
-    const ease = 'cubic-bezier(.32,.72,0,1)', D = on ? 420 : 460, cx = dr.left + dr.width / 2;
+    const ease = 'cubic-bezier(.4,0,.12,1)', D = on ? 520 : 560, cx = dr.left + dr.width / 2;
     const run = (el, kf, o) => { const a = el.animate(kf, Object.assign({ duration: D, easing: ease }, o)); morphAnims.push(a); return a; };
     const pair = (from, to) => on ? [from, to] : [to, from];
     run(nav, pair({ clipPath: full, opacity: 1, visibility: 'visible' }, { clipPath: small, opacity: 1, visibility: 'visible' }));
     tabs().forEach(t => {
-      const r = t.getBoundingClientRect(), dx = cx - (r.left + r.width / 2);
-      const [f, to] = pair({ translate: '0px 0px', scale: 1, opacity: 1 }, { translate: dx + 'px 0px', scale: .55, opacity: 0 });
-      run(t, [f, Object.assign({}, to, { offset: 1 })].map((k, i) => i ? k : k), { duration: Math.round(D * .62), easing: on ? 'cubic-bezier(.4,0,.8,.6)' : 'cubic-bezier(.2,.4,.2,1)', delay: on ? 0 : Math.round(D * .22), fill: on ? 'none' : 'backwards' });
+      const r = t.getBoundingClientRect(), act = t.classList.contains('active'), ni = t.querySelector('.ni');
+      const ir = (ni || t).getBoundingClientRect(), dx = cx - (ir.left + ir.width / 2), dy = (dr.top + dr.height / 2) - (ir.top + ir.height / 2);
+      if (act) {   // the current tab's icon is the shared element: it travels into the round button and stays solid until the button takes over
+        const lab = t.querySelector('small'); if (lab) run(lab, pair({ opacity: 1 }, { opacity: 0 }), { duration: Math.round(D * .35), easing: 'linear', fill: on ? 'none' : 'backwards', delay: on ? 0 : Math.round(D * .3) });
+        run(ni || t, pair({ translate: '0px 0px', opacity: 1 }, { translate: dx + 'px ' + dy + 'px', opacity: 1 }), { easing: ease });
+        run(t, on ? [{ opacity: 1 }, { opacity: 1, offset: .85 }, { opacity: 0 }] : [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1 }], { easing: 'linear' });
+      } else {
+        const [f, to] = pair({ translate: '0px 0px', scale: 1, opacity: 1 }, { translate: dx + 'px ' + dy + 'px', scale: .5, opacity: 0 });
+        run(t, [f, to], { duration: Math.round(D * .62), easing: on ? 'cubic-bezier(.4,0,.8,.6)' : 'cubic-bezier(.2,.4,.2,1)', delay: on ? 0 : Math.round(D * .22), fill: on ? 'none' : 'backwards' });
+      }
     });
     morphAnims[0].finished.then(() => { morphAnims = []; }).catch(() => {});
   }
+  let dockMode = false;   // true: round button + mini player (a player is on screen); false: the pill just gets smaller
   function setCollapsed(on) {
-    on = !!on && collapseOn() && playerOn();
+    on = !!on && collapseOn();
     travel = 0;
     if (on === collapsed) return;
     collapsed = on; syncDock();
-    body.classList.add('nav-anim'); clearTimeout(animT); animT = setTimeout(() => body.classList.remove('nav-anim'), 300);
+    body.classList.add('nav-anim'); clearTimeout(animT); animT = setTimeout(() => body.classList.remove('nav-anim'), 560);
+    if (on) dockMode = playerOn();
+    const useDock = on ? dockMode : (body.classList.contains('nav-collapsed'));
+    if (!on && !useDock) { body.classList.remove('nav-compact'); finish(false); return; }
+    if (on && !dockMode) { body.classList.add('nav-compact'); finish(true); return; }
     // FLIP: the mini player jumps to its new place instantly (layout runs once), then a transform-only animation
     // slides it from where it was. Nothing is re-laid-out per frame, so it stays smooth on weak GPUs.
     const calm = matchMedia('(prefers-reduced-motion: reduce)').matches, dr = dock.getBoundingClientRect();
@@ -144,12 +156,15 @@
     const morph = !calm && nav.animate && dr.width && nb.width ? { nb, dr } : null;
     const pl = playerOn() ? player : null, from = pl && pl.getBoundingClientRect();
     body.classList.toggle('nav-collapsed', on);
-    if (pl && from && pl.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (pl && from && pl.animate && !calm) {
       const to = pl.getBoundingClientRect(), dx = from.left - to.left, dy = from.top - to.top;
-      if (Math.abs(dx) + Math.abs(dy) > 1) pl.animate([{ translate: dx + 'px ' + dy + 'px', opacity: .7 }, { translate: '0px 0px', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.25,.9,.3,1)' });
+      if (Math.abs(dx) + Math.abs(dy) > 1) pl.animate([{ translate: dx + 'px ' + dy + 'px', opacity: .7 }, { translate: '0px 0px', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.32,.72,0,1)' });
     }
     if (morph) runMorph(on, morph.nb, morph.dr);
-    nav.setAttribute('aria-hidden', String(on));
+    finish(on);
+  }
+  function finish(on) {
+    nav.setAttribute('aria-hidden', String(on && dockMode));
     document.dispatchEvent(new CustomEvent('naseem:nav-collapsed', { detail: { collapsed: on } }));
   }
   // Only the user's own scrolling counts. The reader also scrolls by itself to follow the recited ayah, and that
@@ -170,7 +185,7 @@
   function onScroll(e) {
     if (!(fingerDown || performance.now() < userUntil)) return;
     if (document.body.classList.contains('qr-full-player-open') || document.body.classList.contains('qr-sheet-open') || document.body.classList.contains('qr-sleep-open')) return;
-    if (!collapseOn() || !playerOn()) { if (collapsed) setCollapsed(false); return; }
+    if (!collapseOn()) { if (collapsed) setCollapsed(false); return; }
     const t = e.target, el = (t === document || t === document.documentElement || t === document.body) ? (document.scrollingElement || document.documentElement) : t;
     if (!el || el.nodeType !== 1) return;
     const y = el.scrollTop, prev = lastY.has(el) ? lastY.get(el) : y; lastY.set(el, y);
@@ -185,7 +200,7 @@
   document.addEventListener('noor:screen', () => setCollapsed(false));
   document.addEventListener('naseem:navcollapse-changed', () => { if (!collapseOn()) setCollapsed(false); });
   const player = document.getElementById('quranPlayer');
-  if (player) new MutationObserver(() => { if (!playerOn()) setCollapsed(false); }).observe(player, { attributes: true, attributeFilter: ['hidden', 'class'] });
+  if (player) new MutationObserver(() => { if (collapsed && playerOn() !== dockMode) setCollapsed(false); }).observe(player, { attributes: true, attributeFilter: ['hidden', 'class'] });
   // a tab change always brings the full bar back
   let lastActive = -1;
   new MutationObserver(() => { syncDock(); const i = tabs().findIndex(t => t.classList.contains('active')); if (i !== lastActive) { if (lastActive !== -1) setCollapsed(false); lastActive = i; } })

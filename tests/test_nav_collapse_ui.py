@@ -29,8 +29,10 @@ with sync_playwright() as p:
     pg.evaluate("document.body.classList.remove('lite')")
 
     wheel(pg, 700)
-    ok('no player: scrolling never collapses the bar', not pg.evaluate(COLL))
-    pg.evaluate("scrollTo(0,0)")
+    cm = pg.evaluate("(()=>{const n=document.querySelector('.bottom-nav'),r=n.getBoundingClientRect();return {c:document.body.classList.contains('nav-compact'),coll:document.body.classList.contains('nav-collapsed'),dock:getComputedStyle(document.querySelector('.nav-dock')).visibility,w:r.width,vis:getComputedStyle(n).visibility,lab:+getComputedStyle(n.querySelector('.nav-item.active small')).opacity}})()")
+    ok('no player: scrolling down makes the pill smaller (no round button)', cm['c'] and not cm['coll'] and cm['dock'] == 'hidden' and cm['vis'] == 'visible' and 255 < cm['w'] < 285 and cm['lab'] < .1, str(cm))
+    wheel(pg, -900)
+    ok("scrolling up restores the full pill", not pg.evaluate("document.body.classList.contains('nav-compact')") and pg.evaluate("document.querySelector('.bottom-nav').getBoundingClientRect().width")>330)
 
     pg.locator('.nav-item[data-screen="quranReaderScreen"]').tap(); pg.wait_for_timeout(900)
     pg.tap('[data-open-surah="2"]'); pg.wait_for_timeout(1400)
