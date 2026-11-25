@@ -343,3 +343,28 @@ body.nav-compact .bottom-nav{transform:translateX(-50%) scale(.8);transform-orig
 body.navpill .nav-lens .lens-copy .nav-item small{transition:opacity .2s linear}
 body.nav-compact.navpill .bottom-nav .nav-item.active small,body.nav-compact.navpill .nav-lens .lens-copy .nav-item small{opacity:0}
 @media(prefers-reduced-motion:reduce){body.navpill .bottom-nav{transition:none}}
+
+/* =====================================================================
+   Stage 12 — motion pass (rules from Emil Kowalski's animation / mobile-native skills)
+   - strong custom curves instead of the weak built-ins, ease-out for anything the user triggers
+   - press feedback on every tappable (100–160 ms in, no bounce on release), instant on touch
+   - screens: enter ease-out ~260 ms, exit faster (160 ms); transform + opacity only
+   - mobile baseline: no tap flash, no double-tap delay, controls aren't text-selectable
+   ===================================================================== */
+:root{--ease:cubic-bezier(.23,1,.32,1);--ease-out:cubic-bezier(.23,1,.32,1);--ease-in-out:cubic-bezier(.77,0,.175,1);--ease-drawer:cubic-bezier(.32,.72,0,1);--dur:.26s}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;overscroll-behavior-y:contain}
+button,a,[role="button"],[data-open-screen],[data-back],.routine-card,.nav-item,summary{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button,[role="button"],.nav-item,.seg-switch>*,summary,.st-btn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* press: quick scale-in, calm ease-out release (the old overshoot spring made every button wobble) */
+button{transition:transform .16s var(--ease-out),background-color .2s ease,opacity .2s ease,color .2s ease}
+button:active:not(:disabled),[role="button"]:active,[data-open-screen]:active,.routine-card:active,.feature-card:active,.stat-card:active,.quick-counter:active{transform:scale(.97);transition-duration:.1s,.2s,.2s,.2s}
+[data-open-screen],.routine-card,.feature-card,.stat-card,.quick-counter{transition:transform .16s var(--ease-out),background-color .2s ease}
+/* screens */
+.screen.active{animation-duration:.26s;animation-timing-function:var(--ease-out)}
+.screen.leaving{animation-duration:.16s!important;animation-timing-function:var(--ease-out)!important}
+.screen.active>*:nth-child(-n+4){animation-duration:.3s;animation-timing-function:var(--ease-out)}
+.dpanel.enter{animation-duration:.28s;animation-timing-function:var(--ease-out)}
+@media(prefers-reduced-motion:reduce){[data-open-screen]:active,.routine-card:active,.feature-card:active,.stat-card:active{transform:none}}
+/* bottom sheets: iOS drawer curve, closing faster than opening */
+.nsheet-panel{transition:transform .36s var(--ease-drawer)}
+.nsheet:not(.is-open) .nsheet-panel{transition-duration:.24s}
