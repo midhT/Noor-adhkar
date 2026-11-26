@@ -35,8 +35,19 @@
     });
     g.querySelector(':scope > summary')?.addEventListener('click', e => { if (g.open) { e.preventDefault(); closeGroup(g); } });
   });
-  document.addEventListener('naseem:back', e => { const g = groups.find(x => x.open); if (g) { e.preventDefault(); e.stopImmediatePropagation(); closeGroup(g); } }, true);
-  document.addEventListener('naseem:screen-changed', () => groups.forEach(g => { if (g.open) { g.classList.remove('st-closing'); g.open = false; document.body.classList.remove('st-page-open'); holders.get(g)?.remove(); holders.delete(g); } }));
+  // The back press closes whichever sub-page is open (looked up live, not from a list captured at startup).
+  document.addEventListener('naseem:back', e => {
+    const g = groups.find(x => x.open && !x.classList.contains('st-closing')) || groups.find(x => x.open);
+    if (g) { e.preventDefault(); e.stopImmediatePropagation(); closeGroup(g); }
+  }, true);
+  // Leaving Settings by ANY route (tab bar, Home, a deep link, the theme button…) must drop the open sub-page at once: otherwise its
+  // fixed overlay and the hidden header ('st-page-open') would stay behind on the next screen. 'noor:screen' is what switchScreen fires.
+  const resetPages = () => { groups.forEach(g => { if (g.open || g.classList.contains('st-closing')) { g.classList.remove('st-closing'); g.open = false; } holders.get(g)?.remove(); holders.delete(g); }); document.body.classList.remove('st-page-open'); };
+  document.addEventListener('noor:screen', e => { if (e.detail !== 'settingsScreen') resetPages(); });
+  // Safety net: the app returning from the background (permission prompts, other apps) re-checks that the flag matches reality.
+  const reconcile = () => { const any = groups.some(g => g.open); if (!any) resetPages(); else if (!document.getElementById('settingsScreen')?.classList.contains('active')) resetPages(); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) reconcile(); });
+  addEventListener('pageshow', reconcile);
   $('stVersion').textContent = `Naseem ${VERSION}`;
 
   // ---------- Theme ----------

@@ -155,12 +155,27 @@
   const mushafInfo=()=>MUSHAF_CATALOG[mushafEdition]||MUSHAF_CATALOG['quran-uthmani'];
   const mushafPageCount=()=>mushafInfo().pages;
   const qfCache=new Map();
+  /* Where Mushaf editions come from. With NASEEM_QF_PROXY_URL set, the Naseem worker (official Quran Foundation API with credentials).
+     Otherwise the app asks Quran.com's public, credential-free v4 API directly with the same parameters the worker would send,
+     so the Indo-Pak editions work out of the box. The public API is the one Quran Foundation calls "the older unauthenticated API":
+     if it ever goes away, deploying the worker (see its README) restores the feature without touching the app. */
+  const QF_PUBLIC='https://api.quran.com/api/v4';
+  function qfPublicUrl(path){
+    const [route,qs='']=path.split('?'),q=new URLSearchParams(qs);
+    if(route==='chapters')return `${QF_PUBLIC}/chapters?language=en`;
+    const m=route.match(/^page\/(\d+)$/);
+    if(m)return `${QF_PUBLIC}/verses/by_page/${m[1]}?${new URLSearchParams({mushaf:q.get('mushaf')||'',words:'true',word_fields:'text_indopak_nastaleeq',fields:'text_indopak_nastaleeq',translations:q.get('translation')||'131',per_page:'50'})}`;
+    if(route==='lookup')return `${QF_PUBLIC}/pages/lookup?${new URLSearchParams({mushaf:q.get('mushaf')||'',from:q.get('from')||'',to:q.get('to')||q.get('from')||''})}`;
+    throw new Error('Unknown Mushaf request');
+  }
   async function qfRequest(path){
-    if(!qfProxy)throw new Error('Quran Foundation service is not configured. Deploy the included quran-foundation-worker and set NASEEM_QF_PROXY_URL.');
     const key=path;
     if(qfCache.has(key))return qfCache.get(key);
-    const response=await fetch(`${qfProxy}/api/mushaf/${path}`,{headers:{Accept:'application/json'}});
-    if(!response.ok){let message=`Quran service returned ${response.status}`;try{const body=await response.json();message=body.message||message;}catch(_){}throw new Error(message);}
+    const url=qfProxy?`${qfProxy}/api/mushaf/${path}`:qfPublicUrl(path);
+    let response;
+    try{response=await fetch(url,{headers:{Accept:'application/json'}});}
+    catch(_){throw new Error('Could not reach the Quran page service. Check your connection and try again.');}
+    if(!response.ok){let message=`Quran service returned ${response.status}`;try{const body=await response.json();message=body.message||body.error||message;}catch(_){}throw new Error(message);}
     const data=await response.json();qfCache.set(key,data);
     if(qfCache.size>30)qfCache.delete(qfCache.keys().next().value);
     return data;
@@ -1001,7 +1016,7 @@
       indopak15:'Indo-Pak 15-line · 610 pages. Exact printed line breaks and compatible Nastaleeq font.',
       indopak16:'Indo-Pak 16-line · 548 pages. Full-page reader with the edition’s own page boundaries.'
     };
-    $('quranMushafNote').textContent=notes[mushafEdition]+(mushafEdition!=='quran-uthmani'&&!qfProxy?' Quran Foundation service setup is required; see quran-foundation-worker/README.md.':'');
+    $('quranMushafNote').textContent=notes[mushafEdition]+(mushafEdition!=='quran-uthmani'&&!qfProxy?' Pages load from Quran.com when you open them.':'');
   }
   function discoverMushafEditions(){
     const select=$('quranMushaf');if(!select)return;

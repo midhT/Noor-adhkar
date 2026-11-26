@@ -377,3 +377,12 @@ body.cc-run.nav-collapsed .bottom-nav>.nav-item{opacity:var(--o,1)}
 body.cc-run.nav-collapsed .nav-lens{opacity:1;transition:none}
 body.cc-run .nav-dock,body.cc-run .bottom-nav{will-change:auto}
 body.cc-run.navpill .bottom-nav .nav-item.active small,body.cc-run.navpill .nav-lens .lens-copy .nav-item small{opacity:calc(1 - var(--cp,0)*2);transition:none}
+
+/* Settings rows are menu rows now, not accordions: the arrow never turns or moves (it points right on the list and is a back arrow
+   on the open page), and a press only tints the row. */
+.st-group>summary{transition:background-color .15s ease;-webkit-tap-highlight-color:transparent;list-style:none}
+.st-group>summary::-webkit-details-marker{display:none}
+.st-group:not([open])>summary:active{background:var(--gfill,rgba(127,127,127,.12))}
+.st-group>summary:active{transform:none}
+.st-group>summary .st-chev,.st-group[open]>summary .st-chev,.st-group.st-closing>summary .st-chev{transition:none!important;animation:none!important}
+.st-group.st-closing>summary .st-chev{transform:rotate(135deg)}

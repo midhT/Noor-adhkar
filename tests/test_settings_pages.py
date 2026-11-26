@@ -33,6 +33,15 @@ with sync_playwright() as p:
     ok('arrow does not animate (settings rows are pages, not dropdowns)', pg.evaluate("getComputedStyle(document.querySelector('.st-chev')).transitionDuration") == '0s')
     pg.evaluate("document.body.classList.remove('light')")
     ok('summary tap closes', pg.evaluate("!document.getElementById('stAppearance').open"))
+    # leaving Settings by any route must drop the open page and bring the header back
+    pg.evaluate("switchScreen('settingsScreen')"); pg.wait_for_timeout(500)
+    pg.evaluate("document.getElementById('stSalah').querySelector(':scope>summary').click()"); pg.wait_for_timeout(500)
+    ok('a sub-page is open', pg.evaluate("document.getElementById('stSalah').open && document.body.classList.contains('st-page-open')"))
+    pg.evaluate("switchScreen('homeScreen')"); pg.wait_for_timeout(500)
+    ok('leaving Settings by another route closes the open page', pg.evaluate("!document.querySelector('.st-group[open]') && !document.body.classList.contains('st-page-open')"))
+    ok('...and the header is visible again', pg.evaluate("getComputedStyle(document.querySelector('.topbar')).visibility")=='visible')
+    pg.evaluate("switchScreen('settingsScreen')"); pg.wait_for_timeout(500)
+    ok('Settings reopens as a clean list', pg.evaluate("!document.querySelector('.st-group[open]')"))
     ok('no page errors', not errs, errs)
 srv.stop() if hasattr(srv, 'stop') else None
 print('FAILED' if fails else 'OK'); sys.exit(1 if fails else 0)
