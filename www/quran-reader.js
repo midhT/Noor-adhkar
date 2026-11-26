@@ -164,7 +164,7 @@
     const [route,qs='']=path.split('?'),q=new URLSearchParams(qs);
     if(route==='chapters')return `${QF_PUBLIC}/chapters?language=en`;
     const m=route.match(/^page\/(\d+)$/);
-    if(m)return `${QF_PUBLIC}/verses/by_page/${m[1]}?${new URLSearchParams({mushaf:q.get('mushaf')||'',words:'true',word_fields:'text_indopak_nastaleeq',fields:'text_indopak_nastaleeq',translations:q.get('translation')||'131',per_page:'50'})}`;
+    if(m)return `${QF_PUBLIC}/verses/by_page/${m[1]}?${new URLSearchParams({mushaf:q.get('mushaf')||'',words:'true',word_fields:'text_indopak_nastaleeq,text_indopak,line_number,page_number,char_type_name',fields:'text_indopak_nastaleeq,text_indopak',translations:q.get('translation')||'131',per_page:'50'})}`;
     if(route==='lookup')return `${QF_PUBLIC}/pages/lookup?${new URLSearchParams({mushaf:q.get('mushaf')||'',from:q.get('from')||'',to:q.get('to')||q.get('from')||''})}`;
     throw new Error('Unknown Mushaf request');
   }
@@ -421,6 +421,7 @@
         const payload=await qfRequest(`page/${page}?mushaf=${info.id}`);
         const verses=payload?.verses||[];
         if(!verses.length)throw new Error('No verses returned for this Mushaf page');
+        if(info.kind!=='madani'&&!verses.some(v=>verseText(v,info)||(v.words||[]).some(w=>wordText(w,info))))throw new Error('The Quran service sent this page without Arabic text. Try again later.');
         const firstKey=String(verses[0].verse_key||'1:1').split(':').map(Number);
         current=firstKey[0]||1;surahMeta={number:current};
         const translationByKey=new Map();
@@ -453,7 +454,7 @@
   }
   function verseText(verse,info){
     if(info.kind==='madani')return String(verse.text_uthmani||verse.text||'');
-    return String(verse.text_indopak_nastaleeq||verse.text||'');
+    return String(verse.text_indopak_nastaleeq||verse.text_indopak||verse.text||'');
   }
   async function ensureIndoPakFont(){
     if(document.fonts?.check("28px 'NaseemIndoPak'"))return true;
