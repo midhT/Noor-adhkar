@@ -107,7 +107,7 @@ with sync_playwright() as p:
     pg.tap('#quranFullClose'); pg.wait_for_timeout(150)
     pg.evaluate("switchScreen('settingsScreen')"); pg.wait_for_timeout(250)
     ok('mini-player remains available while browsing another app screen', not pg.evaluate("document.getElementById('quranPlayer').hidden"))
-    pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(250)
+    pg.evaluate("switchScreen('quranReaderScreen')"); pg.wait_for_timeout(250)
     pg.evaluate("document.getElementById('quranStop').click()"); pg.wait_for_timeout(300)
     ok('stop clears highlight and hides the player', pg.evaluate(PLAYING_JS) == [] and pg.evaluate("document.getElementById('quranPlayer').hidden"))
     # Reciter capabilities: only the source with matching timing metadata advertises word sync.

@@ -258,11 +258,34 @@
   // Glance uses the public content endpoint internally; the endpoint is not displayed as a setting.
   const GLANCE_FEED_URL=window.NASEEM_GLANCE_FEED||'https://raw.githubusercontent.com/midhT/Naseem-public/main/content/glance.json';
   const BUILTIN_GLANCE=[
-    {type:'Quranic reminder',title:'A moment of reflection',body:'Indeed, with hardship comes ease.',reference:'Qur’an 94:5–6'},
+    {type:'Quran',title:'Hardship and ease',body:'Indeed, with hardship comes ease. Indeed, with hardship comes ease.',reference:'Qur’an 94:5–6 · translation of the meaning'},
+    {type:'Quran',title:'Remember Allah',body:'So remember Me; I will remember you. And be grateful to Me and do not deny Me.',reference:'Qur’an 2:152 · translation of the meaning'},
+    {type:'Quran',title:'Hearts find rest',body:'Verily, in the remembrance of Allah do hearts find rest.',reference:'Qur’an 13:28 · translation of the meaning'},
+    {type:'Quran',title:'Within your capacity',body:'Allah does not burden a soul beyond what it can bear.',reference:'Qur’an 2:286 · translation of the meaning'},
+    {type:'Quran',title:'A way out',body:'Whoever fears Allah, He will make for him a way out, and will provide for him from where he does not expect.',reference:'Qur’an 65:2–3 · translation of the meaning'},
+    {type:'Quran',title:'Patience and prayer',body:'O you who believe, seek help through patience and prayer. Indeed, Allah is with the patient.',reference:'Qur’an 2:153 · translation of the meaning'},
+    {type:'Quran',title:'Never despair',body:'Say: O My servants who have transgressed against themselves, do not despair of the mercy of Allah.',reference:'Qur’an 39:53 · translation of the meaning'},
+    {type:'Quran',title:'Do not grieve',body:'Do not weaken and do not grieve, and you will be superior if you are believers.',reference:'Qur’an 3:139 · translation of the meaning'},
+    {type:'Quran',title:'Ask for knowledge',body:'And say: My Lord, increase me in knowledge.',reference:'Qur’an 20:114 · translation of the meaning'},
+    {type:'Hadith',title:'Actions and intentions',body:'Actions are judged by intentions, and every person will have what they intended.',reference:'Sahih al-Bukhari 1 · Sahih Muslim 1907'},
+    {type:'Hadith',title:'The best of you',body:'The best of you are those who learn the Qur’an and teach it.',reference:'Sahih al-Bukhari 5027'},
+    {type:'Hadith',title:'Love for others',body:'None of you truly believes until he loves for his brother what he loves for himself.',reference:'Sahih al-Bukhari 13 · Sahih Muslim 45'},
+    {type:'Hadith',title:'Good words or silence',body:'Whoever believes in Allah and the Last Day, let him speak good or keep silent.',reference:'Sahih al-Bukhari 6018 · Sahih Muslim 47'},
+    {type:'Hadith',title:'True strength',body:'The strong person is not the one who defeats others, but the one who controls himself when angry.',reference:'Sahih al-Bukhari 6114 · Sahih Muslim 2609'},
+    {type:'Hadith',title:'Two light phrases',body:'Two phrases are light on the tongue, heavy on the scale, and beloved to the Most Merciful: SubhanAllahi wa bihamdihi, SubhanAllahil-Azim.',reference:'Sahih al-Bukhari 6406 · Sahih Muslim 2694'},
+    {type:'Hadith',title:'Make it easy',body:'Make things easy and do not make them hard; give good news and do not drive people away.',reference:'Sahih al-Bukhari 69 · Sahih Muslim 1734'},
+    {type:'Hadith',title:'Small and steady',body:'The most beloved deeds to Allah are the most consistent, even if they are small.',reference:'Sahih al-Bukhari 6464 · Sahih Muslim 783'},
+    {type:'Hadith',title:'Path to knowledge',body:'Whoever follows a path seeking knowledge, Allah makes easy for him a path to Paradise.',reference:'Sahih Muslim 2699'},
     {type:'Daily lesson',title:'Learn the meaning of Tasbeeh',body:'SubhanAllah means that Allah is free from every imperfection. Alhamdulillah is praise and gratitude to Allah.',reference:'Daily learning · Dhikr'},
     {type:'Salah lesson',title:'Pause in Ruku and Sujood',body:'Perform each movement with calmness and composure. Learn the exact recitations and rulings with a trusted teacher.',reference:'Sahih al-Bukhari 757 · introductory reminder'},
-    {type:'Daily quiz',title:'Quick knowledge check',body:'Which Surah is known as Umm al-Kitab (the Mother of the Book)?',reference:'Qur’an · Surah Al-Fatihah',quiz:{options:['Al-Baqarah','Al-Fatihah','Al-Ikhlas'],answer:1,explanation:'Al-Fatihah is also known as Umm al-Kitab.'}},
-    {type:'Daily quiz',title:'Test your knowledge',body:'How many obligatory daily prayers are there?',reference:'Basic Islamic knowledge',quiz:{options:['Three','Four','Five'],answer:2,explanation:'Muslims are obligated to perform five daily prayers.'}}
+    {type:'Daily quiz',title:'Quick knowledge check',body:'Which Surah is known as Umm al-Kitab (the Mother of the Book)?',reference:'Qur’an · Surah Al-Fatihah',quiz:{options:['Al-Baqarah', 'Al-Fatihah', 'Al-Ikhlas'],answer:1,explanation:'Al-Fatihah is also known as Umm al-Kitab.'}},
+    {type:'Daily quiz',title:'Test your knowledge',body:'How many obligatory daily prayers are there?',reference:'Basic Islamic knowledge',quiz:{options:['Three', 'Four', 'Five'],answer:2,explanation:'Muslims are obligated to perform five daily prayers.'}},
+    {type:'Daily quiz',title:'How many surahs?',body:'How many surahs are in the Qur’an?',reference:'Basic Islamic knowledge',quiz:{options:['99', '114', '120'],answer:1,explanation:'The Qur’an has 114 surahs.'}},
+    {type:'Daily quiz',title:'The longest surah',body:'Which is the longest surah of the Qur’an?',reference:'Basic Islamic knowledge',quiz:{options:['Al-Baqarah', 'Al-Imran', 'An-Nisa'],answer:0,explanation:'Al-Baqarah has 286 verses.'}},
+    {type:'Daily quiz',title:'Ramadan',body:'Which month of the Islamic calendar is Ramadan?',reference:'Basic Islamic knowledge',quiz:{options:['The seventh', 'The ninth', 'The tenth'],answer:1,explanation:'Ramadan is the ninth month.'}},
+    {type:'Daily quiz',title:'Without Bismillah',body:'Which surah does not begin with Bismillah?',reference:'Basic Islamic knowledge',quiz:{options:['At-Tawbah', 'Al-Anfal', 'Yusuf'],answer:0,explanation:'Surah At-Tawbah (9) is the one surah that does not begin with Bismillah.'}},
+    {type:'Daily quiz',title:'Fajr prayer',body:'How many rak’ahs are in the obligatory Fajr prayer?',reference:'Basic Islamic knowledge',quiz:{options:['Two', 'Three', 'Four'],answer:0,explanation:'Fajr is two rak’ahs.'}},
+    {type:'Daily quiz',title:'The Kaaba',body:'Which prophet built the Kaaba together with his son Isma’il?',reference:'Qur’an 2:127',quiz:{options:['Nuh', 'Ibrahim', 'Musa'],answer:1,explanation:'Ibrahim and Isma’il raised the foundations of the House.'}}
   ];
   const fallback=BUILTIN_GLANCE[Math.floor(Date.now()/86400000)%BUILTIN_GLANCE.length];
   const glanceBody=`<div class="v404-card"><div class="v404-row"><span class="eyebrow">LATEST FROM NASEEM</span><span class="v404-live-dot">DAILY REFLECTION</span></div><article id="glanceCard" class="v404-glance"><small>${fallback.type}</small><h2>${fallback.title}</h2><p>${fallback.body}</p><strong>${fallback.reference}</strong></article><p class="v404-note" id="glanceStatus">Showing the built-in reminder. Online content refreshes when available.</p><button type="button" class="v404-secondary" id="glanceRefresh">Refresh Glance</button></div>`;
@@ -283,7 +306,7 @@
     // Feed the Daily Reflection home-screen widget with the same reviewed text (quizzes are not shown there).
     if(!quiz&&content.body)window.NoorNative?.widgets?.setReflection?.({text:content.body,source:content.reference||content.title||''});
     $('glanceCard').innerHTML=`<small>${esc(content.type||'Naseem reflection')}</small><h2>${esc(content.title)}</h2><p>${esc(content.body)}</p><strong>${esc(content.reference||'')}</strong>${quiz}`;
-    if(quiz){$('glanceCard').querySelectorAll('[data-quiz-answer]').forEach(b=>b.addEventListener('click',()=>{const correct=Number(b.dataset.quizAnswer)===Number(content.quiz.answer);$('glanceQuizResult').textContent=(correct?'Correct. ':'Not quite. ')+String(content.quiz.explanation||'Review the reference above.');$('glanceCard').querySelectorAll('[data-quiz-answer]').forEach(x=>x.disabled=true);}));}
+    if(quiz){$('glanceCard').querySelectorAll('[data-quiz-answer]').forEach(b=>b.addEventListener('click',()=>{const correct=Number(b.dataset.quizAnswer)===Number(content.quiz.answer);const qk=String(content.title)+'|'+String(content.body).slice(0,60),sc=data.glanceScore=data.glanceScore||{right:0,total:0,seen:{}};if(!sc.seen[qk]){sc.seen[qk]=1;sc.total+=1;if(correct)sc.right+=1;save();}$('glanceQuizResult').textContent=(correct?'Correct. ':'Not quite. ')+String(content.quiz.explanation||'Review the reference above.')+` Your score: ${sc.right} / ${sc.total}.`;$('glanceCard').querySelectorAll('[data-quiz-answer]').forEach(x=>x.disabled=true);}));}
     renderHomeGlance(content);
   }
   function showFallback(status){renderGlanceItem(fallback);$('glanceStatus').textContent=status+' Daily lessons and quizzes are available offline.';}
@@ -298,7 +321,7 @@
   async function refreshGlance(manual){
     manual=manual===true;
     if(glanceBusy)return;
-    if(!manual&&Date.now()-glanceLastFetch<600000)return;
+    if(!manual&&(data.glanceFetchDay===new Date().toDateString()||Date.now()-glanceLastFetch<3600000))return;
     glanceBusy=true;const button=$('glanceRefresh');
     if(manual){glanceOffset+=1;if(button){button.disabled=true;button.textContent='Refreshing…';}$('glanceStatus').textContent='Checking for today’s Glance…';}
     try{
@@ -306,16 +329,16 @@
       if(!json||Number(json.schemaVersion)!==1||!Array.isArray(json.items))throw new Error('Unsupported Glance feed schema.');
       const items=json.items,published=items.filter(x=>x&&x.published===true&&x.title&&x.body),pool=[...published,...BUILTIN_GLANCE],item=pool[(Math.floor(Date.now()/86400000)+glanceOffset)%pool.length]||fallback;
       const content={title:String(item.title).slice(0,120),body:String(item.body).slice(0,1200),reference:String(item.reference||item.source||'').slice(0,160),type:String(item.type||'Naseem update').slice(0,60),quiz:item.quiz&&Array.isArray(item.quiz.options)?item.quiz:null,contentVersion:Number(json.contentVersion)||1,fetchedAt:Date.now()};
-      data.glanceCache=content;data.glanceCacheVersion=content.contentVersion;save();glanceLastFetch=Date.now();renderGlanceItem(content);$('glanceStatus').textContent=`Today’s Glance is ready · public content v${content.contentVersion}.`;
+      data.glanceCache=content;data.glanceCacheVersion=content.contentVersion;data.glanceFetchDay=new Date().toDateString();save();glanceLastFetch=Date.now();renderGlanceItem(content);$('glanceStatus').textContent=`Today’s Glance is ready · public content v${content.contentVersion}.`;
     }catch(error){
       const cached=data.glanceCache;
-      if(cached&&Date.now()-Number(cached.fetchedAt||0)<30*86400000){renderGlanceItem(cached);$('glanceStatus').textContent='Offline or feed unavailable. Showing the last saved reflection.';}
+      glanceLastFetch=Date.now();if(cached&&new Date(Number(cached.fetchedAt||0)).toDateString()===new Date().toDateString()){renderGlanceItem(cached);$('glanceStatus').textContent='Offline or feed unavailable. Showing today’s saved reflection.';}
       else showFallback(error&&error.name==='AbortError'?'The connection is slow right now. Showing the built-in reminder.':'Online content is unavailable. Showing the built-in reminder.');
     }finally{glanceBusy=false;if(button){button.disabled=false;button.textContent='Refresh Glance';}}
   }
   $('glanceRefresh').addEventListener('click',()=>refreshGlance(true));
   // Show something immediately (last saved item, else the built-in one) so the Home card is never empty, then refresh in the background.
-  {const saved=data.glanceCache;if(saved&&saved.title&&saved.body&&Date.now()-Number(saved.fetchedAt||0)<30*86400000)renderGlanceItem(saved);else renderGlanceItem(fallback);}
+  {const saved=data.glanceCache;if(saved&&saved.title&&saved.body&&new Date(Number(saved.fetchedAt||0)).toDateString()===new Date().toDateString())renderGlanceItem(saved);else renderGlanceItem(fallback);}
   (window.NaseemPerf?window.NaseemPerf.idle(()=>refreshGlance(),5000):refreshGlance());
   document.addEventListener('noor:screen',e=>{if(e.detail==='glanceScreen')refreshGlance();});
 

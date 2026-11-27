@@ -279,3 +279,12 @@
   renderUndo();
   try { const m = sessionStorage.getItem('noorFlash'); if (m) { sessionStorage.removeItem('noorFlash'); setTimeout(() => say(m), 400); } } catch (_) {}
 })();
+
+/* Quick View margins: Suhoor ends N minutes before Fajr, Iftar N minutes after Maghrib */
+(function () {
+  [['stSuhoorMargin', 'naseem-suhoor-margin'], ['stIftarMargin', 'naseem-iftar-margin']].forEach(function (pair) {
+    var el = document.getElementById(pair[0]); if (!el) return;
+    try { var v = parseInt(localStorage.getItem(pair[1]), 10); if (v >= 0 && v <= 60) el.value = String(v); } catch (_) {}
+    el.addEventListener('change', function () { try { localStorage.setItem(pair[1], el.value); } catch (_) {} window.dispatchEvent(new Event('noor:schedule')); });
+  });
+})();

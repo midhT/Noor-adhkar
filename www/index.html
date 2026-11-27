@@ -59,25 +59,18 @@
         <button type="button" class="home-hijri-card" data-open-v404="hijri"><span><small>ISLAMIC DATE</small><strong id="homeHijriDate">Loading Hijri date…</strong><em>Open calendar ↗</em></span><b aria-hidden="true">☾</b></button>
         <section class="home-ramadan-card" id="homeRamadanCard" hidden><div><small>RAMADAN · TODAY</small><strong>Sehri & Iftar</strong></div><div class="ramadan-times"><span>Sehri ends <b id="homeSehriTime">—</b></span><span>Iftar <b id="homeIftarTime">—</b></span></div></section>
 
-        <div class="streak-card">
-          <div class="streak-icon">✦</div>
-          <div class="streak-copy"><span class="eyebrow">CURRENT STREAK</span><strong><span id="homeStreak">0</span> <small>days</small></strong><span class="muted" id="streakHint">Begin today’s journey.</span></div>
-          <div class="streak-best"><span class="eyebrow">BEST</span><strong id="bestStreak">0 days</strong></div>
-        </div>
+
+        <button type="button" class="streak-chip" id="homeStreakChip" data-open-adhkar-streak aria-label="Open streak"><span class="sc-flame" aria-hidden="true">✦</span><span><b id="homeStreakChipNum">0</b> day streak</span><em id="homeStreakChipHint">Begin today</em><i aria-hidden="true">↗</i></button>
 
         <div class="section-heading"><div><span class="eyebrow">TODAY</span><h2>Your adhkar</h2></div><span class="pill" id="dailyProgress">0 / 2 complete</span></div>
-        <div class="routine-grid">
-          <button class="routine-card" data-routine="morning">
+        <div class="routine-grid compact">
+          <button class="routine-card compact" data-routine="morning">
             <span class="routine-symbol">☼</span><span class="routine-title">Morning adhkar</span><span class="routine-sub">Start with remembrance</span><span class="routine-bottom"><span id="morningStatus">Not started</span><span>↗</span></span>
           </button>
-          <button class="routine-card evening" data-routine="evening">
+          <button class="routine-card compact evening" data-routine="evening">
             <span class="routine-symbol">☾</span><span class="routine-title">Evening adhkar</span><span class="routine-sub">End with remembrance</span><span class="routine-bottom"><span id="eveningStatus">Not started</span><span>↗</span></span>
           </button>
         </div>
-        <div class="section-heading"><div><span class="eyebrow">MORE ROUTINES</span><h2>Other moments</h2></div></div>
-        <div class="routine-grid" id="extraRoutineGrid"></div>
-        <div class="section-heading"><div><span class="eyebrow">YOUR ROUTINES</span><h2>Custom adhkar</h2></div><button type="button" class="st-btn" id="customRoutineAdd">＋ Create</button></div>
-        <div class="routine-grid" id="customRoutineGrid"></div>
 
         <div class="section-heading"><div><span class="eyebrow">QUICK ACCESS</span><h2>Continue your dhikr</h2></div></div>
         <button class="featured-dhikr" id="quickCounter">
@@ -93,9 +86,9 @@
       </section>
 
 <section class="screen" id="dhikrScreen">
-        <div class="screen-heading"><span class="eyebrow">A MOMENT OF REMEMBRANCE</span><h1>Dhikr</h1><p class="muted">Count freely, or pick a remembrance from the Adhkar list.</p></div>
-        <div class="seg-switch" role="tablist" aria-label="Dhikr views"><span class="seg-thumb" aria-hidden="true"></span><button type="button" role="tab" id="tabCounter" data-panel="counterScreen" aria-selected="true">Counter</button><button type="button" role="tab" id="tabLibrary" data-panel="libraryScreen" aria-selected="false">Adhkar</button></div>
-        <div class="dpanel active" id="counterScreen" role="tabpanel" aria-label="Counter">
+        <div class="screen-heading"><span class="eyebrow">A MOMENT OF REMEMBRANCE</span><h1>Dhikr</h1><p class="muted">Count freely on the Tasbih, or follow a guided routine in Adhkar.</p></div>
+        <div class="seg-switch" role="tablist" aria-label="Dhikr views"><span class="seg-thumb" aria-hidden="true"></span><button type="button" role="tab" id="tabCounter" data-panel="counterScreen" aria-selected="true">Tasbih</button><button type="button" role="tab" id="tabLibrary" data-panel="libraryScreen" aria-selected="false">Adhkar</button></div>
+        <div class="dpanel active" id="counterScreen" role="tabpanel" aria-label="Tasbih">
         <div class="dhikr-picker">
           <label for="dhikrSelect">CURRENT DHIKR</label>
           <select id="dhikrSelect" data-title="Choose a dhikr">
@@ -116,9 +109,21 @@
           <button class="count-button" id="countButton" aria-label="Count one dhikr"><span class="tap-label">TAP TO COUNT</span><strong id="countValue">0</strong><span class="count-target">OF <span id="targetLabel">100</span></span><span class="count-plus" id="plusFeedback">+1</span></button>
         </div>
         <div class="counter-actions"><button class="secondary-button" id="resetCounter">↺ Reset</button><button class="primary-button" id="finishCounter">Complete session</button><button class="secondary-button" id="vibrateBtn" aria-pressed="false">◌ Haptics off</button></div>
+        <div class="streak-slot" id="streakSlot">        <div class="streak-card">
+          <div class="streak-icon">✦</div>
+          <div class="streak-copy"><span class="eyebrow">CURRENT STREAK</span><strong><span id="homeStreak">0</span> <small>days</small></strong><span class="muted" id="streakHint">Begin today’s journey.</span></div>
+          <div class="streak-best"><span class="eyebrow">BEST</span><strong id="bestStreak">0 days</strong></div>
+        </div></div>
         <p class="counter-note" id="counterNote">Every count is saved on this device.</p>
       </div>
         <div class="dpanel" id="libraryScreen" role="tabpanel" aria-label="Adhkar" hidden>
+        <div class="section-heading"><div><span class="eyebrow">TODAY</span><h2>Your adhkar</h2></div></div>
+        <div class="routine-grid" id="dhikrTodayGrid"></div>
+        <div class="section-heading"><div><span class="eyebrow">MORE ROUTINES</span><h2>Other moments</h2></div></div>
+        <div class="routine-grid" id="extraRoutineGrid"></div>
+        <div class="section-heading"><div><span class="eyebrow">YOUR ROUTINES</span><h2>Custom adhkar</h2></div><button type="button" class="st-btn" id="customRoutineAdd">＋ Create</button></div>
+        <div class="routine-grid" id="customRoutineGrid"></div>
+        <div class="section-heading"><div><span class="eyebrow">BROWSE</span><h2>Library</h2></div></div>
         <div class="search-wrap"><span>⌕</span><input id="librarySearch" placeholder="Search dhikr…" aria-label="Search dhikr"></div>
         <div id="libraryList" class="library-list"></div>
         <p class="disclaimer">Translations are brief meanings for convenience. Verify wording, virtues, and prescribed counts with reliable scholarly sources.</p>
@@ -197,7 +202,7 @@
       </section>
 
       <section class="screen" id="customRoutineEditorScreen">
-        <button class="back-link" type="button" data-back="homeScreen">‹ Home</button>
+        <button class="back-link" type="button" data-back="dhikrScreen">‹ Dhikr</button>
         <div class="screen-heading"><span class="eyebrow">PERSONAL ADHKAR</span><h1 id="crEditorTitle">Create a routine</h1><p class="muted">Build a private routine with your own text, meanings, sources and repetition counts.</p></div>
         <label class="v404-label" for="crName">Routine name</label><input class="v404-input" id="crName" maxlength="48" placeholder="e.g. After Fajr">
         <div class="section-heading"><div><span class="eyebrow">ROUTINE ITEMS</span><h2>Dhikr and duas</h2></div><button type="button" class="st-btn" id="crAddItem">＋ Add item</button></div>
@@ -218,6 +223,7 @@
       </section>
 
       <section class="screen" id="settingsScreen">
+        <button class="back-link" type="button" data-back="homeScreen">‹ Home</button>
         <div class="screen-heading"><span class="eyebrow">YOUR SPACE</span><h1>You</h1><p class="muted">Your profile, preferences and everything beyond the daily essentials.</p></div>
         <div class="you-shortcuts" aria-label="More Naseem features">
           <button type="button" class="you-shortcut" data-open-screen="featuresScreen"><span aria-hidden="true">✦</span><strong>More features</strong><small>Tools, duas and reflections</small><b aria-hidden="true">↗</b></button>
@@ -256,6 +262,8 @@
             <div class="setting-row"><div><strong>Theme</strong><p>Follow your device or choose an appearance</p></div><div class="st-seg" id="stThemeSeg" role="group" aria-label="Theme"><button type="button" data-theme="system" aria-pressed="false">System</button><button type="button" data-theme="light" aria-pressed="false">Light</button><button type="button" data-theme="dark" aria-pressed="false">Dark</button></div></div>
             <div class="setting-row"><div><strong>Liquid Glass</strong><p id="stGlassNote">A frosted, water-drop navigation bar.</p></div><button class="toggle" id="stGlassToggle" aria-pressed="true">ON</button></div>
             <div class="setting-row"><div><strong>Collapse navigation bar</strong><p>Scrolling down shrinks the bar to one round button; scrolling up brings it back. </p></div><button class="toggle" id="stNavCollapseToggle" aria-pressed="true">ON</button></div>
+            <div class="setting-row"><div><strong>Suhoor ends</strong><p>Quick View shows Fajr minus this margin</p></div><select class="qv-select" id="stSuhoorMargin" aria-label="stSuhoorMargin"><option value="0">Exactly at Fajr</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option></select></div>
+            <div class="setting-row"><div><strong>Iftar</strong><p>Quick View shows Maghrib plus this</p></div><select class="qv-select" id="stIftarMargin" aria-label="stIftarMargin"><option value="0">Exactly at Maghrib</option><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option></select></div>
             <div class="setting-row"><div><strong>Surah name artwork</strong><p>The full player shows the surah name in large Arabic over a gradient.</p></div><button class="toggle" id="stArtToggle" aria-pressed="true">ON</button></div>
             <div class="accent-setting" aria-label="App accent colour"><div class="accent-heading"><div><strong>App accent colour</strong><p>Changes highlights and controls throughout Naseem.</p></div><span class="accent-current" id="accentCurrentLabel">Islamic emerald</span></div><div class="accent-palette" id="accentPalette" role="group" aria-label="Choose app accent colour"><button type="button" class="accent-swatch" data-accent="emerald" aria-label="Islamic emerald"><span style="--swatch:#20a875"></span><small>Emerald</small></button><button type="button" class="accent-swatch" data-accent="forest" aria-label="Deep forest green"><span style="--swatch:#2f9b63"></span><small>Forest</small></button><button type="button" class="accent-swatch" data-accent="blue" aria-label="Royal blue"><span style="--swatch:#4f8fe8"></span><small>Blue</small></button><button type="button" class="accent-swatch" data-accent="purple" aria-label="Midnight purple"><span style="--swatch:#9a7bea"></span><small>Purple</small></button><button type="button" class="accent-swatch" data-accent="gold" aria-label="Muted gold"><span style="--swatch:#c4a15b"></span><small>Gold</small></button><button type="button" class="accent-swatch" data-accent="silver" aria-label="Silver grey"><span style="--swatch:#a8b3c2"></span><small>Silver</small></button><label class="accent-swatch accent-custom" for="accentCustom"><span id="accentCustomPreview"></span><small>Custom</small><input type="color" id="accentCustom" value="#20a875" aria-label="Choose custom accent colour"></label></div></div>
             <div class="setting-row"><div><strong>Motion</strong><p id="stMotionNote">Choose how animations behave on this device.</p></div><div class="st-seg" id="stMotionSeg" role="group" aria-label="Motion"><button type="button" data-motion="auto" aria-pressed="true">Auto</button><button type="button" data-motion="full" aria-pressed="false">Full</button><button type="button" data-motion="smooth" aria-pressed="false">Smooth</button></div></div></div>
@@ -267,7 +275,7 @@
           <div class="st-body"><div class="setting-row"><div><strong>Back up my data</strong><p>Saves progress, prayer times, settings and optional cycle history to a file</p></div><button class="st-btn" type="button" id="stExport">Export</button></div><div class="setting-row"><div><strong>Restore from backup</strong><p>Checks the file first and asks before replacing anything</p></div><label class="st-btn st-file">Choose file<input type="file" id="stRestoreFile" accept="application/json,.json" hidden></label></div><div class="setting-row" id="stUndoRow" hidden><div><strong>Undo last restore or reset</strong><p id="stUndoInfo"></p></div><button class="st-btn" type="button" id="stUndo">Undo</button></div><div class="setting-row"><div><strong>Reset progress</strong><p>Clears counts, sessions and streaks. Settings and prayer times stay.</p></div><button class="st-btn st-danger" type="button" id="stResetProgress">Reset</button></div><div class="setting-row"><div><strong>Erase everything</strong><p>Removes all Naseem data from this device</p></div><button class="st-btn st-danger" type="button" id="stEraseAll">Erase</button></div><p class="tiny-note" id="stDataNote">Your data stays on this device. Back it up before uninstalling Naseem or switching to a differently signed build.</p></div>
         </details>
         <details class="st-group" id="stAbout"><summary><span class="st-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 11v5.2"/><circle cx="12" cy="7.9" r=".6" fill="currentColor"/></svg></span><span class="st-title"><strong>About Naseem</strong><small>Version, credits and creator</small></span><span class="st-chev" aria-hidden="true"></span></summary>
-          <div class="st-body"><div class="setting-row"><div><strong>Version</strong><p><span id="stVersion"></span></p></div></div><div class="setting-row"><div><strong>Software updates</strong><p id="naseemUpdateStatus" role="status" aria-live="polite">Checks the official Naseem GitHub release feed.</p></div><button class="st-btn" type="button" id="naseemCheckUpdates">Check for updates</button></div><div class="setting-row"><div><strong>Credits &amp; Acknowledgements</strong><p><strong>Creator and developer:</strong> Mir Midhat ul Ahad · <a href="https://www.instagram.com/mir.filmy/" target="_blank" rel="noopener noreferrer">@mir.filmy</a><br><strong>Adhan recording:</strong> Omar Hisham Al Arabi<br><strong>Quran text service:</strong> <a href="https://alquran.cloud" target="_blank" rel="noopener noreferrer">AlQuran Cloud</a>; contributors include <a href="https://globalquran.com" target="_blank" rel="noopener noreferrer">GlobalQuran.com</a>, <a href="https://tanzil.net" target="_blank" rel="noopener noreferrer">Tanzil.net</a> and Quran Academy<br><strong>English Quran translation:</strong> Marmaduke Pickthall<br><strong>Quran audio:</strong> recitations streamed from the <a href="https://alquran.cloud/cdn" target="_blank" rel="noopener noreferrer">Islamic Network CDN</a> for personal, non-commercial listening; Al-Luhaidan word timings from <a href="https://github.com/its3li/quran-word-timings" target="_blank" rel="noopener noreferrer">quran-word-timings</a><br><strong>Mushaf pages:</strong> Madani Mushaf via AlQuran Cloud and Tanzil.net; Indo-Pak and line-based Mushaf layouts via the <a href="https://quran.foundation" target="_blank" rel="noopener noreferrer">Quran Foundation</a> content API<br><strong>Design inspiration:</strong> LastWave (visual reference only, no code used)<br><strong>Hadith library:</strong> <a href="https://hadeethenc.com" target="_blank" rel="noopener noreferrer">HadeethEnc.com</a></p></div></div><p class="tiny-note">The prayer guide is a general learning aid. For detailed practice, follow trusted local teaching.</p></div>
+          <div class="st-body"><div class="setting-row"><div><strong>Version</strong><p><span id="stVersion"></span></p></div></div><div class="setting-row"><div><strong>Credits &amp; Acknowledgements</strong><p><strong>Creator and developer:</strong> Mir Midhat ul Ahad · <a href="https://www.instagram.com/mir.filmy/" target="_blank" rel="noopener noreferrer">@mir.filmy</a><br><strong>Adhan recording:</strong> Omar Hisham Al Arabi<br><strong>Quran text service:</strong> <a href="https://alquran.cloud" target="_blank" rel="noopener noreferrer">AlQuran Cloud</a>; contributors include <a href="https://globalquran.com" target="_blank" rel="noopener noreferrer">GlobalQuran.com</a>, <a href="https://tanzil.net" target="_blank" rel="noopener noreferrer">Tanzil.net</a> and Quran Academy<br><strong>English Quran translation:</strong> Marmaduke Pickthall<br><strong>Quran audio:</strong> recitations streamed from the <a href="https://alquran.cloud/cdn" target="_blank" rel="noopener noreferrer">Islamic Network CDN</a> for personal, non-commercial listening; Al-Luhaidan word timings from <a href="https://github.com/its3li/quran-word-timings" target="_blank" rel="noopener noreferrer">quran-word-timings</a><br><strong>Quran.com (Quran Foundation):</strong> tafsir, translations, verse search, word-by-word data and the Indo-Pak Mushaf pages come from the <a href="https://quran.com" target="_blank" rel="noopener noreferrer">Quran.com</a> public API by the <a href="https://quran.foundation" target="_blank" rel="noopener noreferrer">Quran Foundation</a>; Quran text is shown as provided<br><strong>Mushaf pages:</strong> Madani Mushaf via AlQuran Cloud and Tanzil.net; Indo-Pak and line-based Mushaf layouts via the <a href="https://quran.foundation" target="_blank" rel="noopener noreferrer">Quran Foundation</a> content API<br><strong>Design inspiration:</strong> LastWave (visual reference only, no code used)<br><strong>Hadith library:</strong> <a href="https://hadeethenc.com" target="_blank" rel="noopener noreferrer">HadeethEnc.com</a></p></div></div><p class="tiny-note">The prayer guide is a general learning aid. For detailed practice, follow trusted local teaching.</p></div>
         </details>
         <div class="about-card"><div class="brand-mark">ن</div><h2>Naseem · نسيم</h2><p class="muted">A gentle breeze · An Islamic daily companion.</p><span class="eyebrow">OFFLINE-FIRST · PRIVATE BY DESIGN</span></div>
       </section>
@@ -313,7 +321,7 @@
   <script src="back.js"></script>
   <script type="text/lazy" data-lazy="quran" src="wavy-seek.js"></script>
   <script type="text/lazy" data-lazy="quran" src="quran-reader.js"></script>
+  <script type="text/lazy" data-lazy="quran" src="quran-extras.js"></script>
   <script src="glance-config.js"></script>
-  <script src="public-updates.js"></script>
 </body>
 </html>

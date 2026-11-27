@@ -71,6 +71,9 @@ run_py_test tests/test_media_bridge_ui.py
 run_py_test tests/test_background_handoff_ui.py
 run_py_test tests/test_nav_collapse_ui.py
 run_py_test tests/test_glance.py
+run_py_test tests/test_quran_extras.py
+run_py_test tests/test_adhkar_layout.py
+run_py_test tests/test_quickview_margins.py
 run_py_test tests/test_layout_overlap.py
 run_py_test tests/test_onboarding_responsive.py
 python3 tests/verify_salah_engine.py

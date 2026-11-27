@@ -67,6 +67,6 @@ assert.deepEqual(C.progressOf(items, part), { done: 2, total: 3, items: 1, itemT
 for (const w of ['morning', 'evening']) {
   const list = D.items(w); assert.ok(list.length >= 5);
   const ids = new Set(list.map(i => i.id)); assert.equal(ids.size, list.length, 'unique ids');
-  for (const i of list) { assert.ok(i.arabic && i.title && i.source, i.id); assert.ok(Number.isInteger(i.count) && i.count >= 1, i.id); assert.equal(i.verified, false, 'unverified until reviewed: ' + i.id); }
+  for (const i of list) { assert.ok(i.arabic && i.title && i.source, i.id); assert.ok(Number.isInteger(i.count) && i.count >= 1, i.id); assert.ok(i.verified === false || (i.verified === true && /Hisn al-Muslim/.test(i.source)), 'verified entries must cite the Hisn al-Muslim check: ' + i.id); }
 }
 console.log('Adhkar core: all assertions passed.');

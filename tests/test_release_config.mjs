@@ -16,7 +16,7 @@ try {
 } catch {}
 assert.equal(legacyKeystoreTracked, false, 'legacy embedded keystore must not be tracked');
 assert.match(readFileSync('.gitignore', 'utf8'), /\*\.keystore/);
-assert.match(readFileSync('www/sw.js', 'utf8'), /noor-adhkar-cache-v4115/);
+assert.match(readFileSync('www/sw.js', 'utf8'), /noor-adhkar-cache-v4116/);
 console.log('V4.1.0 release configuration checks passed.');
 
 assert.match(release, /app-release\.apk\.sha256/);

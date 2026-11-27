@@ -47,8 +47,16 @@ final class WidgetArt {
             s.bright = s.light ? 0xFF1B7A51 : 0xFF63D6A0;
         }
         s.fg = s.light ? 0xFF1D2822 : 0xFFF4F7F2;
-        s.muted = s.light ? 0xFF5B6760 : 0xFF9BA59F;
+        s.muted = s.light ? 0xFF3E4A44 : 0xFFC9D2CC;
         return s;
+    }
+
+    /** Blend {@code a} toward {@code b} by {@code t} (0..1), opaque. */
+    static int mix(int a, int b, float t) {
+        int r = Math.round(((a >> 16) & 255) * (1 - t) + ((b >> 16) & 255) * t);
+        int g = Math.round(((a >> 8) & 255) * (1 - t) + ((b >> 8) & 255) * t);
+        int bl = Math.round((a & 255) * (1 - t) + (b & 255) * t);
+        return 0xFF000000 | (r << 16) | (g << 8) | bl;
     }
 
     static int withAlpha(int color, int alpha) {
@@ -69,7 +77,7 @@ final class WidgetArt {
         float scale = (float) Math.min(1.0, Math.sqrt(MAX_CARD_PIXELS / (w * h)));
         int bw = Math.max(1, Math.round(w * scale));
         int bh = Math.max(1, Math.round(h * scale));
-        float r = 26f * d * scale;
+        float r = 30f * d * scale;
         Bitmap bmp = Bitmap.createBitmap(bw, bh, Bitmap.Config.ARGB_8888);
         Canvas cv = new Canvas(bmp);
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -78,12 +86,22 @@ final class WidgetArt {
         clip.addRoundRect(new RectF(0, 0, bw, bh), r, r, Path.Direction.CW);
         cv.save();
         cv.clipPath(clip);
-        p.setShader(new LinearGradient(0, 0, 0, bh,
-            s.light ? 0xFFF7F9F5 : 0xFF191C1D, s.light ? 0xFFE7EDE6 : 0xFF0B0D0D, Shader.TileMode.CLAMP));
+        // Bold fill: the accent colour itself (deep in dark mode, pale in light mode), not a neutral charcoal card.
+        int top = s.light ? mix(s.glow, 0xFFFFFFFF, 0.78f) : mix(s.glow, 0xFF000000, 0.38f);
+        int bottom = s.light ? mix(s.glow, 0xFFFFFFFF, 0.90f) : mix(s.glow, 0xFF000000, 0.78f);
+        p.setShader(new LinearGradient(0, 0, bw * 0.35f, bh, top, bottom, Shader.TileMode.CLAMP));
         cv.drawRect(0, 0, bw, bh, p);
         p.setShader(null);
+        // Two large soft rings bleeding off the corner give the card depth without adding any text-noise.
+        Paint ring = new Paint(Paint.ANTI_ALIAS_FLAG);
+        ring.setStyle(Paint.Style.STROKE);
+        ring.setStrokeWidth(Math.max(1f, 1.4f * d * scale));
+        ring.setColor(withAlpha(s.light ? s.glow : 0xFFFFFFFF, s.light ? 0x26 : 0x1C));
+        float big = Math.max(bw, bh);
+        cv.drawCircle(bw * 0.92f, bh * 0.05f, big * 0.46f, ring);
+        cv.drawCircle(bw * 0.92f, bh * 0.05f, big * 0.66f, ring);
 
-        int strong = s.light ? 0x78 : 0xC0;
+        int strong = s.light ? 0x90 : 0xE0;
         if (cornerGlow) {
             glow(cv, bw * 0.90f, bh * 0.10f, Math.max(bw, bh) * 0.70f, withAlpha(s.glow, strong * 7 / 10), p);
             glow(cv, bw * 0.05f, bh * 1.00f, Math.max(bw, bh) * 0.55f, withAlpha(s.glow, strong * 4 / 10), p);

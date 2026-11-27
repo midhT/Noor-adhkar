@@ -34,8 +34,8 @@
     <div class="pd-timetable card-surface" id="pdTimetable" aria-label="Daily prayer timetable"></div>
     <div class="pd-caption">QUICK VIEW</div>
     <div class="pd-banner-row">
-      <div class="pd-banner card-surface"><span>Sunrise</span><strong id="pdSunrise">—:—</strong><small>Sunrise</small></div>
-      <div class="pd-banner card-surface"><span>Dhuhr</span><strong id="pdDhuhr">—:—</strong><small>Midday prayer</small></div>
+      <div class="pd-banner card-surface"><span>Suhoor</span><strong id="pdSunrise">—:—</strong><small id="pdSuhoorNote">Ends at Fajr</small></div>
+      <div class="pd-banner card-surface"><span>Iftar</span><strong id="pdDhuhr">—:—</strong><small id="pdIftarNote">Maghrib</small></div>
     </div>
     <div class="pd-ring-row">
       <div class="pd-ring-card card-surface">
@@ -63,8 +63,15 @@
     let tomorrow = false, nextTimes = today, jamDate = now;
     if (!next) { tomorrow = true; nextTimes = S.timesFor(tmrDate); jamDate = tmrDate; next = { ...prayers[0], minutes: S.toMin(nextTimes.fajr) }; }
     $('pdTimetable').innerHTML = prayers.map(p => `<div class="pd-prayer ${next.id === p.id ? 'is-next' : ''}"><span>${p.label}</span><strong>${fmt(today[p.id])}</strong></div>`).join('');
-    $('pdSunrise').textContent = fmt(today.sunrise);
-    $('pdDhuhr').textContent = fmt(today.dhuhr);
+    { // Suhoor = Fajr minus a margin; Iftar = Maghrib plus a margin. Both margins are set in Settings → Appearance.
+      const adj = k => { try { const v = parseInt(localStorage.getItem(k), 10); return v >= 0 && v <= 60 ? v : 0; } catch (_) { return 0; } };
+      const sm = adj('naseem-suhoor-margin'), im = adj('naseem-iftar-margin');
+      const shift = (hhmm, d) => { const t = S.toMin(hhmm) + d; const m = ((t % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+      $('pdSunrise').textContent = fmt(shift(today.fajr, -sm));
+      $('pdSuhoorNote').textContent = sm ? sm + ' min before Fajr' : 'Ends at Fajr';
+      $('pdDhuhr').textContent = fmt(shift(today.maghrib, im));
+      $('pdIftarNote').textContent = im ? im + ' min after Maghrib' : 'At Maghrib';
+    }
     const target = new Date(tomorrow ? tmrDate : now); target.setHours(Math.floor(next.minutes / 60), next.minutes % 60, 0, 0);
     const diff = Math.max(0, Math.floor((target - now) / 1000));
     const remaining = `${Math.floor(diff / 3600)}h ${String(Math.floor((diff % 3600) / 60)).padStart(2, '0')}m`;

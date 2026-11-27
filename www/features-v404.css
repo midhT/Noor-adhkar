@@ -302,3 +302,30 @@ body.sheet-open main::after{display:none}
 .cycle-form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.75fr);gap:9px 12px;align-items:center;margin:12px 0}.cycle-form-grid>label{font-size:12px;color:var(--muted)}.cycle-form-grid input{width:100%;min-width:0;border:1px solid var(--hair);border-radius:11px;background:var(--panel);color:var(--text);padding:10px;font:inherit;font-size:13px}.cycle-input-wrap{display:flex;align-items:center;gap:7px}.cycle-input-wrap span{font-size:11px;color:var(--muted)}.cycle-summary{padding:13px;margin-top:12px;border:1px solid var(--hair);border-radius:14px;background:var(--panel)}.cycle-summary>strong{font-size:13px}.cycle-summary p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}.cycle-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.cycle-summary-grid span{display:grid;gap:3px}.cycle-summary-grid small{font-size:10px;color:var(--muted)}.cycle-summary-grid b{font-size:19px;color:var(--accent)}.cycle-history{margin-top:12px;font-size:12px}.cycle-history ul{margin:7px 0 0;padding-left:18px;color:var(--muted);display:grid;gap:5px}
 
 .st-group[hidden]{display:none!important}
+
+/* ---- Home: small streak chip and compact adhkar tiles; full tiles live in Dhikr ---- */
+.streak-chip{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;margin:2px 0 14px;padding:0 14px;border-radius:16px;border:1px solid var(--hair,rgba(255,255,255,.1));background:var(--card-a,rgba(255,255,255,.05));color:var(--text);font:inherit;text-align:left}
+.streak-chip .sc-flame{color:var(--gold,var(--accent));font-size:16px}
+.streak-chip b{font-size:17px}
+.streak-chip span{font-size:13.5px;font-weight:600}
+.streak-chip em{margin-left:auto;font-style:normal;font-size:12px;color:var(--muted)}
+.streak-chip i{font-style:normal;color:var(--muted)}
+.routine-grid.compact{gap:8px}
+#homeScreen .routine-card.compact,.routine-card.compact{min-height:0!important;height:auto;display:flex;flex-direction:row;align-items:center;gap:10px;padding:11px 13px;border-radius:16px}
+.routine-card.compact .routine-symbol{margin:0;width:30px;height:30px;flex:0 0 30px;font-size:15px}
+.routine-card.compact .routine-sub,.routine-card.compact .routine-bottom>span:last-child{display:none}
+.routine-card.compact .routine-title{font-size:13.5px;margin:0;line-height:1.2}
+.routine-card.compact .routine-bottom{margin:0;margin-left:auto;font-size:11px;white-space:nowrap}
+.streak-slot{margin:16px 0 4px}
+.streak-slot .streak-card{margin:0}
+/* guided routine: the current item is open, the rest wait their turn */
+.as-item{transition:opacity .28s var(--ease-out,ease),transform .28s var(--ease-out,ease)}
+.as-item.as-later{opacity:.42;transform:scale(.985)}
+.as-item.as-later .as-tap{opacity:.5}
+.as-item.as-current{border-color:color-mix(in srgb,var(--accent,var(--gold)) 55%,transparent)}
+@media(prefers-reduced-motion:reduce){.as-item{transition:none}}
+#homeScreen .routine-card.compact{display:grid!important;grid-template-columns:30px minmax(0,1fr);grid-template-areas:"s t" "s b";column-gap:10px;row-gap:1px;align-items:center;text-align:left;padding:10px 12px}
+#homeScreen .routine-card.compact .routine-symbol{grid-area:s}
+#homeScreen .routine-card.compact .routine-title{grid-area:t;font-size:13.5px}
+#homeScreen .routine-card.compact .routine-bottom{grid-area:b;margin:0;font-size:11px;color:var(--muted);white-space:nowrap}
+.qv-select{min-height:40px;max-width:150px;padding:0 10px;border-radius:12px;border:1px solid var(--hair,var(--line));background:var(--card-a,transparent);color:var(--text);font:inherit;font-size:13px}

@@ -25,5 +25,5 @@ assert.match(quran, /indopak15:\{id:6,label:'Indo-Pak 15-line'/);
 assert.match(quran, /indopak16:\{id:7,label:'Indo-Pak 16-line'/);
 assert.match(quranCss, /qr-line-mode/);
 assert.match(html, /naseem-version-code" content="40116"/);
-assert.match(read('www/sw.js'), /noor-adhkar-cache-v4115/);
+assert.match(read('www/sw.js'), /noor-adhkar-cache-v4116/);
 console.log('Naseem 40116 navigation, waveform, Mushaf modes and release checks passed.');

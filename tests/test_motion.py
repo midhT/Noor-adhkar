@@ -58,7 +58,7 @@ with sync_playwright() as p:
     pg.click('#ssCity + .ntrig'); pg.click('.nsheet-opt[data-v="srinagar"]'); pg.wait_for_timeout(500)
     ev("document.dispatchEvent(new CustomEvent('naseem:back',{cancelable:true,bubbles:true}))"); pg.wait_for_timeout(500)
     # ---- swipe navigation ----
-    pg.click('.nav-item[data-screen="homeScreen"]'); pg.wait_for_timeout(500)
+    pg.evaluate("switchScreen('homeScreen')"); pg.wait_for_timeout(500)
     swipe(cdp, 330, 60, y=300); ok('swipe left: Home -> Dhikr', cur() == 'dhikrScreen', cur())
     ok('slide direction class set', ev("document.querySelector('.screen.active').dataset.dir") == 'next')
     swipe(cdp, 330, 60, y=300); ok('swipe left inside Dhikr: Counter -> Adhkar panel', cur() == 'dhikrScreen' and ev("!document.getElementById('libraryScreen').hidden"))

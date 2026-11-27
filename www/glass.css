@@ -386,3 +386,15 @@ body.cc-run.navpill .bottom-nav .nav-item.active small,body.cc-run.navpill .nav-
 .st-group>summary:active{transform:none}
 .st-group>summary .st-chev,.st-group[open]>summary .st-chev,.st-group.st-closing>summary .st-chev{transition:none!important;animation:none!important}
 .st-group.st-closing>summary .st-chev{transform:rotate(135deg)}
+
+/* Compact bar: the active tab's name gives its room back, so the icon sits in the middle of its slot (and of the lens) */
+body.nav-compact.navpill .bottom-nav .nav-item.active small,body.nav-compact.navpill .nav-lens .lens-copy .nav-item.active small{max-width:0;margin-left:0}
+body.cc-run.navpill .bottom-nav .nav-item.active small,body.cc-run.navpill .nav-lens .lens-copy .nav-item.active small{max-width:calc(44px * (1 - var(--cp,0)));margin-left:calc(4px * (1 - var(--cp,0)))}
+
+/* Settings: the bar slides down and fades out (exit .26s), and comes back a little slower (.38s). Transform + opacity only. */
+body.nav-away .bottom-nav{transform:translateX(-50%) translateY(150%)!important;opacity:0;visibility:hidden;pointer-events:none;transition:transform .26s var(--ease-out),opacity .2s linear,visibility 0s .26s!important}
+body.nav-away .nav-dock{transform:translateY(150%)!important;opacity:0!important;visibility:hidden!important;pointer-events:none;transition:transform .26s var(--ease-out),opacity .2s linear,visibility 0s .26s!important}
+body.nav-away .qr-player{bottom:calc(14px + env(safe-area-inset-bottom))!important}
+body.nav-away .app-shell{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+body:not(.nav-away) .bottom-nav{transition-property:transform,opacity,visibility}
+@media(prefers-reduced-motion:reduce){body.nav-away .bottom-nav,body.nav-away .nav-dock{transition:none!important}}

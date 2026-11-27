@@ -23,12 +23,15 @@ with sync_playwright() as p:
     pg.click('#asDone', timeout=500) if False else None
     ok('undo disabled with nothing counted', ev("document.getElementById('asUndo').disabled"))
     # ---- counting + undo
+    # routines run one item at a time: earlier items first, then the ones under test
+    ev("(()=>{for(const it of NaseemAdhkarData.items('morning')){if(it.id==='ayat-al-kursi')break;for(let i=0;i<it.count;i++)tapItem(it.id)}})()"); pg.wait_for_timeout(200)
+    ok('later items wait their turn', ev("document.querySelector('[data-id=ikhlas] .as-tap').disabled"))
+    pg.click('[data-id=ayat-al-kursi] .as-tap'); pg.wait_for_timeout(100)
+    ok('single-count item completes in one tap and locks', ev("document.querySelector('[data-id=ayat-al-kursi] .as-tap').disabled"))
     pg.click('[data-id=ikhlas] .as-tap'); pg.wait_for_timeout(100)
     ok('count advances 1 / 3', '1 / 3' in pg.inner_text('[data-id=ikhlas] .as-count'))
     pg.click('#asUndo'); pg.wait_for_timeout(100)
     ok('undo removes last count', '0 / 3' in pg.inner_text('[data-id=ikhlas] .as-count'))
-    pg.click('[data-id=ayat-al-kursi] .as-tap'); pg.wait_for_timeout(100)
-    ok('single-count item completes in one tap and locks', ev("document.querySelector('[data-id=ayat-al-kursi] .as-tap').disabled"))
     for _ in range(2): pg.click('[data-id=ikhlas] .as-tap')
     ok('partial progress is not completion', not ev("(state.completed[today()]||{}).morning") and ev("!document.getElementById('asDone').hidden") is False)
     # persistence across restart
@@ -73,7 +76,7 @@ with sync_playwright() as p:
     # ---- session open across midnight starts fresh instead of writing to the old day
     pg.click('.routine-card[data-routine="morning"]'); pg.wait_for_timeout(300)
     ev("window.__off=3")
-    pg.click('[data-id=ikhlas] .as-tap'); pg.wait_for_timeout(200)
+    pg.click('#asList .as-item.as-current .as-tap'); pg.wait_for_timeout(200)
     ok('tap after midnight does not count on the old day', '0 / 3' in pg.inner_text('[data-id=ikhlas] .as-count') and ev("Object.keys(state.adhkar).length") == 1)
     ev("window.__off=0"); pg.evaluate("switchScreen('homeScreen')")
     # ---- legacy data: earlier button-press records are kept and still count, no data loss

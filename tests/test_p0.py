@@ -40,7 +40,7 @@ with sync_playwright() as p:
     pg.click('[data-open-feature="zakatScreen"]'); pg.wait_for_timeout(400)
     ok('More features card still opens Zakat', ev("document.querySelector('.screen.active').id") == 'zakatScreen')
     # ---- Home Qibla: arrow follows device heading
-    pg.click('.nav-item[data-screen="homeScreen"]'); pg.wait_for_timeout(500)
+    pg.evaluate("switchScreen('homeScreen')"); pg.wait_for_timeout(500)
     bearing = ev("NaseemQibla.bearing(34.0837,74.7973)")
     def fire(alpha, absolute=True):
         ev("(a,abs)=>{const e=new Event('deviceorientationabsolute');e.alpha=a;e.absolute=abs;window.dispatchEvent(e)}" if False else f"(()=>{{const e=new Event('deviceorientationabsolute');e.alpha={alpha};e.absolute={'true' if absolute else 'false'};window.dispatchEvent(e)}})()")

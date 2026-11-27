@@ -11,6 +11,7 @@ try:
         ctx.add_init_script("localStorage.setItem('naseem-onboarding-complete-v1','1')")
         page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto(srv.url());page.wait_for_timeout(900)
+        page.evaluate("switchScreen('dhikrScreen')");page.click('#tabLibrary');page.wait_for_timeout(300)
         page.click('#customRoutineAdd');page.wait_for_timeout(150)
         page.fill('#crName','Test Routine')
         card=page.locator('#crItems .cr-item').first
@@ -28,7 +29,7 @@ try:
         page.click('#asUndo');assert '0 / 2' in page.locator('#asList .as-count').first.inner_text()
         tap.click();tap.click();assert not page.locator('#asDone').is_hidden()
         page.click('#asDone + *',timeout=500) if False else None
-        page.click('#adhkarSessionScreen [data-back="homeScreen"]');page.wait_for_timeout(150)
+        page.click('#adhkarSessionScreen [data-back="dhikrScreen"]');page.wait_for_timeout(150)
         page.locator('#customRoutineGrid .custom-routine-edit').click();page.fill('#crName','Edited Routine');page.click('#crSave');page.wait_for_timeout(150)
         assert page.locator('#customRoutineGrid .routine-title').filter(has_text='Edited Routine').count()==1
         page.on('dialog',lambda dialog:dialog.accept())

@@ -136,7 +136,7 @@
   function paint(p) {
     if (dockMode) {
       const tn = clamp01(p / .5), td = clamp01((p - .3) / .5);
-      nav.style.transition = dock.style.transition = 'none';
+      nav.style.transition = dock.style.transition = 'none'; nav.style.transformOrigin = '0 100%';
       nav.style.opacity = 1 - tn; nav.style.visibility = tn >= 1 ? 'hidden' : 'visible';
       nav.style.pointerEvents = p < .5 ? 'auto' : 'none';
       nav.style.transform = 'translateX(-50%) scale(' + lerp(1, .7, tn) + ')';
@@ -146,13 +146,13 @@
       const g = cc.ends, player = getPlayer();
       if (g && playerOn()) { player.style.left = lerp(g.el, g.cl, p) + 'px'; player.style.bottom = lerp(g.eb, g.cb, p) + 'px'; }
     } else {
-      nav.style.transition = 'none';
+      nav.style.transition = 'none'; nav.style.transformOrigin = '50% 100%';   // set inline: the class flips at once on expand, so a CSS origin would jump to the left edge mid-spring
       nav.style.transform = 'translateX(-50%) scale(' + lerp(1, .8, p) + ')';
       nav.style.setProperty('--cp', p.toFixed(3));
     }
   }
   function clearInline() {
-    ['transition', 'opacity', 'visibility', 'pointerEvents', 'transform'].forEach(k => { nav.style[k] = ''; dock.style[k] = ''; });
+    ['transition', 'opacity', 'visibility', 'pointerEvents', 'transform', 'transformOrigin'].forEach(k => { nav.style[k] = ''; dock.style[k] = ''; });
     nav.style.removeProperty('--cp'); const pe = getPlayer(); if (pe) pe.style.left = pe.style.bottom = '';
   }
   function tick(now) {
@@ -200,6 +200,7 @@
   document.addEventListener('keydown', e => { if (/^(PageDown|PageUp|ArrowDown|ArrowUp|Home|End| )$/.test(e.key)) userUntil = performance.now() + 450; }, true);
   function onScroll(e) {
     if (!(fingerDown || performance.now() < userUntil)) return;
+    if (body.classList.contains('nav-away')) return;
     if (document.body.classList.contains('qr-full-player-open') || document.body.classList.contains('qr-sheet-open') || document.body.classList.contains('qr-sleep-open')) return;
     if (!collapseOn()) { if (collapsed) setCollapsed(false); return; }
     const t = e.target, el = (t === document || t === document.documentElement || t === document.body) ? (document.scrollingElement || document.documentElement) : t;
@@ -214,6 +215,10 @@
   document.addEventListener('scroll', onScroll, { capture: true, passive: true });
   dock.addEventListener('click', () => setCollapsed(false));
   document.addEventListener('noor:screen', () => setCollapsed(false));
+  // Settings ("You") and the pages opened from it have their own back controls: the bar slips away there and returns on any other screen
+  const AWAY = ['settingsScreen', 'featuresScreen', 'zakatScreen', 'qiblaScreen'];
+  const syncAway = id => { body.classList.toggle('nav-away', AWAY.indexOf(id || window.curScreen) >= 0); };
+  document.addEventListener('noor:screen', e => syncAway(e.detail)); syncAway();
   document.addEventListener('naseem:navcollapse-changed', () => { if (!collapseOn()) setCollapsed(false); });
   // the Quran stack loads lazily, so the player may not exist yet when this script runs: always look it up on use
   const getPlayer = () => document.getElementById('quranPlayer');

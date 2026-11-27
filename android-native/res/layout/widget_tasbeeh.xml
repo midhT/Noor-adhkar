@@ -12,7 +12,7 @@
         <LinearLayout android:id="@+id/tw_count_area" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
             android:gravity="center" android:orientation="vertical">
             <TextView android:id="@+id/tw_count" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-light" android:text="0" android:textColor="#FFF4F7F2" android:textSize="46sp" />
+                android:fontFamily="sans-serif-medium" android:text="0" android:textColor="#FFF4F7F2" android:textSize="54sp" />
             <TextView android:id="@+id/tw_target" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="of 100 · tap to count" android:textColor="#FF9BA59F" android:textSize="10sp" />
         </LinearLayout>
