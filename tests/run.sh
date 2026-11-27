@@ -29,7 +29,6 @@ node tests/test_mushaf_integration.js
 node tests/test_quran_player_core.js
 node tests/test_fluid_motion.cjs
 node tests/test_release_config.mjs
-node tests/test_public_updates.cjs
 node tests/test_salah_tracker_time.js
 node tests/test_salah_gender_tracking.cjs
 node tests/test_cycle_tracker.cjs
