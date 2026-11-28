@@ -3,6 +3,14 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from playwright.sync_api import sync_playwright
 from common import *
+
+def sheet_do(pg, tab, sel):
+    """Open the Reading-settings sheet, press one control on a tab, close the sheet."""
+    pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(450)
+    pg.tap('[data-qs-tab="%s"]' % tab); pg.wait_for_timeout(250)
+    pg.tap(sel); pg.wait_for_timeout(250)
+    pg.tap('.qs-x'); pg.wait_for_timeout(400)
+
 import quran_mock
 
 fails = []
@@ -111,11 +119,12 @@ with sync_playwright() as p:
     pg.evaluate("document.getElementById('quranStop').click()"); pg.wait_for_timeout(300)
     ok('stop clears highlight and hides the player', pg.evaluate(PLAYING_JS) == [] and pg.evaluate("document.getElementById('quranPlayer').hidden"))
     # Reciter capabilities: only the source with matching timing metadata advertises word sync.
-    pg.tap('#quranSettingsBtn'); pg.tap('#quranQariToggle')
-    ok('multiple Qaris are available', pg.evaluate("document.querySelectorAll('#quranQariMenu [data-qari-id]').length") >= 4)
+    pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(450); pg.tap('[data-qs-tab="rc"]'); pg.wait_for_timeout(300)
+    ok('multiple Qaris are available', pg.evaluate("document.querySelectorAll('.qs-sheet [data-qs-qari]').length") >= 4)
     ok('word-by-word badge appears only for the timing-supported Qari', pg.evaluate("document.querySelectorAll('#quranQariMenu .qr-qari-capability').length") == 1)
-    pg.tap('[data-qari-id="ar.alafasy"]'); pg.wait_for_timeout(200)
+    pg.tap('[data-qs-qari="ar.alafasy"]'); pg.wait_for_timeout(300)
     ok('selected Qari persists', pg.evaluate("localStorage.getItem('naseem-quran-reciter-v1')") == 'ar.alafasy')
+    pg.tap('.qs-x'); pg.wait_for_timeout(400)
     pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(600)
     ok('non-synchronised Qari starts its own ayah audio', 'mock/2/ayah/2.wav' in pg.evaluate("document.getElementById('quranAudio').src"))
     ok('word highlight is not falsely shown for unsupported timing data', pg.evaluate("document.querySelectorAll('#quranVerses .qr-word-active').length") == 0)
@@ -157,17 +166,14 @@ with sync_playwright() as p:
     ok('tab pill has glided to the active tab', pill['w'] > 20 and pill['dx'] < 6, str(pill))
     ok('leaving class is cleaned up', pg.evaluate("document.querySelectorAll('.screen.leaving').length") == 0)
     pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(500)
-    pg.tap('#quranSettingsBtn') if pg.evaluate("document.getElementById('quranSettings').hidden") else None
-    pg.tap('#quranQariToggle') if pg.evaluate("document.getElementById('quranQariMenu').hidden") else None
-    pg.tap('#quranSettingsBtn') if not pg.evaluate("document.getElementById('quranSettings').hidden") else None
     # follow switch off
-    pg.tap('#quranSettingsBtn'); pg.tap('#quranFollow'); pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(200)
+    sheet_do(pg, 'read', '[data-qs-follow]')
     ok('follow switch reports off', pg.evaluate("document.getElementById('quranFollow').getAttribute('aria-checked')") == 'false')
     pg.evaluate("window.scrollTo(0,0)"); pg.wait_for_timeout(400)
     pg.tap('[data-play-ayah="1"]'); pg.wait_for_timeout(1900)
     ok('with follow off the page is left where the reader put it', pg.evaluate("window.scrollY") < 60, str(pg.evaluate('window.scrollY')))
     pg.evaluate("document.getElementById('quranStop').click()")
-    pg.tap('#quranSettingsBtn'); pg.tap('#quranFollow'); pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(200)
+    sheet_do(pg, 'read', '[data-qs-follow]')
 
     # ---- layout: nothing collides ----
     pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(700)
@@ -199,22 +205,21 @@ with sync_playwright() as p:
 
     # ---- display + memory mode ----
     pg.tap('[data-quran-view="surah"]'); pg.tap('[data-open-surah="2"]'); pg.wait_for_timeout(1000)
-    pg.tap('#quranSettingsBtn'); pg.tap('[data-quran-edition="arabic"]'); pg.wait_for_timeout(1200)
+    sheet_do(pg, 'tr', '[data-qs-tron]'); pg.wait_for_timeout(1200)
     ok('Arabic-only display removes the English lines', pg.evaluate("document.querySelectorAll('#quranVerses .quran-translation').length") == 0)
-    pg.tap('[data-quran-edition="translation"]'); pg.wait_for_timeout(1200)
-    pg.tap('#quranMemMode'); pg.wait_for_timeout(300)
+    sheet_do(pg, 'tr', '[data-qs-tron]'); pg.wait_for_timeout(1200)
+    sheet_do(pg, 'read', '[data-qs-mem="hide"]'); pg.wait_for_timeout(300)
     ok('memory mode hides the Arabic (blurred) until tapped', 'blur' in pg.evaluate("getComputedStyle(document.querySelector('#quran-ayah-2 .quran-arabic')).filter"))
-    pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(200)
     pg.tap('#quran-ayah-2 .quran-arabic'); pg.wait_for_timeout(400)
     ok('tapping an ayah reveals it', pg.evaluate("getComputedStyle(document.querySelector('#quran-ayah-2 .quran-arabic')).filter") == 'none')
-    pg.tap('#quranSettingsBtn'); pg.tap('#quranMemMode'); pg.tap('#quranSettingsBtn')
+    sheet_do(pg, 'read', '[data-qs-mem="hide"]')
 
     # ---- memorisation deck + review ----
     pg.tap('[data-mem-ayah="2"]'); pg.tap('[data-mem-ayah="3"]'); pg.wait_for_timeout(200)
     ok('+ adds an ayah to memory', pg.evaluate("document.querySelector('[data-mem-ayah=\"2\"]').getAttribute('aria-pressed')") == 'true')
     pg.tap('[data-mem-ayah="3"]'); pg.wait_for_timeout(100)
     ok('tapping again removes it', pg.evaluate("document.querySelector('[data-mem-ayah=\"3\"]').getAttribute('aria-pressed')") == 'false')
-    pg.tap('#quranSettingsBtn'); pg.tap('#quranMemSurah'); pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(200)
+    sheet_do(pg, 'read', '[data-qs-mem="add"]')
     ok('Add surah adds every ayah', pg.evaluate("window.NaseemQuran.state().memory") == 30)
     pg.tap('#quranBack'); pg.wait_for_timeout(500)
     ok('due chip appears on the index', pg.evaluate("!document.getElementById('quranDueChip').hidden") and '30' in pg.inner_text('#quranDueChip'))

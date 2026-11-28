@@ -51,7 +51,7 @@ assert.match(html, /salah-experience\.js/);
 assert.match(read('www/prayer-dashboard.js'), /homeScreen/);
 assert.match(read('www/salah-experience.js'), /naseem-salah-habit-v1/);
 assert.match(read('www/salah-experience.js'), /lastThirdWindow/);
-assert.match(read('www/sw.js'), /noor-adhkar-cache-v4116/);
+assert.match(read('www/sw.js'), /noor-adhkar-cache-v4117/);
 assert.match(read('www/salah.js'), /asr: 'hanafi'/); // Internal calculation compatibility; no school label is shown in the UI.
 assert.doesNotMatch(read('www/salah-settings.js'), /School \(madhab\)|id=\"ssSchool\"/);
 assert.doesNotMatch(read('www/salah.js'), /raw\.asr === 'hanafi'.*settings\.asr = 'standard'/);

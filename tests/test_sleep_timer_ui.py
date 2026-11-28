@@ -3,6 +3,14 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from playwright.sync_api import sync_playwright
 from common import *
+
+def sheet_do(pg, tab, sel):
+    """Open the Reading-settings sheet, press one control on a tab, close the sheet."""
+    pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(450)
+    pg.tap('[data-qs-tab="%s"]' % tab); pg.wait_for_timeout(250)
+    pg.tap(sel); pg.wait_for_timeout(250)
+    pg.tap('.qs-x'); pg.wait_for_timeout(400)
+
 import quran_mock
 
 fails = []
@@ -106,8 +114,7 @@ with sync_playwright() as p:
     pg.goto(srv.url()); pg.wait_for_timeout(2400)
     pg.tap('.nav-item[data-screen="quranReaderScreen"]'); pg.wait_for_timeout(900)
     pg.tap('[data-open-surah="2"]'); pg.wait_for_timeout(1400)
-    pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(150); pg.tap('#quranQariToggle'); pg.wait_for_timeout(200)
-    pg.tap('#quranQariMenu [data-qari-id="ar.alafasy"]'); pg.wait_for_timeout(200); pg.tap('#quranSettingsBtn'); pg.wait_for_timeout(150)
+    sheet_do(pg, 'rc', '[data-qs-qari="ar.alafasy"]')
     pg.tap('[data-play-ayah="2"]'); pg.wait_for_timeout(300)
     pg.evaluate("window.__a=document.getElementById('quranAudio')")
     ok('per-ayah reciter plays a separate file for each ayah', 'ayah/2.wav' in pg.evaluate("window.__a.src"))

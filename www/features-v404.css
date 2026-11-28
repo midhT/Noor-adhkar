@@ -329,3 +329,9 @@ body.sheet-open main::after{display:none}
 #homeScreen .routine-card.compact .routine-title{grid-area:t;font-size:13.5px}
 #homeScreen .routine-card.compact .routine-bottom{grid-area:b;margin:0;font-size:11px;color:var(--muted);white-space:nowrap}
 .qv-select{min-height:40px;max-width:150px;padding:0 10px;border-radius:12px;border:1px solid var(--hair,var(--line));background:var(--card-a,transparent);color:var(--text);font:inherit;font-size:13px}
+
+/* Home: Tasbih / Adhkar library toggle (same two destinations as the Dhikr tab) */
+.home-seg{display:flex;gap:8px;margin:0 0 14px;padding:3px;border-radius:999px;border:1px solid var(--line);background:var(--card,rgba(255,255,255,.04))}
+.home-seg-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:0;border-radius:999px;background:transparent;color:var(--text);font:650 13.5px/1 inherit;transition:background .2s ease,transform .15s ease}
+.home-seg-btn span{color:var(--accent);font-size:15px}
+.home-seg-btn:active{transform:scale(.97);background:color-mix(in srgb,var(--accent) 14%,transparent)}

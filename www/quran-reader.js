@@ -20,6 +20,7 @@
     {id:'ar.muhammadayoub',name:'Muhammad Ayyoub',ini:'MY',edition:'ar.muhammadayoub',wordSync:false},
     {id:'ar.muhammadjibreel',name:'Muhammad Jibreel',ini:'MJ',edition:'ar.muhammadjibreel',wordSync:false}
   ];
+  try{const c=JSON.parse(localStorage.getItem('naseem-quran-reciters-v2')||'null');for(const e of (c&&c.list)||[]){if(e&&e.identifier&&e.language==='ar'&&!QARIS.some(q=>q.id===e.identifier)){const nm=String(e.englishName||e.identifier);QARIS.push({id:e.identifier,name:nm,ini:nm.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'Q',edition:e.identifier,wordSync:false});}}}catch(_){}
   const QARI_KEY='naseem-quran-reciter-v1';
   let selectedQari=(()=>{try{return localStorage.getItem(QARI_KEY)||'muhammad-al-luhaidan';}catch(_){return 'muhammad-al-luhaidan';}})();
   if(!QARIS.some(q=>q.id===selectedQari))selectedQari='muhammad-al-luhaidan';
@@ -391,7 +392,32 @@
     finally{busy=false;}
     return ok;
   }
+  async function pageOfVerse(surah,ayah){
+    const key=`${surah}:${ayah}`;
+    if(mushafEdition==='quran-uthmani'){const a=await request(`/ayah/${key}/quran-uthmani`);return Number(a.page??a.ayah?.page)||1;}
+    const lookup=await qfRequest(`lookup?mushaf=${mushafInfo().id}&from=${encodeURIComponent(key)}&to=${encodeURIComponent(key)}`);
+    return Number(Object.keys(lookup.pages||{})[0])||1;
+  }
+  async function chooseMushaf(v,mode){
+    if(!MUSHAF_CATALOG[v])return false;const old=mushafEdition,oldMode=readingMode;
+    mushafEdition=v;mushafLabel=MUSHAF_CATALOG[v].label;
+    if(mode)readingMode=mode;
+    try{localStorage.setItem('naseem-quran-mushaf',mushafEdition);localStorage.setItem('naseem-quran-reading-mode',readingMode);}catch(_){}
+    syncMushafControls();syncReadingMode();
+    if(!readerOpen())return true;
+    try{
+      if(pageReading)return await loadMushafPage(await pageOfVerse(current,progress.ayah||1));
+      return await loadSurah(current,progress.ayah||1);
+    }catch(error){mushafEdition=old;mushafLabel=MUSHAF_CATALOG[old].label;readingMode=oldMode;try{localStorage.setItem('naseem-quran-mushaf',old);localStorage.setItem('naseem-quran-reading-mode',oldMode);}catch(_){}syncMushafControls();syncReadingMode();notify(error.message||'Could not switch the Mushaf edition.');return false;}
+  }
+  async function openPageAt(page,mode){
+    if(mode&&mode!==readingMode){readingMode=mode;try{localStorage.setItem('naseem-quran-reading-mode',readingMode);}catch(_){}syncReadingMode();}
+    currentPage=Math.max(1,Number(page)||1);showReader();return loadMushafPage(currentPage);
+  }
   async function openReader(number,ayah=1,opts={}){
+    if(!opts.verses&&window.NaseemQuranStudio&&window.NaseemQuranStudio.wantsMushaf()){
+      try{const pg=await pageOfVerse(Math.max(1,Math.min(114,Number(number)||1)),Number(ayah)||1);const ok=await openPageAt(pg);if(ok&&opts.play)await startPlayback(ayah);return ok;}catch(_){/* fall back to the verse list */}
+    }
     showReader();const ok=await loadSurah(number,ayah);
     if(ok&&opts.play)await startPlayback(ayah);
     return ok;
@@ -854,7 +880,7 @@
     lastUserScroll=0;if(playSurah!==current||pageReading)await openReader(playSurah,n,{play:true});else await startPlayback(n);
   });
   $('quranBack').addEventListener('click',showHome);
-  $('quranSettingsBtn').addEventListener('click',()=>{const box=$('quranSettings'),open=box.hidden;box.hidden=!open;$('quranSettingsBtn').setAttribute('aria-expanded',String(open));});
+  $('quranSettingsBtn').addEventListener('click',()=>{if(window.NaseemQuranStudio){window.NaseemQuranStudio.open();return;}const box=$('quranSettings'),open=box.hidden;box.hidden=!open;$('quranSettingsBtn').setAttribute('aria-expanded',String(open));});
   $('quranQariToggle').textContent=qari().name+' ⌄';
   $('quranQariToggle').addEventListener('click',()=>{const menu=$('quranQariMenu'),open=menu.hidden;menu.hidden=!open;$('quranQariToggle').setAttribute('aria-expanded',String(open));});
   $('quranQariMenu').addEventListener('click',e=>{const o=e.target.closest('[data-qari-id]');if(o)chooseQari(o.dataset.qariId);});
@@ -997,7 +1023,7 @@
     if(pageReading){
       try{
         const key=`${current}:${progress.ayah||1}`;let page=1;
-        if(mushafEdition==='quran-uthmani'){const a=await request(`/ayah/${key}/quran-uthmani`);page=Number(a.ayah?.page)||1;}
+        if(mushafEdition==='quran-uthmani'){const a=await request(`/ayah/${key}/quran-uthmani`);page=Number(a.page??a.ayah?.page)||1;}
         else{const lookup=await qfRequest(`lookup?mushaf=${mushafInfo().id}&from=${encodeURIComponent(key)}&to=${encodeURIComponent(key)}`);page=Number(Object.keys(lookup.pages||{})[0])||1;}
         await loadMushafPage(page);
       }catch(error){mushafEdition=old;mushafLabel=MUSHAF_CATALOG[old].label;e.target.value=old;syncMushafControls();notify(error.message||'Could not locate this verse in the selected Mushaf.');}
@@ -1122,5 +1148,25 @@
   // Also cover app builds whose screen switch event is emitted before this module attaches.
   const duaEntry=document.querySelector('[data-open-v404="duas"]');duaEntry?.addEventListener('click',()=>setTimeout(loadQuranDuas,0));
   setTimeout(()=>{try{restoreResume();}catch(_){}},1800);
-  window.NaseemQuran={restoreResume,loadSurah,loadSurahList,loadQuranDuas,openReader,startPlayback,scrollToAyah,source:'Muhammad Al-Luhaidan · CC0 word timings',state:()=>({current,audioIndex,queue:audioQueue.length,playMode,memory:Object.keys(memory).length})};
+  /* More reciters: the live audio-edition list from AlQuran Cloud (same service that already serves Naseem's recitation), Arabic verse-by-verse only. Cached on device. */
+  const QARI_LIST_KEY='naseem-quran-reciters-v2';
+  function renderQariLists(){const html=QARIS.map(qariOptionHTML).join('');const a=$('quranQariMenu'),b=$('quranFullQariList');if(a)a.innerHTML=html;if(b)b.innerHTML=html;const t=$('quranQariToggle');if(t)t.textContent=qari().name+' ⌄';}
+  function mergeReciters(list){
+    let added=0;const have=new Set(QARIS.map(q=>q.id));
+    for(const e of list||[]){
+      if(!e||!e.identifier||have.has(e.identifier)||e.language!=='ar'||(e.type&&e.type!=='versebyverse'))continue;
+      const name=String(e.englishName||e.name||e.identifier).trim();if(!name)continue;
+      const ini=name.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'Q';
+      QARIS.push({id:e.identifier,name,ini,edition:e.identifier,wordSync:false});have.add(e.identifier);added++;
+    }
+    if(added)renderQariLists();return added;
+  }
+  async function loadMoreReciters(){
+    const cached=readJSON(QARI_LIST_KEY,null);
+    if(cached&&Array.isArray(cached.list)&&Date.now()-cached.at<7*864e5){mergeReciters(cached.list);return;}
+    try{const list=await request('/edition/format/audio');if(Array.isArray(list)){mergeReciters(list);writeJSON(QARI_LIST_KEY,{at:Date.now(),list:list.filter(e=>e.language==='ar').map(e=>({identifier:e.identifier,englishName:e.englishName,language:e.language,type:e.type}))});}}
+    catch(_){if(cached&&cached.list)mergeReciters(cached.list);}
+  }
+  setTimeout(()=>{loadMoreReciters();},2500);
+  window.NaseemQuran={pageOfVerse,openPageAt,reciters:()=>QARIS.map(q=>({id:q.id,name:q.name})),layout:()=>({edition,pageReading,readingMode,mushaf:mushafEdition,current,currentPage,ayah:progress.ayah||1,reading:readerOpen()}),setMushaf:chooseMushaf,restoreResume,loadSurah,loadSurahList,loadQuranDuas,openReader,startPlayback,scrollToAyah,source:'Muhammad Al-Luhaidan · CC0 word timings',state:()=>({current,audioIndex,queue:audioQueue.length,playMode,memory:Object.keys(memory).length})};
 })();
